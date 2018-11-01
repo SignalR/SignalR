@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.SystemWeb</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.RequestExtensions.GetHttpContext(Microsoft.AspNet.SignalR.IRequest)">
+      <summary>Ortamdan HttpContextBase öğesini alır.</summary>
+      <returns>Ortamdan <see cref="T:System.Web.HttpContextBase" /> alınan öğesi.</returns>
+      <param name="request">HTTP isteği.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator">
+      <summary>Derleme bulucu için bir yapı yöneticisini temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator" /> sınıfının yeni bir örneğini başlatır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.GetAssemblies">
+      <summary>Yapı yöneticisiyle ilişkili derleme listesini döndürür.</summary>
+      <returns>Yapı yöneticisiyle ilişkili derleme listesi.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData">
+      <summary>Makine anahtarıyla ilişkili korunan verileri temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData" /> sınıfının yeni bir örneğini başlatır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Protect(System.String,System.String)">
+      <summary>Belirtilen bir veriyi korur.</summary>
+      <returns>Korunan veriler.</returns>
+      <param name="data">Korunacak veriler.</param>
+      <param name="purpose">Korumanın amacı.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Unprotect(System.String,System.String)">
+      <summary>Korunan bir verinin korumasını kaldırır.</summary>
+      <returns>Koruması kaldırılan veriler.</returns>
+      <param name="protectedValue">Verilerin korunan değeri.</param>
+      <param name="purpose">Korumayı kaldırma nedeni.</param>
+    </member>
+    <member name="T:System.Web.Routing.SignalRRouteExtensions">
+      <summary>SignalR için yönlendirme uzantıları sağlar.</summary>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String)">
+      <summary>Bir <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> öğesini varsayılan bağımlılık çözümleyicisiyle belirtilen yola eşleştirir.</summary>
+      <returns>Kayıtlı rota.</returns>
+      <param name="routes">Rota tablosu.</param>
+      <param name="name">Rotanın adı.</param>
+      <param name="url">Rotanın yolu.</param>
+      <typeparam name="T">
+        <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> öğesinin türü.</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>Bir <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> öğesini varsayılan bağımlılık çözümleyicisiyle belirtilen yola eşleştirir.</summary>
+      <returns>Kayıtlı rota.</returns>
+      <param name="routes">Rota tablosu.</param>
+      <param name="name">Rotanın adı.</param>
+      <param name="url">Rotanın yolu.</param>
+      <param name="configuration">Yapılandırma seçenekleri.</param>
+      <typeparam name="T">
+        <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> öğesinin türü.</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection(System.Web.Routing.RouteCollection,System.String,System.String,System.Type,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>Bir <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> öğesini varsayılan bağımlılık çözümleyicisiyle belirtilen yola eşleştirir.</summary>
+      <returns>Kayıtlı rota.</returns>
+      <param name="routes">Rota tablosu.</param>
+      <param name="name">Rotanın adı.</param>
+      <param name="url">Rotanın yolu.</param>
+      <param name="type">
+        <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> öğesinin türü.</param>
+      <param name="configuration">Yapılandırma seçenekleri.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection)">
+      <summary>Varsayılan hub rotasını başlatır (/signalr).</summary>
+      <returns>Kayıtlı rota.</returns>
+      <param name="routes">Rota tablosu.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>Varsayılan hub rotasını başlatır (/signalr).</summary>
+      <returns>Kayıtlı rota.</returns>
+      <param name="routes">Rota tablosu.</param>
+      <param name="configuration">Yapılandırma seçenekleri.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,System.String,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>Varsayılan hub rotasını başlatır (/signalr).</summary>
+      <returns>Kayıtlı rota.</returns>
+      <param name="routes">Rota tablosu.</param>
+      <param name="path">Rotanın yolu.</param>
+      <param name="configuration">Yapılandırma seçenekleri.</param>
+    </member>
+  </members>
+</doc>

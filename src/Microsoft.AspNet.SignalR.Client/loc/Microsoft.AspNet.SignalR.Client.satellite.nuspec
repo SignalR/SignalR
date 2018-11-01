@@ -22,6 +22,8 @@
         <file src="net40\$Locale$\Microsoft.AspNet.SignalR.Client.resources.dll" target="lib\net40\$Locale$" />
         <file src="net45\$Locale$\Microsoft.AspNet.SignalR.Client.resources.dll" target="lib\net45\$Locale$" />
         <file src="netstandard1.3\$Locale$\Microsoft.AspNet.SignalR.Client.resources.dll" target="lib\netstandard1.3\$Locale$" />
-        <!-- <file src="Intellisense\Microsoft.AspNet.SignalR.Client.xml" target="lib\net45\en-US" /> -->
+        <file src="$Locale$\Microsoft.AspNet.SignalR.Client.xml" target="lib\net40\$Locale$" />
+        <file src="$Locale$\Microsoft.AspNet.SignalR.Client.xml" target="lib\net45\$Locale$" />
+        <file src="$Locale$\Microsoft.AspNet.SignalR.Client.xml" target="lib\netstandard1.3\$Locale$" />
     </files>
 </package>

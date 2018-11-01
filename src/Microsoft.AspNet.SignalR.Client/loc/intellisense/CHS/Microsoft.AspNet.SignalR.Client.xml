@@ -1,0 +1,1480 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.Client</name>
+  </assembly>
+  <members>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Connection">
+      <summary>提供 SignalR 服务的客户端连接。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.#ctor(System.String)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 类的新实例。</summary>
+      <param name="url">要连接到的 URL。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 类的新实例。</summary>
+      <param name="url">要连接到的 URL。</param>
+      <param name="queryString">要传递到服务器的查询字符串数据。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.#ctor(System.String,System.String)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 类的新实例。</summary>
+      <param name="url">要连接到的 URL。</param>
+      <param name="queryString">要传递到服务器的查询字符串数据。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.AddClientCertificate(System.Security.Cryptography.X509Certificates.X509Certificate)">
+      <summary>向请求添加客户端证书。</summary>
+      <param name="certificate">客户端证书。</param>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Closed">
+      <summary>当连接停止时发生。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.ConnectionId">
+      <summary>获取或设置连接的连接 ID。</summary>
+      <returns>连接的连接 ID。</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.ConnectionSlow">
+      <summary>当 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 即将超时时发生。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.ConnectionToken">
+      <summary>获取或设置用于连接的连接令牌。</summary>
+      <returns>连接的连接令牌。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.CookieContainer">
+      <summary>获取或设置与连接关联的 Cookie。</summary>
+      <returns>与连接关联的 Cookie。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Credentials">
+      <summary>获取或设置用于连接的身份验证信息。</summary>
+      <returns>连接的身份验证信息。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Dispose">
+      <summary>停止连接，这相当于调用 connection stop。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Dispose(System.Boolean)">
+      <summary>停止连接，这相当于调用 connection stop。</summary>
+      <param name="disposing">将此项设置为 true 会执行释放，设置为 false 将不执行任何操作。</param>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Error">
+      <summary>当连接遇到错误时发生。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.GroupsToken">
+      <summary>获取或设置用于连接的组令牌。</summary>
+      <returns>连接的组令牌。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Headers">
+      <summary>获取或设置请求的标头。</summary>
+      <returns>请求的标头。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Items">
+      <summary>获取词典以存储连接的状态。</summary>
+      <returns>用于存储连接状态的字典。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.JsonSerializer">
+      <summary>获取或设置连接使用的序列化程序。</summary>
+      <returns>连接使用的序列化程序。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.MessageId">
+      <summary>获取或设置连接的最后一个消息 ID。</summary>
+      <returns>连接的最后一个消息 ID。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#Certificates">
+      <summary>获取存储 X509Certificate 对象的集合。</summary>
+      <returns>存储 X509Certificate 对象的集合。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#ChangeState(Microsoft.AspNet.SignalR.Client.ConnectionState,Microsoft.AspNet.SignalR.Client.ConnectionState)">
+      <summary>当连接将要更改状态时调用。</summary>
+      <returns>如果连接将要更改状态，则为 true；否则为 false。</returns>
+      <param name="oldState">旧状态。</param>
+      <param name="newState">新状态。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#Disconnect">
+      <summary>停止 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 而不将中止消息发送到服务器。在收到来自服务器的断开连接消息后，将调用此函数。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#KeepAliveData">
+      <summary>获取或设置一个对象以存储各个保持活动超时值。</summary>
+      <returns>用于存储各个保持活动超时值的对象。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnConnectionSlow">
+      <summary>当 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 即将超时时调用。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnError(System.Exception)">
+      <summary>当 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 遇到错误时调用。</summary>
+      <param name="error">连接错误。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnReceived(Newtonsoft.Json.Linq.JToken)">
+      <summary>在 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 从服务器收到数据后调用。</summary>
+      <param name="message">收到的消息。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnReconnected">
+      <summary>当 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 成功地在超时后重新连接时调用。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#PrepareRequest(Microsoft.AspNet.SignalR.Client.Http.IRequest)">
+      <summary>准备 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 的所有请求。</summary>
+      <param name="request">请求。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#UpdateLastKeepAlive">
+      <summary>将 LastKeepAlive 设置为当前时间。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnClosed"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnMessageReceived(Newtonsoft.Json.Linq.JToken)">
+      <summary>在 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 从服务器收到消息后调用。</summary>
+      <param name="message">收到的消息。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnReconnecting"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnSending">
+      <summary>当 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 发送警报或提醒通知时调用。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 发送警报或提醒通知。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Protocol">
+      <summary>获取或设置连接的协议。</summary>
+      <returns>连接的协议。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Proxy">
+      <summary>获取或设置连接的代理信息。</summary>
+      <returns>连接的代理信息。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.QueryString">
+      <summary>获取构造函数中指定的查询字符串。</summary>
+      <returns>构造函数中指定的查询字符串。</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Received">
+      <summary>当连接从服务器收到数据后发生。</summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Reconnected">
+      <summary>当连接成功地在超时后重新连接时发生。</summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Reconnecting">
+      <summary>当连接在出现错误后开始重新连接时发生。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Send(System.Object)">
+      <summary>发送一个将要通过连接进行异步 JSON 序列化的对象。</summary>
+      <returns>一个任务，表示何时已发送数据。</returns>
+      <param name="value">要序列化的值。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Send(System.String)">
+      <summary>通过连接异步发送数据。</summary>
+      <returns>一个任务，表示何时已发送数据。</returns>
+      <param name="data">要发送的数据。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Start">
+      <summary>启动 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />。</summary>
+      <returns>一个任务，表示何时已启动连接。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Start(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>启动 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />。</summary>
+      <returns>一个任务，表示何时已启动连接。</returns>
+      <param name="httpClient">HTTP 客户端连接。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Start(Microsoft.AspNet.SignalR.Client.Transports.IClientTransport)">
+      <summary>启动 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />。</summary>
+      <returns>一个任务，表示何时已启动连接。</returns>
+      <param name="transport">要使用的传输。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.State">
+      <summary>获取连接的当前 ConnectionState。</summary>
+      <returns>连接的当前 ConnectionState。</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.StateChanged">
+      <summary>当连接状态发生更改时发生。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Stop">
+      <summary>停止 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 并将中止消息发送到服务器。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Stop(System.TimeSpan)">
+      <summary>停止 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 并将中止消息发送到服务器。&lt;param name="timeout"&gt;超时&lt;/param&gt;。</summary>
+      <param name="timeout">连接超时</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Trace(Microsoft.AspNet.SignalR.Client.TraceLevels,System.String,System.Object[])">
+      <summary>跟踪参数指定的连接方法。</summary>
+      <param name="level">跟踪级别。</param>
+      <param name="format">格式。</param>
+      <param name="args">参数。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.TraceLevel">
+      <summary>获取或设置连接的跟踪级别。</summary>
+      <returns>连接的跟踪级别。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.TraceWriter">
+      <summary>获取或设置用于跟踪连接的文本编写器。</summary>
+      <returns>用于跟踪连接的文本编写器。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Transport">
+      <summary>获取或设置连接的客户端传输。</summary>
+      <returns>连接的客户端传输。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.TransportConnectTimeout">
+      <summary>获取或设置一个 TimeSpan，用于表示传输连接在经过多长时间后超时。</summary>
+      <returns>一个 TimeSpan，用于表示传输连接在经过多长时间后超时。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Url">
+      <summary>获取或设置连接的 URL。</summary>
+      <returns>连接的 URL。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ConnectionExtensions">
+      <summary>此处的内容将不会更新；请不要在此处添加材料。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.AsObservable(Microsoft.AspNet.SignalR.Client.Connection)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.AsObservable``1(Microsoft.AspNet.SignalR.Client.Connection)">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.AsObservable``1(Microsoft.AspNet.SignalR.Client.Connection,System.Func{System.String,``0})">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.EnsureReconnecting(Microsoft.AspNet.SignalR.Client.IConnection)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.GetValue``1(Microsoft.AspNet.SignalR.Client.IConnection,System.String)">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.JsonDeserializeObject``1(Microsoft.AspNet.SignalR.Client.IConnection,System.String)">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.JsonSerializeObject(Microsoft.AspNet.SignalR.Client.IConnection,System.Object)"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ConnectionState">
+      <summary>表示 SignalR 连接的连接状态。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Connected">
+      <summary>连接状态为已连接。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Connecting">
+      <summary>连接状态为正在连接。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Disconnected">
+      <summary>连接状态为已断开连接。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Reconnecting">
+      <summary>连接状态为正在重新连接。</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ErrorExtensions">
+      <summary>为简化的错误识别提供扩展方法。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ErrorExtensions.GetError(System.Exception)">
+      <summary> 通过展开复杂的异常来简化错误识别。</summary>
+      <returns>SignalRError 形式的已展开异常。</returns>
+      <param name="ex">引发的异常。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HeaderDictionary">
+      <summary>表示从 SignalR 客户端的一组键到一组值的映射。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.#ctor(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.HeaderDictionary" /> 类的新实例。</summary>
+      <param name="connection">客户端连接。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Add(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+      <summary>将特定的项添加到字典。</summary>
+      <param name="item">要添加的项。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Add(System.String,System.String)">
+      <summary>将特定的键/值对添加到字典。</summary>
+      <param name="key">要添加的键。</param>
+      <param name="value">要添加的值。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Clear">
+      <summary>清除字典的内容。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Contains(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+      <summary>指定字典中是否包含某个项。</summary>
+      <returns>如果字典中包含某个项，则为 true；否则为 false。</returns>
+      <param name="item">要搜索的项。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.ContainsKey(System.String)">
+      <summary>指定字典中是否包含指定的键。</summary>
+      <returns>如果字典中包含指定的键，则为 true；否则为 false。</returns>
+      <param name="key">要搜索的键。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.CopyTo(System.Collections.Generic.KeyValuePair{System.String,System.String}[],System.Int32)">
+      <summary>从指定的数组索引处开始，将键/值对元素复制到现有的一维数组中。</summary>
+      <param name="array">一维数组，用作从字典中复制的元素的目标。</param>
+      <param name="arrayIndex">数组中从零开始的索引，将从此位置开始复制。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Count">
+      <summary>获取字典中包含的键/值对的数目。</summary>
+      <returns>字典中包含的键/值对的数目。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.GetEnumerator">
+      <summary>返回一个循环访问字典的枚举器。</summary>
+      <returns>循环访问字典的枚举器。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.IsReadOnly">
+      <summary>获取字典是否为只读。</summary>
+      <returns>如果字典为只读，则为 true；否则为 false。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Item(System.String)">
+      <summary>获取或设置与指定的键关联的值。</summary>
+      <returns>与指定键关联的值。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Keys">
+      <summary>获取字典中的键集合。</summary>
+      <returns>字典中的键集合。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Remove(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+      <summary>从字典中删除指定的键/值对项。</summary>
+      <returns>已在其中删除了项的字典。</returns>
+      <param name="item">要删除的项。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Remove(System.String)">
+      <summary>从字典中删除特定的键。</summary>
+      <returns>已在其中删除了键的字典。</returns>
+      <param name="key">要删除的键。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.System#Collections#IEnumerable#GetEnumerator">
+      <summary>返回循环访问集合的枚举器。</summary>
+      <returns>循环访问集合的枚举器。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.TryGetValue(System.String,System.String@)">
+      <summary>获取与指定的键关联的值。</summary>
+      <returns>如果字典包含具有指定键的元素，则为 true；否则为 false。</returns>
+      <param name="key">要获取的值的键。</param>
+      <param name="value">当此方法返回时，如果找到指定键，则包含与该键关联的值；否则，将包含 value 参数的类型的默认值。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Values">
+      <summary>获取字典中的值集合。</summary>
+      <returns>字典中的值集合。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor">
+      <summary>表示对来自服务器的响应进行的 HeartbeatMonitor，如果响应成功，将继续保持心跳。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.#ctor(Microsoft.AspNet.SignalR.Client.IConnection,System.Object)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> 类的新实例。</summary>
+      <param name="connection">接口连接。</param>
+      <param name="connectionStateLock">连接状态锁定。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Beat(System.TimeSpan)">
+      <summary>用于确定是否要通知用户或尝试重新连接的逻辑。</summary>
+      <param name="timeElapsed">已用时间。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Dispose">
+      <summary>释放由 <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> 类的当前实例使用的所有资源。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Dispose(System.Boolean)">
+      <summary>释放 <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> 类使用的非托管资源并选择性地释放托管资源。</summary>
+      <param name="disposing">若为 true，则同时释放托管资源和非托管资源；若为 false，则仅释放非托管资源。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.HasBeenWarned">
+      <summary>获取或设置一个值，该值指示是否已对 <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> 发出警告。</summary>
+      <returns>如果已对 <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> 发出警告，则为 true；否则为 false。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Start">
+      <summary>更新 LastKeepAlive 并启动计时器。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.TimedOut">
+      <summary>获取或设置一个值，该值指示 <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> 是否已超时。</summary>
+      <returns>如果 <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> 已超时，则为 true；否则为 false。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HttpClientException">
+      <summary>当 HTTP 客户端建立连接时引发的异常。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" /> 类的新实例。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor(System.Net.Http.HttpResponseMessage)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" /> 类的新实例。</summary>
+      <param name="responseMessage">响应消息。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor(System.String)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" /> 类的新实例。</summary>
+      <param name="message">错误消息。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor(System.String,System.Exception)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" /> 类的新实例。</summary>
+      <param name="message">错误消息。</param>
+      <param name="ex">异常。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HttpClientException.Response">
+      <summary>获取或设置与此客户端关联的响应。</summary>
+      <returns>与此客户端关联的响应。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HubConnection">
+      <summary>用于与集线器交互的 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> 类的新实例。</summary>
+      <param name="url">要连接到的 URL。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.Boolean)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> 类的新实例。</summary>
+      <param name="url">要连接到的 URL。</param>
+      <param name="useDefaultUrl">确定默认的“/signalr”路径是否应追加到指定的 URL 之后。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> 类的新实例。</summary>
+      <param name="url">要连接到的 URL。</param>
+      <param name="queryString">要传递到服务器的查询字符串数据。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.String},System.Boolean)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> 类的新实例。</summary>
+      <param name="url">要连接到的 URL。</param>
+      <param name="queryString">要传递到服务器的查询字符串数据。</param>
+      <param name="useDefaultUrl">确定默认的“/signalr”路径是否应追加到指定的 URL 之后。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.String)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> 类的新实例。</summary>
+      <param name="url">要连接到的 URL。</param>
+      <param name="queryString">要传递到服务器的查询字符串数据。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.String,System.Boolean)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> 类的新实例。</summary>
+      <param name="url">要连接到的 URL。</param>
+      <param name="queryString">要传递到服务器的查询字符串数据。</param>
+      <param name="useDefaultUrl">确定默认的“/signalr”路径是否应追加到指定的 URL 之后。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.CreateHubProxy(System.String)">
+      <summary>使用指定名称为集线器创建 <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />
+      </returns>
+      <param name="hubName">集线器的名称。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.Microsoft#AspNet#SignalR#Client#Hubs#IHubConnection#RegisterCallback(System.Action{Microsoft.AspNet.SignalR.Client.Hubs.HubResult})"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.Microsoft#AspNet#SignalR#Client#Hubs#IHubConnection#RemoveCallback(System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnClosed"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnMessageReceived(Newtonsoft.Json.Linq.JToken)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnReconnecting"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnSending"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HubException"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubException.#ctor"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubException.#ctor(System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubException.#ctor(System.String,System.Object)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HubException.ErrorData"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HubProxyExtensions">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /> 的扩展。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.GetValue``1(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String)">
+      <summary>获取状态变量的值。</summary>
+      <returns>状态变量的值。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="name">状态变量的名称。</param>
+      <typeparam name="T">状态变量的类型</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.Observe(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String)">
+      <summary>注册的 <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /> 事件具有 <see cref="T:IObservable{T}" />。</summary>
+      <returns>一个 <see cref="T:IObservable{object[]}" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />
+      </param>
+      <param name="eventName">事件的名称。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action)">
+      <summary>用指定的名称和回调注册事件</summary>
+      <returns>一个表示此订阅的 <see cref="T:System.IDisposable" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">事件的名称。</param>
+      <param name="onData">回调</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{System.Object})">
+      <summary>用指定的名称和回调注册事件</summary>
+      <returns>一个表示此订阅的 <see cref="T:System.IDisposable" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">事件的名称。</param>
+      <param name="onData">回调</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``1(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0})">
+      <summary>用指定的名称和回调注册事件</summary>
+      <returns>一个表示此订阅的 <see cref="T:System.IDisposable" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">事件的名称。</param>
+      <param name="onData">回调</param>
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``2(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1})">
+      <summary>用指定的名称和回调注册事件</summary>
+      <returns>一个表示此订阅的 <see cref="T:System.IDisposable" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">事件的名称。</param>
+      <param name="onData">回调</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``3(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2})">
+      <summary>用指定的名称和回调注册事件</summary>
+      <returns>一个表示此订阅的 <see cref="T:System.IDisposable" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">事件的名称。</param>
+      <param name="onData">回调</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``4(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3})">
+      <summary>用指定的名称和回调注册事件</summary>
+      <returns>一个表示此订阅的 <see cref="T:System.IDisposable" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">事件的名称。</param>
+      <param name="onData">回调</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``5(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3,``4})">
+      <summary>用指定的名称和回调注册事件</summary>
+      <returns>一个表示此订阅的 <see cref="T:System.IDisposable" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">事件的名称。</param>
+      <param name="onData">回调</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+      <typeparam name="T5"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``6(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3,``4,``5})">
+      <summary>用指定的名称和回调注册事件</summary>
+      <returns>一个表示此订阅的 <see cref="T:System.IDisposable" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">事件的名称。</param>
+      <param name="onData">回调</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+      <typeparam name="T5"></typeparam>
+      <typeparam name="T6"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``7(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3,``4,``5,``6})">
+      <summary>用指定的名称和回调注册事件</summary>
+      <returns>一个表示此订阅的 <see cref="T:System.IDisposable" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">事件的名称。</param>
+      <param name="onData">回调</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+      <typeparam name="T5"></typeparam>
+      <typeparam name="T6"></typeparam>
+      <typeparam name="T7"></typeparam>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.IConnection">
+      <summary>此处的内容将不会更新；请不要在此处添加材料。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Certificates">
+      <summary>获取 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的 X509CertificateCollection 的证书。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的 X509CertificateCollection 的证书。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.ChangeState(Microsoft.AspNet.SignalR.Client.ConnectionState,Microsoft.AspNet.SignalR.Client.ConnectionState)">
+      <summary>当 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 将要更改状态时调用。</summary>
+      <returns>如果 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 将要更改状态，则为 true；否则为 false。</returns>
+      <param name="oldState">旧状态。</param>
+      <param name="newState">新状态。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.ConnectionId">
+      <summary>获取 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的连接 ID。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的连接 ID。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.ConnectionToken">
+      <summary>获取或设置 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的连接令牌。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的连接令牌。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.CookieContainer">
+      <summary>获取或设置与 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 关联的 Cookie。</summary>
+      <returns>与 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 关联的 Cookie。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Credentials">
+      <summary>获取或设置 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的身份验证信息。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的身份验证信息。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Disconnect">
+      <summary>停止 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 而不将中止消息发送到服务器。在收到来自服务器的断开连接消息后，将调用此函数。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.GroupsToken">
+      <summary>获取或设置 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的组令牌。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的组令牌。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Headers">
+      <summary>获取请求的标头。</summary>
+      <returns>请求的标头。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Items">
+      <summary>获取用于存储 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 状态的字典。</summary>
+      <returns>用于存储 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 状态的字典。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.JsonSerializer">
+      <summary>获取 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 使用的序列化程序。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 使用的序列化程序。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.KeepAliveData">
+      <summary>获取或设置为 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 保持活动数据的对象。</summary>
+      <returns>为 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 保持活动数据的对象。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.MessageId">
+      <summary>获取或设置 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的最后一个消息 ID。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的最后一个消息 ID。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnConnectionSlow">
+      <summary>当 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 即将超时时调用。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnError(System.Exception)">
+      <summary>当 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 遇到错误时调用。</summary>
+      <param name="ex">异常错误。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnReceived(Newtonsoft.Json.Linq.JToken)">
+      <summary>在 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 从服务器收到数据后调用。</summary>
+      <param name="data">收到的数据。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnReconnected">
+      <summary>当 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 成功地在超时后重新连接时调用。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnReconnecting">
+      <summary>当 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 在出现错误后开始重新连接时调用。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.PrepareRequest(Microsoft.AspNet.SignalR.Client.Http.IRequest)">
+      <summary>准备 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的所有请求。</summary>
+      <param name="request">请求。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Protocol">
+      <summary>获取或设置 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的协议。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的协议。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Proxy">
+      <summary>获取或设置 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的代理信息。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的代理信息。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.QueryString">
+      <summary>获取构造函数中指定的查询字符串。</summary>
+      <returns>构造函数中指定的查询字符串。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Send(System.String)">
+      <summary>通过 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 异步发送数据。</summary>
+      <returns>一个任务，表示何时已发送数据。</returns>
+      <param name="data">要发送的数据。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.State">
+      <summary>获取 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的当前 ConnectionState。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的当前 ConnectionState。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Stop">
+      <summary>停止 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 并将中止消息发送到服务器。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Trace(Microsoft.AspNet.SignalR.Client.TraceLevels,System.String,System.Object[])">
+      <summary>跟踪参数所指定的 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 方法。</summary>
+      <param name="level">跟踪级别。</param>
+      <param name="format">格式。</param>
+      <param name="args">参数。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Transport">
+      <summary>获取 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的客户端传输。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的客户端传输。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.TransportConnectTimeout">
+      <summary>获取或设置一个 TimeSpan，用于表示传输连接在经过多长时间后超时。</summary>
+      <returns>一个 TimeSpan，用于表示传输连接在经过多长时间后超时。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.UpdateLastKeepAlive">
+      <summary>更新对象以存储各个保持活动超时值。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Url">
+      <summary>获取 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的 URL。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 的 URL。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.IHubProxy">
+      <summary>服务器端集线器的客户端代理。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IHubProxy.Invoke``1(System.String,System.Object[])">
+      <summary>在服务器端集线器上异步执行方法。</summary>
+      <returns>表示调用何时返回的任务。</returns>
+      <param name="method">方法的名称。</param>
+      <param name="args">参数</param>
+      <typeparam name="T">从集线器返回的结果的类型</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IHubProxy.Invoke(System.String,System.Object[])">
+      <summary>在服务器端集线器上异步执行方法。</summary>
+      <returns>表示调用何时返回的任务。</returns>
+      <param name="method">方法的名称。</param>
+      <param name="args">参数</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IHubProxy.Item(System.String)">
+      <summary>获取或设置集线器的状态。</summary>
+      <returns>字段的值</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IHubProxy.JsonSerializer">
+      <summary>获取连接使用的序列化程序。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IHubProxy.Subscribe(System.String)">
+      <summary>注册集线器的事件。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.Subscription" />。</returns>
+      <param name="eventName">事件的名称</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.KeepAliveData">
+      <summary>表示用于存储所有保持活动属性的类。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.KeepAliveData.#ctor(System.DateTime,System.TimeSpan,System.TimeSpan,System.TimeSpan)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> 类的新实例。</summary>
+      <param name="lastKeepAlive">上次保持活动属性。</param>
+      <param name="timeout">超时属性。</param>
+      <param name="timeoutWarning">超时警告。</param>
+      <param name="checkInterval">检查间隔。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.KeepAliveData.#ctor(System.TimeSpan)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> 类的新实例。</summary>
+      <param name="timeout">超时属性。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.CheckInterval">
+      <summary>获取或设置检查间隔属性的时间跨度。</summary>
+      <returns>检查间隔属性的时间跨度。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.LastKeepAlive">
+      <summary>获取或设置存储上次保持活动属性的 DateTime。</summary>
+      <returns>存储上次保持活动属性的 DateTime。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.Timeout">
+      <summary>获取或设置 <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> 的超时。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> 的超时。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.TimeoutWarning">
+      <summary>获取或设置 <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> 的超时警告。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> 的超时警告。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.NegotiationResponse">
+      <summary>提供协商响应的连接属性。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.NegotiationResponse.#ctor">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.NegotiationResponse" /> 类的新实例。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.ConnectionId">
+      <summary>获取或设置协商响应的连接 ID。</summary>
+      <returns>协商响应的连接 ID。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.ConnectionToken">
+      <summary>获取或设置协商响应的连接令牌。</summary>
+      <returns>协商响应的连接令牌。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.DisconnectTimeout">
+      <summary>获取或设置协商响应的断开连接超时属性。</summary>
+      <returns>协商响应的断开连接超时属性。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.KeepAliveTimeout">
+      <summary>获取或设置协商响应的保持活动超时。</summary>
+      <returns>协商响应的保持活动超时。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.ProtocolVersion">
+      <summary>获取或设置协商响应的协议版本。</summary>
+      <returns>协商响应的协议版本。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.TransportConnectTimeout">
+      <summary>获取或设置协商响应的传输连接超时。</summary>
+      <returns>协商响应的传输连接超时。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.TryWebSockets">
+      <summary>获取或设置一个值，该值指示协商响应是否将尝试使用 Web 套接字。</summary>
+      <returns>如果协商响应将尝试使用 Web 套接字，则为 true；否则为 false。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.Url">
+      <summary>获取或设置协商响应的 URL。</summary>
+      <returns>协商响应的 URL。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ObservableConnection`1">
+      <summary>表示为 SignalR 服务提供客户端连接的数据连接。</summary>
+      <typeparam name="T">连接中的元素类型。</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ObservableConnection`1.#ctor(Microsoft.AspNet.SignalR.Client.Connection,System.Func{System.String,`0})">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.ObservableConnection`1" /> 类的新实例。</summary>
+      <param name="connection">客户端连接。</param>
+      <param name="convert">要转换的函数字符串。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ObservableConnection`1.Subscribe(System.IObserver{`0})">
+      <summary>订阅 SignalR 服务的可监视连接。</summary>
+      <returns>SignalR 服务的可监视连接。</returns>
+      <param name="observer">监视程序通知。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.SignalRError">
+      <summary>表示由 SignalR 客户端引发的错误。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.#ctor(System.Exception)">
+      <summary>使用指定的异常初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.SignalRError" /> 类的新实例。</summary>
+      <param name="exception">要解封的异常。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.Dispose">
+      <summary>释放 <see cref="T:Microsoft.AspNet.SignalR.Client.SignalRError" /> 类的当前实例使用的资源。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.Dispose(System.Boolean)">
+      <summary>释放 <see cref="T:Microsoft.AspNet.SignalR.DefaultDependencyResolver" /> 类的当前实例使用的非托管资源，并有选择性地释放托管资源。</summary>
+      <param name="disposing">若为 true，则同时释放托管资源和非托管资源；若为 false，则仅释放非托管资源。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.SignalRError.Exception">
+      <summary>获取或设置解封的基础异常。</summary>
+      <returns>解封的基本异常。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.SignalRError.ResponseBody">
+      <summary>获取或设置错误的响应正文（如果错误是 WebException 且响应可读）。</summary>
+      <returns>错误的响应正文。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.SignalRError.StatusCode">
+      <summary>获取或设置错误的状态代码（如果错误是 WebException）。</summary>
+      <returns>错误的状态代码。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.ToString">
+      <summary>返回此 SignalR 错误的字符串表示形式。</summary>
+      <returns>此 SignalR 错误的字符串表示形式。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.StateChange">
+      <summary>表示连接状态的更改。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.StateChange.#ctor(Microsoft.AspNet.SignalR.Client.ConnectionState,Microsoft.AspNet.SignalR.Client.ConnectionState)">
+      <summary>创建 <see cref="T:Microsoft.AspNet.SignalR.Client.StateChange" /> 的新实例。</summary>
+      <param name="oldState">连接的旧状态。</param>
+      <param name="newState">连接的新状态。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.StateChange.NewState">
+      <summary>获取连接的新状态。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.StateChange.OldState">
+      <summary>获取连接的旧状态。</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.TraceLevels">
+      <summary>枚举与 SignalR 客户端关联的跟踪级别。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.All">
+      <summary>跟踪所有关联对象。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.Events">
+      <summary>跟踪所有事件。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.Messages">
+      <summary>跟踪所有消息。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.None">
+      <summary>不跟踪任何内容。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.StateChanges">
+      <summary>跟踪所有状态更改。</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient">
+      <summary>默认的 <see cref="T:Microsoft.AspNet.SignalR.Client.Http.IHttpClient" /> 实现。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.#ctor">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient" /> 类的新实例。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.Get(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Boolean)">
+      <summary>向指定的 URL 发送异步 http GET 请求。</summary>
+      <returns>&lt;see cref="T:Task{IResponse}" /&gt;。</returns>
+      <param name="url">要将请求发送到的 URL。</param>
+      <param name="prepareRequest">使用默认值初始化请求的回调。</param>
+      <param name="isLongRunning">指示请求是否长时间运行。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.Initialize(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>初始化 HTTP 客户端。</summary>
+      <param name="connection">当前的 HTTP 连接。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.Post(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Collections.Generic.IDictionary{System.String,System.String},System.Boolean)">
+      <summary>向指定的 URL 发送异步 http POST 请求。</summary>
+      <returns>&lt;see cref="T:Task{IResponse}" /&gt;。</returns>
+      <param name="url">要将请求发送到的 URL。</param>
+      <param name="prepareRequest">使用默认值初始化请求的回调。</param>
+      <param name="postData">窗体 URL 编码数据。</param>
+      <param name="isLongRunning">指示请求是否长时间运行</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler">
+      <summary>表示客户端的默认 HTTP 处理程序。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler.#ctor(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler" /> 类的新实例。</summary>
+      <param name="connection">默认连接。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper">
+      <summary>提供 HTTP 请求消息的包装。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.#ctor(System.Net.Http.HttpRequestMessage,System.Action)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" /> 类的新实例。</summary>
+      <param name="httpRequestMessage">HTTP 请求消息。</param>
+      <param name="cancel">取消请求消息。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.Abort">
+      <summary>取消当前的 HTTP 请求消息。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.Accept">
+      <summary>获取或设置用于接受请求消息的 HTTP 属性。</summary>
+      <returns>用于接受请求消息的 HTTP 属性。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.SetRequestHeaders(System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>设置 <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" /> 的请求标头。</summary>
+      <param name="headers">请求标头。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.UserAgent">
+      <summary>获取或设置 <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" /> 的用户代理。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" /> 的用户代理。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper">
+      <summary>表示 <see cref="T:System.Net.Http.HttpResponseMessage" /> 的容器类。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.#ctor(System.Net.Http.HttpResponseMessage)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper" /> 类的新实例。</summary>
+      <param name="httpResponseMessage">此 HTTP 客户端的响应消息。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.Dispose">
+      <summary>释放由 <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper" /> 的当前实例所使用的所有资源。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.Dispose(System.Boolean)">
+      <summary>释放 <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper" /> 类使用的非托管资源并选择性地释放托管资源。</summary>
+      <param name="disposing">若为 true，则同时释放托管资源和非托管资源；若为 false，则仅释放非托管资源。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.GetStream">
+      <summary>获取与此消息关联的流的全新只读副本。</summary>
+      <returns>与此消息关联的流的全新只读副本。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.ReadAsString">
+      <summary>以字符串的形式读取响应消息。</summary>
+      <returns>表示响应消息的字符串。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IHttpClient">
+      <summary>可以发出 http 请求的客户端。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClient.Get(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Boolean)">
+      <summary>向指定的 URL 发送异步 http GET 请求。</summary>
+      <returns>&lt;see cref="T:Task{IResponse}" /&gt;。</returns>
+      <param name="url">要将请求发送到的 URL。</param>
+      <param name="prepareRequest">使用默认值初始化请求的回调。</param>
+      <param name="isLongRunning">指示它是否为长时间运行的请求</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClient.Initialize(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>初始化 HTTP 客户端。</summary>
+      <param name="connection">连接</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClient.Post(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Collections.Generic.IDictionary{System.String,System.String},System.Boolean)">
+      <summary>向指定的 URL 发送异步 http POST 请求。</summary>
+      <returns>&lt;see cref="T:Task{IResponse}" /&gt;。</returns>
+      <param name="url">要将请求发送到的 URL。</param>
+      <param name="prepareRequest">使用默认值初始化请求的回调。</param>
+      <param name="postData">窗体 URL 编码数据。</param>
+      <param name="isLongRunning">指示它是否为长时间运行的请求</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IHttpClientExtensions">
+      <summary>此处的内容将不会更新；请不要在此处添加材料。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClientExtensions.Post(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Boolean)">
+      <summary>向指定的 URL 发送异步 http POST 请求。</summary>
+      <returns>向指定的 URL 发送的异步 http POST 请求。</returns>
+      <param name="client">可以发出 http 请求的客户端。</param>
+      <param name="url">要将请求发送到的 URL。</param>
+      <param name="prepareRequest">使用默认值初始化请求的回调。</param>
+      <param name="isLongRunning">指示 POST 是否长时间运行。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IRequest">
+      <summary>表示 HTTP 请求。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IRequest.Abort"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.IRequest.Accept"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IRequest.SetRequestHeaders(System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>设置请求标头。</summary>
+      <param name="headers">请求标头。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.IRequest.UserAgent"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IResponse">
+      <summary>表示 HTTP 响应。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IResponse.GetStream">
+      <summary>获取表示响应正文的流。</summary>
+      <returns>表示响应正文的流。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IResponseExtensions">
+      <summary>Provides method that is used to read the response object.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IResponseExtensions.ReadAsString(Microsoft.AspNet.SignalR.Client.Http.IResponse)">
+      <summary>Reads the response object and returns the content as string.</summary>
+      <returns>A task that represents the read operation.</returns>
+      <param name="response">The response object to read.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation">
+      <summary>表示客户端的集线器调用。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.#ctor">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation" /> 类的新实例。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.Args">
+      <summary>获取或设置调用客户端集线器方法时将使用的参数列表。</summary>
+      <returns>调用客户端集线器方法时将使用的参数列表。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.CallbackId">
+      <summary>获取或设置集线器调用属性的回调标识符。</summary>
+      <returns>集线器调用属性的回调标识符。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.Hub">
+      <summary>获取或设置被调用方法所属的集线器的名称。</summary>
+      <returns>被调用方法所属的集线器的名称。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.Method">
+      <summary>获取或设置要调用的客户端集线器方法的名称。</summary>
+      <returns>要调用的客户端集线器方法的名称。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.State">
+      <summary>获取或设置表示自上次将集线器状态发送到客户端以来已更改的服务器上的集线器状态的键/值存储。</summary>
+      <returns>表示自上次将集线器状态发送到客户端以来已更改的服务器上的集线器状态的键/值存储。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy">
+      <summary>此处的内容将不会更新；请不要在此处添加材料。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.#ctor(Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection,System.String)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy" /> 类的新实例。</summary>
+      <param name="connection">集线器连接。</param>
+      <param name="hubName">集线器的名称。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Invoke(System.String,System.Object[])">
+      <summary>使用指定的参数调用方法和参数。</summary>
+      <returns>返回 <see cref="T:System.Threading.Tasks.Task" />。</returns>
+      <param name="method">方法。</param>
+      <param name="args">参数。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Invoke``1(System.String,System.Object[])">
+      <summary>使用指定的参数调用方法和参数。</summary>
+      <returns>返回 <see cref="T:System.Threading.Tasks.Task`1" />。</returns>
+      <param name="method">方法。</param>
+      <param name="args">参数。</param>
+      <typeparam name="T">类型。</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.InvokeEvent(System.String,System.Collections.Generic.IList{Newtonsoft.Json.Linq.JToken})">
+      <summary>使用指定参数调用事件。</summary>
+      <param name="eventName">事件名称。</param>
+      <param name="args">参数列表的集合。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Item(System.String)">
+      <summary>获取或设置集线器代理的项目。</summary>
+      <returns>集线器代理的项目。</returns>
+      <param name="name">字符串名称。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.JsonSerializer">
+      <summary>获取集线器代理的 JSON 序列化程序。</summary>
+      <returns>集线器代理的 JSON 序列化程序。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Subscribe(System.String)">
+      <summary>提供要订阅的集线器代理。</summary>
+      <returns>要订阅的集线器代理。</returns>
+      <param name="eventName">事件名称。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData">
+      <summary>表示集线器注册数据。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData.#ctor">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData" /> 类的新实例。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData.Name">
+      <summary>获取或设置数据的名称。</summary>
+      <returns>数据的名称。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubResult">
+      <summary>表示集线器调用的结果。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.#ctor">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubResult" /> 类的新实例。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.Error">
+      <summary>获取或设置从集线器调用中返回的错误消息。</summary>
+      <returns>从集线器调用中返回的错误消息。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.ErrorData">
+      <summary>额外的错误数据</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.Id">
+      <summary>获取或设置回调标识符。</summary>
+      <returns>回调标识符。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.IsHubException">
+      <summary>指示 Error 是否为 <see cref="T:Microsoft.AspNet.SignalR.Client.HubException" />。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.Result">
+      <summary>获取或设置集线器的返回值。</summary>
+      <returns>集线器的返回值。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.State">
+      <summary>获取或设置此集线器中的调用方状态。</summary>
+      <returns>此集线器中的调用方状态。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.Hubservable">
+      <summary>表示集线器事件的 <see cref="T:System.IObservable{object[]}" /> 实现。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.Hubservable.#ctor(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.Hubservable.Subscribe(System.IObserver{System.Collections.Generic.IList{Newtonsoft.Json.Linq.JToken}})">
+      <summary>为集线器事件注册指定的监视程序。</summary>
+      <returns>表示订阅的已接收事件的 <see cref="T:System.IDisposable" /> 对象。</returns>
+      <param name="observer">要注册的监视程序。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection">
+      <summary>表示集线器连接。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection.RegisterCallback(System.Action{Microsoft.AspNet.SignalR.Client.Hubs.HubResult})">
+      <summary>为集线器连接注册回调函数。</summary>
+      <returns>回调 ID 字符串。</returns>
+      <param name="callback">要注册的回调函数。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection.RemoveCallback(System.String)"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.Subscription">
+      <summary>表示集线器方法的订阅。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.Subscription.#ctor">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.Subscription" /> 类的新实例。</summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Hubs.Subscription.Received">
+      <summary>当收到订阅时发生。</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.CompleteAbort"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.Dispose"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.TryCompleteAbort"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler">
+      <summary>表示用于处理传输初始化的对象。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.#ctor(System.TimeSpan,System.Threading.CancellationToken)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler" /> 类的新实例。</summary>
+      <param name="failureTimeout">要将初始化过程视为失败所需的时间。</param>
+      <param name="disconnectToken">断开连接令牌。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Fail"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Fail(System.Exception)"></member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.OnFailure">
+      <summary>传输初始化失败时发生。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Success">
+      <summary>指定何时传输初始化成功。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Task">
+      <summary>获取或设置与传输初始化关联的任务。</summary>
+      <returns>与传输初始化关联的任务。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader">
+      <summary>Represents an asynchronous stream reader.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.#ctor(System.IO.Stream)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader" /> class. </summary>
+      <param name="stream">The stream to read asynchronously payloads from.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.BufferLock">
+      <summary>Gets the object that is used to lock the buffer.</summary>
+      <returns>The object that is used to lock the buffer.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Closed">
+      <summary>Gets or sets the method to invoke when the reader is closed while in the Processing state. </summary>
+      <returns>The method to invoke when the reader is closed while in the Processing state.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Data">
+      <summary>Gets or sets the method to invoke when there is a message to be received in the stream. </summary>
+      <returns>The method to invoke when there is a message to be received in the stream.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Opened">
+      <summary>Gets or sets the method to invoke when the stream is open. </summary>
+      <returns>The method to invoke when the stream is open.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Start">
+      <summary> Starts the reader. </summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport">
+      <summary>此处的内容将不会更新；请不要在此处添加材料。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> 类的新实例。</summary>
+      <param name="httpClient">可以发出 http 请求的客户端。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Client.Transports.IClientTransport})">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> 类的新实例。</summary>
+      <param name="httpClient">可以发出 http 请求的客户端。</param>
+      <param name="transports">可以建立 http 传输的客户端。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Dispose">
+      <summary>释放由 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> 类的当前实例使用的所有资源。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Dispose(System.Boolean)">
+      <summary>释放 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> 类使用的非托管资源并选择性地释放托管资源。</summary>
+      <param name="disposing">若为 true，则同时释放托管资源和非托管资源；若为 false，则仅释放非托管资源。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.GetNegotiateResponse(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>客户端服务的传输连接已断开。</summary>
+      <param name="connection">传输连接。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Name">
+      <summary>获取 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> 的名称。</summary>
+      <returns>获取 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> 的名称。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)">
+      <summary>启动自动传输连接。</summary>
+      <returns>要启动的自动传输连接。</returns>
+      <param name="connection">传输连接。</param>
+      <param name="disconnectToken">断开连接令牌。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.SupportsKeepAlive">
+      <summary>获取一个值，该值指示活动传输是否支持保持活动。</summary>
+      <returns>如果活动传输支持保持活动，则为 true；否则为 false。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport">
+      <summary>此处的内容将不会更新；请不要在此处添加材料。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.AbortHandler"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Dispose">
+      <summary>释放 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport" /> 类的当前实例使用的资源。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Dispose(System.Boolean)">
+      <summary>释放 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport" /> 类使用的非托管资源，并选择性地释放与此对象相关的托管资源。</summary>
+      <param name="disposing">若为 true，则同时释放托管资源和非托管资源；若为 false，则仅释放非托管资源。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.GetReceiveQueryString(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.HttpClient"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>断开客户端传输的连接。</summary>
+      <param name="connection">客户端连接。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Name"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.OnStart(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken,Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.SupportsKeepAlive">
+      <summary>获取一个值，该值指示客户端传输是否支持保持活动。</summary>
+      <returns>如果客户端传输支持保持活动，则为 true；否则为 false。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport">
+      <summary>此处的内容将不会更新；请不要在此处添加材料。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>断开客户端传输的连接。</summary>
+      <param name="connection">客户端连接。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Name">
+      <summary>获取 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport" /> 的名称。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport" /> 的名称。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)">
+      <summary>启动客户端传输连接。</summary>
+      <returns>要启动的客户端传输连接。</returns>
+      <param name="connection">客户端连接。</param>
+      <param name="disconnectToken">断开连接令牌。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.SupportsKeepAlive">
+      <summary>获取一个值，该值指示客户端传输是否支持保持活动。</summary>
+      <returns>如果客户端传输支持保持活动，则为 true；否则为 false。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport">
+      <summary>此处的内容将不会更新；请不要在此处添加材料。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.#ctor">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport" /> 类的新实例。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport" /> 类的新实例。</summary>
+      <param name="httpClient">HTTP 客户端。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.ErrorDelay">
+      <summary>获取或设置表示延迟错误的时间跨度。</summary>
+      <returns>表示延迟错误的时间跨度。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.OnStart(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken,Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.ReconnectDelay">
+      <summary>获取或设置表示重新连接传输的延迟的时间跨度。</summary>
+      <returns>表示重新连接传输的延迟的时间跨度。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.SupportsKeepAlive">
+      <summary> 指示传输是否支持保持活动 </summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler">
+      <summary>Represents a polling request handler.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler" /> class.</summary>
+      <param name="httpClient">The HTTP client to poll.</param>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnAbort">
+      <summary>Occurs when the current poll request was aborted, passing in the soon to be aborted request. </summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnAfterPoll">
+      <summary>Gets or sets a function that triggers before a new polling request is attempted.   Passes in an exception if the Poll errored, null otherwise. Expects the return as a task in order to allow modification of timing for subsequent polls.</summary>
+      <returns>A function that triggers before a new polling request is attempted.</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnError">
+      <summary>Occurs and passes the exception when the poll errors. </summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnMessage">
+      <summary> Sends the string based message to the callback. </summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnPolling">
+      <summary> Occurs when the polling request is in flight. </summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.PrepareRequest">
+      <summary> Allows modification of the IRequest parameter before using it in a poll.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.ResolveUrl">
+      <summary>Gets or sets a function used to generate the URL that is posted to for the poll. </summary>
+      <returns>A function used to generate the URL that is posted to for the poll.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.Start">
+      <summary> Starts the polling request handler. </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.Stop">
+      <summary> Fully stops the polling request handler. </summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport">
+      <summary>此处的内容将不会更新；请不要在此处添加材料。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.#ctor">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport" /> 类的新实例。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport" /> 类的新实例。</summary>
+      <param name="httpClient">客户端。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>服务器失去其连接时出现。</summary>
+      <param name="connection">连接。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.OnStart(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken,Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.OpenConnection(Microsoft.AspNet.SignalR.Client.IConnection,System.Action{System.Exception})"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.ReconnectDelay">
+      <summary>指定在连接超时之后服务器重新连接所用的时间。</summary>
+      <returns>在连接超时之后服务器重新连接所用的时间。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.SupportsKeepAlive">
+      <summary>指示传输是否支持保持活动。</summary>
+      <returns>如果传输支持保持活动，则为 true；否则为 false。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper">
+      <summary>此处的内容将不会更新；请不要在此处添加材料。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.AppendCustomQueryString(Microsoft.AspNet.SignalR.Client.IConnection,System.String)">
+      <summary>如果自定义查询字符串未出现“?”或“&amp;”字符，则附加在前面。</summary>
+      <returns>已修改的自定义查询字符串。</returns>
+      <param name="connection">客户端连接。</param>
+      <param name="baseUrl">基本 URL。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.GetNegotiationResponse(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.GetReceiveQueryString(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.ProcessResponse(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Boolean@,System.Boolean@)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.ProcessResponse(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Boolean@,System.Boolean@,System.Action)">
+      <summary>处理响应消息。</summary>
+      <param name="connection">客户端连接。</param>
+      <param name="response">要处理的响应消息。</param>
+      <param name="disconnected">此方法返回时，包含指示处理是否已断开连接的值。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport">
+      <summary>此处的内容将不会更新；请不要在此处添加材料。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.#ctor"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Dispose">
+      <summary>释放 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport" /> 类的当前实例使用的资源。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Dispose(System.Boolean)">
+      <summary>释放 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport" /> 类使用的非托管资源，并选择性地释放与此对象相关的托管资源。</summary>
+      <param name="disposing">若为 true，则同时释放托管资源和非托管资源；若为 false，则仅释放非托管资源。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>断开客户端传输的连接。</summary>
+      <param name="connection">客户端连接。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Name"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnClose(System.Boolean)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnError"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnMessage(System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnOpen"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.PerformConnect"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.ReconnectDelay"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.SupportsKeepAlive">
+      <summary>获取或设置指示传输是否支持保持活动的值。</summary>
+      <returns>如果传输支持保持活动，则为 true；否则为 false。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer">
+      <summary>此处的内容将不会更新；请不要在此处添加材料。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.#ctor">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer" /> 类的新实例。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.Add(System.ArraySegment{System.Byte})">
+      <summary>向区块添加缓冲区。</summary>
+      <param name="buffer">要添加的缓冲区。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.Add(System.Byte[],System.Int32)">
+      <summary>添加指定缓冲区。</summary>
+      <param name="buffer">要添加的缓冲区。</param>
+      <param name="length">缓冲区的长度。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.HasChunks">
+      <summary>获取指示缓冲区是否有区块的值。</summary>
+      <returns>如果缓冲区有区块，则为 true；否则为 false。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.ReadLine">
+      <summary>从当前缓冲区读取一行字符，并以字符串的形式返回数据。</summary>
+      <returns>缓冲区的下一行。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader">
+      <summary>提供 .NET 的事件源实现。此实现并不规范，但足以支持 SignalR 的服务器。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader.#ctor(Microsoft.AspNet.SignalR.Client.IConnection,System.IO.Stream)">
+      <summary> 初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader" /> 类的新实例。</summary>
+      <param name="connection">与此事件源关联的连接。</param>
+      <param name="stream">要从中读取事件源负载的流。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader.Message"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType">
+      <summary>枚举与服务器端事件关联的事件类型。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType.Data">
+      <summary>数据事件类型。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType.Id">
+      <summary>ID 事件类型。</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent">
+      <summary>提供用于分析服务器发送的事件数据的静态方法。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.#ctor(Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType,System.String)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent" /> 类的新实例。</summary>
+      <param name="type">服务器发送的事件类型。</param>
+      <param name="data">服务器发送的事件数据。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.Data">
+      <summary>获取或设置服务器发送的事件数据。</summary>
+      <returns>服务器发送的事件数据。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.EventType">
+      <summary>获取或设置服务器发送的事件类型。</summary>
+      <returns>服务器发送的事件类型。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.ToString">
+      <summary>返回此对象的字符串表示形式。</summary>
+      <returns>此对象的字符串表示形式。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.TryParse(System.String,Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent@)">
+      <summary>分析进入 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent" /> 对象的指定数据。</summary>
+      <returns>如果指定的数据是有效的服务器端事件，则为 true；否则为 false。</returns>
+      <param name="line">要尝试分析的数据。</param>
+      <param name="sseEvent">此方法返回时，将包含结果 SseEvent 对象。</param>
+    </member>
+  </members>
+</doc>

@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.SystemWeb</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.RequestExtensions.GetHttpContext(Microsoft.AspNet.SignalR.IRequest)">
+      <summary>Obtiene el objeto HttpContextBase desde el entorno.</summary>
+      <returns>El objeto <see cref="T:System.Web.HttpContextBase" /> del entorno.</returns>
+      <param name="request">Solicitud HTTP.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator">
+      <summary>Representa el administrador de compilaciones para el localizador de ensamblados.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.#ctor">
+      <summary>Inicializa una nueva instancia de la clase <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.GetAssemblies">
+      <summary>Devuelve la lista de ensamblados asociados con el administrador de compilaciones.</summary>
+      <returns>La lista de ensamblados asociados con el administrador de compilaciones.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData">
+      <summary>Representa los datos protegidos asociados con la clave del equipo.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.#ctor">
+      <summary>Inicializa una nueva instancia de la clase <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Protect(System.String,System.String)">
+      <summary>Protege los datos especificados.</summary>
+      <returns>Los datos protegidos.</returns>
+      <param name="data">Los datos que se van a proteger.</param>
+      <param name="purpose">El motivo de la protección.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Unprotect(System.String,System.String)">
+      <summary>Desprotege los datos especificados.</summary>
+      <returns>Los datos desprotegidos.</returns>
+      <param name="protectedValue">El valor protegido de los datos.</param>
+      <param name="purpose">El motivo de la eliminación de la protección.</param>
+    </member>
+    <member name="T:System.Web.Routing.SignalRRouteExtensions">
+      <summary>Proporciona extensiones de enrutamiento para SignalR.</summary>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String)">
+      <summary>Asigna una <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> con la resolución de dependencia predeterminada a la ruta de acceso especificada.</summary>
+      <returns>La ruta registrada.</returns>
+      <param name="routes">La tabla de rutas.</param>
+      <param name="name">Nombre de la ruta.</param>
+      <param name="url">La ruta de acceso de la ruta.</param>
+      <typeparam name="T">El tipo de <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />.</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>Asigna una <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> con la resolución de dependencia predeterminada a la ruta de acceso especificada.</summary>
+      <returns>La ruta registrada.</returns>
+      <param name="routes">La tabla de rutas.</param>
+      <param name="name">Nombre de la ruta.</param>
+      <param name="url">La ruta de acceso de la ruta.</param>
+      <param name="configuration">Opciones de configuración.</param>
+      <typeparam name="T">El tipo de <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />.</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection(System.Web.Routing.RouteCollection,System.String,System.String,System.Type,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>Asigna una <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> con la resolución de dependencia predeterminada a la ruta de acceso especificada.</summary>
+      <returns>La ruta registrada.</returns>
+      <param name="routes">La tabla de rutas.</param>
+      <param name="name">Nombre de la ruta.</param>
+      <param name="url">La ruta de acceso de la ruta.</param>
+      <param name="type">El tipo de <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />.</param>
+      <param name="configuration">Opciones de configuración.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection)">
+      <summary>Inicializa la ruta de concentrador predeterminada (/signalr).</summary>
+      <returns>La ruta registrada.</returns>
+      <param name="routes">La tabla de rutas.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>Inicializa la ruta de concentrador predeterminada (/signalr).</summary>
+      <returns>La ruta registrada.</returns>
+      <param name="routes">La tabla de rutas.</param>
+      <param name="configuration">Opciones de configuración.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,System.String,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>Inicializa la ruta de concentrador predeterminada (/signalr).</summary>
+      <returns>La ruta registrada.</returns>
+      <param name="routes">La tabla de rutas.</param>
+      <param name="path">La ruta de acceso de la ruta.</param>
+      <param name="configuration">Opciones de configuración.</param>
+    </member>
+  </members>
+</doc>

@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.ServiceBus</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseServiceBus(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration)">
+      <summary>サービス バスを、メッセージ バス実装をスケールアウトするためのメッセージング バックプレーンとして使用します。</summary>
+      <returns>依存関係競合回避モジュール。</returns>
+      <param name="resolver">依存関係競合回避モジュール。</param>
+      <param name="configuration">構成をスケールアウトするサービス バス。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseServiceBus(Microsoft.AspNet.SignalR.IDependencyResolver,System.String,System.String)">
+      <summary>サービス バスを、メッセージ バス実装をスケールアウトするためのメッセージング バックプレーンとして使用します。</summary>
+      <returns>依存関係競合回避モジュール。</returns>
+      <param name="resolver">依存関係競合回避モジュール。</param>
+      <param name="connectionString">接続文字列。</param>
+      <param name="topicPrefix">トピック プレフィックス。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration">
+      <summary>Provides settings for the Service Bus scale-out message bus implementation.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.#ctor(System.String,System.String)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration" /> class.</summary>
+      <param name="connectionString">The connection string.</param>
+      <param name="topicPrefix">The topic prefix.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.ConnectionString">
+      <summary>Gets or sets the Service Bus connection string to use.</summary>
+      <returns>The Service Bus connection string to use.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.TimeToLive">
+      <summary>Gets or sets the message’s time to live value. </summary>
+      <returns>The message’s time to live value.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.TopicCount">
+      <summary>Gets or sets the number of topics to send messages over. Defaults to 1. </summary>
+      <returns>The number of topics to send messages over.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.TopicPrefix">
+      <summary>Gets or sets the topic prefix to use. </summary>
+      <returns>The topic prefix to use.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessage">
+      <summary>SignalR メッセージ変換のメソッドを提供します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessage.FromBrokeredMessage(Microsoft.ServiceBus.Messaging.BrokeredMessage)">
+      <summary>指定された仲介メッセージから <see cref="T:Microsoft.AspNet.SignalR.Messaging.ScaleoutMessage" /> クラスの新しいインスタンスを初期化します。</summary>
+      <returns>作成された <see cref="T:Microsoft.AspNet.SignalR.Messaging.ScaleoutMessage" /> のインスタンス。</returns>
+      <param name="brokeredMessage">仲介メッセージ。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessage.ToStream(System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>SignalR メッセージの基になるストリームを作成します。</summary>
+      <returns>SignalR メッセージの基になるストリーム。</returns>
+      <param name="messages">SignalR メッセージ。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus">
+      <summary>Windows Azure Service Bus トピックを使用して、Web ファームで SignalR アプリケーションをスケールアウトします。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="resolver">依存関係競合回避モジュール。</param>
+      <param name="configuration">Service Bus スケール アウト メッセージのバス構成。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus" /> クラスによって使用されているアンマネージ リソースを解放し、オプションでマネージ リソースも解放します。</summary>
+      <param name="disposing">マネージ リソースとアンマネージ リソースの両方を解放する場合は true。アンマネージ リソースだけを解放する場合は false。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>Windows Azure サービス バス経由でメッセージ ストリームを送信します。</summary>
+      <returns>送信するメッセージ ストリーム。</returns>
+      <param name="streamIndex">ストリーム インデックス。</param>
+      <param name="messages">メッセージのコレクション。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.StreamCount">
+      <summary>サービス バスのメディア ストリームの数を取得します。</summary>
+      <returns>サービス バスのメディア ストリームの数。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBus.Infrastructure.ServiceBusTaskExtensions">
+      <summary>サービス バスのタスク拡張を表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.Infrastructure.ServiceBusTaskExtensions.SendAsync(Microsoft.ServiceBus.Messaging.TopicClient,Microsoft.ServiceBus.Messaging.BrokeredMessage)">
+      <summary>指定されたクライアントから非同期にタスクを送信します。</summary>
+      <returns>送信されるタスク。</returns>
+      <param name="client">クライアント。</param>
+      <param name="message">メッセージ。</param>
+    </member>
+  </members>
+</doc>

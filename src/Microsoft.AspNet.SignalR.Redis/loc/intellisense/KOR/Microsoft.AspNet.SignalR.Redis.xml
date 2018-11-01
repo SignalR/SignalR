@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.Redis</name>
+  </assembly>
+  <members>
+    <member name="T:Microsoft.AspNet.SignalR.DependencyResolverExtensions">
+      <summary>여기에 있는 콘텐츠는 업데이트되지 않습니다. 여기에 자료를 추가하지 마십시오.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseRedis(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.RedisScaleoutConfiguration)">
+      <summary>Redis를 메시징 백플레인으로 사용하여 웹 팜에서 ASP.NET SignalR 응용 프로그램을 확장합니다.</summary>
+      <returns>종속성 확인자입니다.</returns>
+      <param name="resolver">종속성 확인자입니다.</param>
+      <param name="configuration">Redis 확장 구성 옵션입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseRedis(Microsoft.AspNet.SignalR.IDependencyResolver,System.String,System.Int32,System.String,System.String)">
+      <summary>Redis를 메시징 백플레인으로 사용하여 웹 팜에서 ASP.NET SignalR 응용 프로그램을 확장합니다.</summary>
+      <returns>종속성 확인자입니다.</returns>
+      <param name="resolver">종속성 확인자입니다.</param>
+      <param name="server">Redis 서버 주소입니다.</param>
+      <param name="port">Redis 서버 포트입니다.</param>
+      <param name="password">Redis 서버 암호입니다.</param>
+      <param name="eventKey">사용할 Redis 이벤트 키입니다.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration">
+      <summary>Redis 확장 메시지 버스 구현을 위한 설정입니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.#ctor(System.Func{BookSleeve.RedisConnection},System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="connectionFactory">연결 팩터리입니다.</param>
+      <param name="eventKey">이벤트 키입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.#ctor(System.String,System.Int32,System.String,System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="server">서버입니다.</param>
+      <param name="port">포트입니다.</param>
+      <param name="password">암호입니다.</param>
+      <param name="eventKey">이벤트 키입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.Database">
+      <summary>사용할 Redis 데이터베이스 인스턴스를 가져오거나 설정합니다.기본값은 0입니다.</summary>
+      <returns>사용할 Redis 데이터베이스 인스턴스입니다.기본값은 0입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.EventKey">
+      <summary>사용할 Redis 이벤트 키를 가져오거나 설정합니다. </summary>
+      <returns>사용할 Redis 이벤트 키입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException">
+      <summary>Redis 연결이 손실된 경우 발생하는 예외입니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+      <summary>직렬화된 정보를 사용하여 <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="info">예외에 대한 직렬화된 정보입니다.</param>
+      <param name="context">원본 또는 대상에 대한 문맥 정보입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor(System.String)">
+      <summary>오류 메시지를 사용하여 <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="message">예외를 설명하는 오류 메시지입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor(System.String,System.Exception)">
+      <summary>오류 메시지 및 내부 예외를 사용하여 <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="message">예외를 설명하는 오류 메시지입니다.</param>
+      <param name="inner">현재 예외의 원인이 되는 내부 예외입니다.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Redis.RedisMessage">
+      <summary>Redis 메시지를 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessage.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisMessage" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessage.FromBytes(System.Byte[])">
+      <summary>지정된 데이터에서 Redis 메시지를 만듭니다.</summary>
+      <returns>새로 만든 Redis 메시지입니다.</returns>
+      <param name="data">메시지를 나타내는 데이터입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Redis.RedisMessage.Id">
+      <summary>Redis 메시지 ID를 가져오거나 설정합니다.</summary>
+      <returns>Redis 메시지 ID입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Redis.RedisMessage.ScaleoutMessage">
+      <summary>확장된 Redis 메시지를 가져오거나 설정합니다.</summary>
+      <returns>확장된 Redis 메시지입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessage.ToBytes(System.Int64,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>메시지를 바이트 배열로 변환합니다.</summary>
+      <param name="id">메시지 ID입니다.</param>
+      <param name="messages">변환할 메시지입니다.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Redis.RedisMessageBus">
+      <summary>Redis 메시지에 대한 서비스 버스를 나타냅니다.웹 팜에서 Redis pub-sub을 사용하여 SignalR 응용 프로그램을 확장합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.RedisScaleoutConfiguration)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisMessageBus" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="resolver">종속성 확인자입니다.</param>
+      <param name="configuration">Redis 메시지 버스 구성입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisMessageBus" />에서 사용하는 관리되지 않는 리소스를 해제하고, 관리되는 리소스를 선택적으로 해제합니다.</summary>
+      <param name="disposing">관리된 리소스와 관리되지 않은 리소스를 모두 해제하려면 true이고, 관리되지 않은 리소스만 해제하려면 false입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.ReconnectDelay">
+      <summary>다시 연결을 시도하는 동안 기다리는 시간을 가져오거나 설정합니다.</summary>
+      <returns>다시 연결을 시도하는 동안 기다리는 시간입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>지정된 메시지를 서비스 버스에 게시합니다.</summary>
+      <returns>메시지 보내기 작업을 나타내는 작업입니다.</returns>
+      <param name="streamIndex">스트림 인덱스입니다.</param>
+      <param name="messages">보낼 메시지입니다.</param>
+    </member>
+  </members>
+</doc>

@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.SystemWeb</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.RequestExtensions.GetHttpContext(Microsoft.AspNet.SignalR.IRequest)">
+      <summary>Obtient HttpContextBase à partir de l'environnement.</summary>
+      <returns>Le <see cref="T:System.Web.HttpContextBase" /> de l'environnement.</returns>
+      <param name="request">Requête HTTP.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator">
+      <summary>Représente un gestionnaire de build pour le localisateur d'assembly.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.#ctor">
+      <summary>Initialise une nouvelle instance de la classe <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.GetAssemblies">
+      <summary>Retourne la liste des assemblys associés au gestionnaire de build.</summary>
+      <returns>La liste des assemblys associés au gestionnaire de build.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData">
+      <summary>Représente les données protégées associées à la clé ordinateur.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.#ctor">
+      <summary>Initialise une nouvelle instance de la classe <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Protect(System.String,System.String)">
+      <summary>Protège des données spécifiées.</summary>
+      <returns>Données protégées.</returns>
+      <param name="data">Données à protéger.</param>
+      <param name="purpose">L'objectif de la protection.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Unprotect(System.String,System.String)">
+      <summary>Déprotège les données spécifiées.</summary>
+      <returns>Données non protégées.</returns>
+      <param name="protectedValue">La valeur protégée des données.</param>
+      <param name="purpose">La raison de la suppression de la protection.</param>
+    </member>
+    <member name="T:System.Web.Routing.SignalRRouteExtensions">
+      <summary>Fournit des extensions de routage pour SignalR.</summary>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String)">
+      <summary>Mappe une <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> avec un résolveur de dépendance vers le chemin d'accès spécifié.</summary>
+      <returns>Itinéraire enregistré.</returns>
+      <param name="routes">Table d'itinéraires.</param>
+      <param name="name">Nom de l'itinéraire.</param>
+      <param name="url">Chemin d'accès de l'itinéraire.</param>
+      <typeparam name="T">Type de la <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />.</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>Mappe une <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> avec un résolveur de dépendance vers le chemin d'accès spécifié.</summary>
+      <returns>Itinéraire enregistré.</returns>
+      <param name="routes">Table d'itinéraires.</param>
+      <param name="name">Nom de l'itinéraire.</param>
+      <param name="url">Chemin d'accès de l'itinéraire.</param>
+      <param name="configuration">Options de configuration.</param>
+      <typeparam name="T">Type de la <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />.</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection(System.Web.Routing.RouteCollection,System.String,System.String,System.Type,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>Mappe une <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> avec un résolveur de dépendance vers le chemin d'accès spécifié.</summary>
+      <returns>Itinéraire enregistré.</returns>
+      <param name="routes">Table d'itinéraires.</param>
+      <param name="name">Nom de l'itinéraire.</param>
+      <param name="url">Chemin d'accès de l'itinéraire.</param>
+      <param name="type">Type de la <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />.</param>
+      <param name="configuration">Options de configuration.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection)">
+      <summary>Initialise l'itinéraire de concentrateur par défaut (/signalr).</summary>
+      <returns>Itinéraire enregistré.</returns>
+      <param name="routes">Table d'itinéraires.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>Initialise l'itinéraire de concentrateur par défaut (/signalr).</summary>
+      <returns>Itinéraire enregistré.</returns>
+      <param name="routes">Table d'itinéraires.</param>
+      <param name="configuration">Options de configuration.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,System.String,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>Initialise l'itinéraire de concentrateur par défaut (/signalr).</summary>
+      <returns>Itinéraire enregistré.</returns>
+      <param name="routes">Table d'itinéraires.</param>
+      <param name="path">Chemin d'accès de l'itinéraire.</param>
+      <param name="configuration">Options de configuration.</param>
+    </member>
+  </members>
+</doc>

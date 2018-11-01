@@ -20,6 +20,6 @@
     </metadata>
     <files>
         <file src="net45\$Locale$\Microsoft.AspNet.SignalR.ServiceBus.resources.dll" target="lib\net45\$Locale$" />
-        <!-- <file src="Intellisense\Microsoft.AspNet.SignalR.ServiceBus.xml" target="lib\net45\en-US" /> -->
+        <file src="$Locale$\Microsoft.AspNet.SignalR.ServiceBus.xml" target="lib\net45\$Locale$" />
     </files>
 </package>

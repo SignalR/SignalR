@@ -1,0 +1,1582 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.Client</name>
+  </assembly>
+  <members>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Connection">
+      <summary>SignalR 서비스에 대한 클라이언트 연결을 제공합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.#ctor(System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="url">연결할 URL입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="url">연결할 URL입니다.</param>
+      <param name="queryString">서버에 전달할 쿼리 문자열 데이터입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.#ctor(System.String,System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="url">연결할 URL입니다.</param>
+      <param name="queryString">서버에 전달할 쿼리 문자열 데이터입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.AddClientCertificate(System.Security.Cryptography.X509Certificates.X509Certificate)">
+      <summary>요청에 클라이언트 인증서를 추가합니다.</summary>
+      <param name="certificate">클라이언트 인증서입니다.</param>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Closed">
+      <summary>연결이 중지될 때 발생합니다.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.ConnectionId">
+      <summary>연결에 대한 연결 ID를 가져오거나 설정합니다.</summary>
+      <returns>연결에 대한 연결 ID입니다.</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.ConnectionSlow">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 시간이 초과되려고 할 때 발생합니다.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.ConnectionToken">
+      <summary>연결에 대한 연결 토큰을 가져오거나 설정합니다.</summary>
+      <returns>연결에 대한 연결 토큰입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.CookieContainer">
+      <summary>연결과 연관된 쿠키를 가져오거나 설정합니다.</summary>
+      <returns>연결과 연관된 쿠키입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Credentials">
+      <summary>연결을 위한 인증 정보를 가져오거나 설정합니다.</summary>
+      <returns>연결을 위한 인증 정보입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Dispose">
+      <summary>연결을 중지합니다. 이는 연결 중지를 호출하는 것과 같습니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Dispose(System.Boolean)">
+      <summary>연결을 중지합니다. 이는 연결 중지를 호출하는 것과 같습니다.</summary>
+      <param name="disposing">삭제를 수행하려면 이 값을 true로 설정하고 아무 작업도 수행하지 않으려면 false로 설정합니다.</param>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Error">
+      <summary>Connection에서 오류가 발생했을 때 발생합니다.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.GroupsToken">
+      <summary>연결에 대한 그룹 토큰을 가져오거나 설정합니다.</summary>
+      <returns>연결에 대한 그룹 토큰입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Headers">
+      <summary>요청에 대한 헤더를 가져오거나 설정합니다. </summary>
+      <returns>요청에 대한 헤더입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Items">
+      <summary>연결에 대한 상태가 저장되는 사전을 가져옵니다.</summary>
+      <returns>연결에 대한 상태가 저장되는 사전입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.JsonSerializer">
+      <summary>연결에서 사용되는 직렬 변환기를 가져오거나 설정합니다.</summary>
+      <returns>연결에서 사용되는 직렬 변환기입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.MessageId">
+      <summary>연결에 대한 마지막 메시지 ID를 가져오거나 설정합니다.</summary>
+      <returns>연결에 대한 마지막 메시지 ID입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#Certificates">
+      <summary>X509Certificate 개체를 저장하는 컬렉션을 가져옵니다.</summary>
+      <returns>X509Certificate 개체를 저장하는 컬렉션입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#ChangeState(Microsoft.AspNet.SignalR.Client.ConnectionState,Microsoft.AspNet.SignalR.Client.ConnectionState)">
+      <summary>연결 상태가 변경될 때 호출됩니다.</summary>
+      <returns>연결 상태가 변경되면 true이고, 그렇지 않으면 false입니다.</returns>
+      <param name="oldState">이전 상태입니다.</param>
+      <param name="newState">새 상태입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#Disconnect">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />을 중지하고 중단 메시지를 서버에 보냅니다.서버에서 연결 끊기 메시지를 수신한 후 이 함수가 호출됩니다.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#KeepAliveData">
+      <summary>다양한 연결 유지 시간 제한 값을 저장하는 개체를 가져오거나 설정합니다.</summary>
+      <returns>다양한 연결 유지 시간 제한 값을 저장하는 개체입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnConnectionSlow">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> 시간이 초과되려고 할 때 호출됩니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnError(System.Exception)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />에 오류가 발생했을 때 호출됩니다.</summary>
+      <param name="error">연결 오류입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnReceived(Newtonsoft.Json.Linq.JToken)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />에서 서버의 데이터를 수신했을 때 호출됩니다.</summary>
+      <param name="message">수신된 메시지입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnReconnected">
+      <summary>시간 초과 이후 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />이 다시 연결되었을 때 호출됩니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#PrepareRequest(Microsoft.AspNet.SignalR.Client.Http.IRequest)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />을 위한 모든 요청을 준비합니다.</summary>
+      <param name="request">요청입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#UpdateLastKeepAlive">
+      <summary>LastKeepAlive를 현재 시간으로 설정합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnClosed"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnMessageReceived(Newtonsoft.Json.Linq.JToken)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />에서 서버의 메시지를 수신했을 때 호출됩니다.</summary>
+      <param name="message">수신된 메시지입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnReconnecting"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnSending">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />에서 경고 및 미리 알림을 보낼 때 호출됩니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />에서 경고 및 미리 알림을 보냅니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Protocol">
+      <summary>연결 프로토콜을 가져오거나 설정합니다.</summary>
+      <returns>연결 프로토콜입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Proxy">
+      <summary>연결에 대한 프록시 정보를 가져오거나 설정합니다.</summary>
+      <returns>연결에 대한 프록시 정보입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.QueryString">
+      <summary>생성자에 지정된 쿼리 문자열을 가져옵니다.</summary>
+      <returns>생성자에 지정된 쿼리 문자열입니다.</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Received">
+      <summary>Connection에서 서버의 데이터를 수신했을 때 발생합니다.</summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Reconnected">
+      <summary>시간 초과 이후 Connection이 다시 연결되었을 때 발생합니다.</summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Reconnecting">
+      <summary>오류가 발생한 후 Connection에서 다시 연결을 시작할 때 발생합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Send(System.Object)">
+      <summary>Sends an object that will be JSON serialized asynchronously over the connection.</summary>
+      <returns>데이터가 플러시된 경우를 나타내는 작업입니다.</returns>
+      <param name="value">래핑할 값입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Send(System.String)">
+      <summary>Sends data asynchronously over the connection.</summary>
+      <returns>데이터가 플러시된 경우를 나타내는 작업입니다.</returns>
+      <param name="data">보낼 데이터입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Start">
+      <summary>Starts the <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />.</summary>
+      <returns>연결이 닫힌 경우를 나타내는 작업입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Start(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>Starts the <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />.</summary>
+      <returns>연결이 닫힌 경우를 나타내는 작업입니다.</returns>
+      <param name="httpClient">HTTP 클라이언트 연결입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Start(Microsoft.AspNet.SignalR.Client.Transports.IClientTransport)">
+      <summary>Starts the <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />.</summary>
+      <returns>연결이 닫힌 경우를 나타내는 작업입니다.</returns>
+      <param name="transport">사용할 구성입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.State">
+      <summary>연결의 현재 ConnectionState를 가져옵니다.</summary>
+      <returns>연결의 현재 ConnectionState입니다.</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.StateChanged">
+      <summary>Connection 상태가 변경될 때 발생합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Stop">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />을 중지하고 중단 메시지를 서버에 보냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Stop(System.TimeSpan)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />을 중지하고 중단 메시지를 서버에 보냅니다.&lt;param name="timeout"&gt;시간 제한&lt;/param&gt;입니다.</summary>
+      <param name="timeout">연결 시간 제한입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Trace(Microsoft.AspNet.SignalR.Client.TraceLevels,System.String,System.Object[])">
+      <summary>매개 변수로 지정된 연결 메서드를 추적합니다.</summary>
+      <param name="level">추적 수준입니다.</param>
+      <param name="format">형식입니다.</param>
+      <param name="args">인수입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.TraceLevel">
+      <summary>연결의 추적 수준을 가져오거나 설정합니다.</summary>
+      <returns>연결의 추적 수준입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.TraceWriter">
+      <summary>연결을 추적할 텍스트 기록기를 가져오거나 설정합니다.</summary>
+      <returns>연결을 추적할 텍스트 기록기입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Transport">
+      <summary>연결에 대한 클라이언트 전송을 가져오거나 설정합니다.</summary>
+      <returns>연결에 대한 클라이언트 전송입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.TransportConnectTimeout">
+      <summary>시간 초과 전까지 연결을 전송하는 시간을 나타내는 TimeSpan을 가져오거나 설정합니다.</summary>
+      <returns>시간 초과 전까지 연결을 전송하는 시간을 나타내는 TimeSpan입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Url">
+      <summary>연결 URL을 가져오거나 설정합니다.</summary>
+      <returns>연결 URL입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ConnectionExtensions">
+      <summary>여기에 있는 콘텐츠는 업데이트되지 않습니다. 여기에 자료를 추가하지 마십시오.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.AsObservable(Microsoft.AspNet.SignalR.Client.Connection)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.AsObservable``1(Microsoft.AspNet.SignalR.Client.Connection)">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.AsObservable``1(Microsoft.AspNet.SignalR.Client.Connection,System.Func{System.String,``0})">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.EnsureReconnecting(Microsoft.AspNet.SignalR.Client.IConnection)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.GetValue``1(Microsoft.AspNet.SignalR.Client.IConnection,System.String)">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.JsonDeserializeObject``1(Microsoft.AspNet.SignalR.Client.IConnection,System.String)">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.JsonSerializeObject(Microsoft.AspNet.SignalR.Client.IConnection,System.Object)"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ConnectionState">
+      <summary>SignalR 연결의 연결 상태를 나타냅니다.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Connected">
+      <summary>연결 상태는 연결됨입니다.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Connecting">
+      <summary>연결 상태는 연결 중입니다.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Disconnected">
+      <summary>연결 상태는 연결 끊김입니다.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Reconnecting">
+      <summary>연결 상태는 다시 연결 중입니다.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ErrorExtensions">
+      <summary>간단한 오류 인식을 위한 확장 메서드를 제공합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ErrorExtensions.GetError(System.Exception)">
+      <summary> 복합 예외를 래핑 해제하여 오류를 인식을 단순화합니다.</summary>
+      <returns>래핑 해제된 형식의 SignalRError입니다.</returns>
+      <param name="ex">발생된 예외입니다.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HeaderDictionary">
+      <summary>SignalR 클라이언트에 대한 키 집합에서 값 집합으로의 매핑을 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.#ctor(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeaderDictionary" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="connection">클라이언트 연결입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Add(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+      <summary>사전에 특정 항목을 추가합니다.</summary>
+      <param name="item">추가할 항목입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Add(System.String,System.String)">
+      <summary>특정 키/값 쌍을 사전에 추가합니다.</summary>
+      <param name="key">추가할 키입니다.</param>
+      <param name="value">추가할 값입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Clear">
+      <summary>사전 콘텐츠를 지웁니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Contains(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+      <summary>항목이 사전에 포함되어 있는지 여부를 지정합니다.</summary>
+      <returns>항목이 사전에 포함되어 있으면 true이고, 그렇지 않으면 false입니다.</returns>
+      <param name="item">검색할 항목입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.ContainsKey(System.String)">
+      <summary>지정된 키가 사전에 포함되어 있는지 여부를 지정합니다.</summary>
+      <returns>지정된 키가 사전에 포함되어 있으면 true이고, 그렇지 않으면 false입니다.</returns>
+      <param name="key">검색할 키입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.CopyTo(System.Collections.Generic.KeyValuePair{System.String,System.String}[],System.Int32)">
+      <summary>지정된 배열 인덱스에서 시작하는 기존 1차원 배열에 키/값 쌍 요소를 복사합니다.</summary>
+      <param name="array">사전에서 복사한 요소의 대상인 1차원 배열입니다.</param>
+      <param name="arrayIndex">배열에서 복사가 시작되는 0부터 시작하는 인덱스입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Count">
+      <summary>사전에 포함된 키/값 쌍의 개수를 가져옵니다.</summary>
+      <returns>사전에 포함된 키/값 쌍의 개수입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.GetEnumerator">
+      <summary>사전 전체를 반복하는 열거자를 반환합니다.</summary>
+      <returns>사전 전체를 반복하는 열거자입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.IsReadOnly">
+      <summary>사전이 읽기 전용인지 여부를 가져옵니다.</summary>
+      <returns>사전이 읽기 전용이면 true이고, 그렇지 않으면 false입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Item(System.String)">
+      <summary>지정된 키와 연결된 값을 가져오거나 설정합니다.</summary>
+      <returns>지정된 키와 연관된 값입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Keys">
+      <summary>사전에 있는 키 컬렉션을 가져옵니다.</summary>
+      <returns>사전에 있는 키 컬렉션입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Remove(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+      <summary>사전에서 특정 키/값 쌍 항목을 제거합니다.</summary>
+      <returns>항목이 제거된 사전입니다.</returns>
+      <param name="item">제거할 항목입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Remove(System.String)">
+      <summary>사전에서 특정 키를 제거합니다.</summary>
+      <returns>키가 제거된 사전입니다.</returns>
+      <param name="key">제거할 키입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.System#Collections#IEnumerable#GetEnumerator">
+      <summary>컬렉션 전체를 반복하는 열거자를 반환합니다.</summary>
+      <returns>컬렉션 전체를 반복하는 열거자입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.TryGetValue(System.String,System.String@)">
+      <summary>지정된 키와 연결된 값을 가져옵니다.</summary>
+      <returns>사전에 지정된 키가 있는 요소가 포함되어 있으면 true이고, 그렇지 않으면 false입니다.</returns>
+      <param name="key">가져올 값의 키입니다.</param>
+      <param name="value">이 메서드가 반환될 때 지정된 키가 있으면 해당 키와 연관된 값을 포함하고, 그렇지 않으면 값 매개 변수의 형식에 대한 기본값입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Values">
+      <summary>사전에 있는 값 컬렉션을 가져옵니다.</summary>
+      <returns>사전에 있는 값 컬렉션입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor">
+      <summary>서버에서 응답하고 응답한 경우 비트를 수행하는 HeartbeatMonitor를 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.#ctor(Microsoft.AspNet.SignalR.Client.IConnection,System.Object)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="connection">인터페이스 연결입니다.</param>
+      <param name="connectionStateLock">연결 상태 잠금입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Beat(System.TimeSpan)">
+      <summary>사용자에게 알려야 할지 또는 다시 연결해야 할지를 결정하는 논리입니다.</summary>
+      <param name="timeElapsed">경과된 시간입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Dispose">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> 클래스의 현재 인스턴스에서 사용된 모든 리소스를 해제합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" />에서 사용하는 관리되지 않는 리소스를 해제하고, 관리되는 리소스를 선택적으로 해제합니다.</summary>
+      <param name="disposing">관리된 리소스와 관리되지 않은 리소스를 모두 해제하려면 true이고, 관리되지 않은 리소스만 해제하려면 false입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.HasBeenWarned">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" />에 경고가 표시되었는지를 나타내는 값을 가져오거나 설정합니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" />에 경고가 표시되었으면 true이고, 그렇지 않으면 false입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Start">
+      <summary>LastKeepAlive를 업데이트하고 타이머를 시작합니다.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.TimedOut">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" />에 시간 초과가 있는지를 나타내는 값을 가져오거나 설정합니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" />에 시간 초과가 있으면 true이고, 그렇지 않으면 false입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HttpClientException">
+      <summary>HTTP 클라이언트에서 연결 중일 때 throw되는 예외입니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor(System.Net.Http.HttpResponseMessage)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="responseMessage">응답 메시지입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor(System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="message">오류 메시지입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor(System.String,System.Exception)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="message">오류 메시지입니다.</param>
+      <param name="ex">예외입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HttpClientException.Response">
+      <summary>이 클라이언트와 연관된 응답을 가져오거나 설정합니다.</summary>
+      <returns>이 클라이언트와 연관된 응답입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HubConnection">
+      <summary>허브와 상호 작용하기 위한 <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />입니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="url">연결할 URL입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="url">연결할 URL입니다.</param>
+      <param name="useDefaultUrl">지정한 URL에 기본 "/signalr" 경로를 추가해야 할지 여부를 결정합니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="url">연결할 URL입니다.</param>
+      <param name="queryString">서버에 전달할 쿼리 문자열 데이터입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.String},System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="url">연결할 URL입니다.</param>
+      <param name="queryString">서버에 전달할 쿼리 문자열 데이터입니다.</param>
+      <param name="useDefaultUrl">지정한 URL에 기본 "/signalr" 경로를 추가해야 할지 여부를 결정합니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="url">연결할 URL입니다.</param>
+      <param name="queryString">서버에 전달할 쿼리 문자열 데이터입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.String,System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="url">연결할 URL입니다.</param>
+      <param name="queryString">서버에 전달할 쿼리 문자열 데이터입니다.</param>
+      <param name="useDefaultUrl">지정한 URL에 기본 "/signalr" 경로를 추가해야 할지 여부를 결정합니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.CreateHubProxy(System.String)">
+      <summary>지정된 이름의 허브를 위한 <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />를 만듭니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />입니다.</returns>
+      <param name="hubName">허브의 이름입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.Microsoft#AspNet#SignalR#Client#Hubs#IHubConnection#RegisterCallback(System.Action{Microsoft.AspNet.SignalR.Client.Hubs.HubResult})"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.Microsoft#AspNet#SignalR#Client#Hubs#IHubConnection#RemoveCallback(System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnClosed"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnMessageReceived(Newtonsoft.Json.Linq.JToken)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnReconnecting"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnSending"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HubException"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubException.#ctor"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubException.#ctor(System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubException.#ctor(System.String,System.Object)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HubException.ErrorData"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HubProxyExtensions">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />에 대한 확장입니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.GetValue``1(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String)">
+      <summary>상태 변수의 값을 가져옵니다.</summary>
+      <returns>상태 변수의 값입니다.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />입니다.</param>
+      <param name="name">상태 변수의 이름입니다.</param>
+      <typeparam name="T">상태 변수의 유형입니다.</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.Observe(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String)">
+      <summary>
+        <see cref="T:IObservable{T}" />이 있는 <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /> 이벤트를 등록합니다.</summary>
+      <returns>
+        <see cref="T:IObservable{object[]}" />입니다.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />입니다.</param>
+      <param name="eventName">이벤트의 이름입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action)">
+      <summary>지정한 이름과 콜백이 사용된 이벤트를 등록합니다</summary>
+      <returns>이 구독을 나타내는 <see cref="T:System.IDisposable" />입니다.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />입니다.</param>
+      <param name="eventName">이벤트의 이름입니다.</param>
+      <param name="onData">콜백입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{System.Object})">
+      <summary>지정한 이름과 콜백이 사용된 이벤트를 등록합니다</summary>
+      <returns>이 구독을 나타내는 <see cref="T:System.IDisposable" />입니다.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />입니다.</param>
+      <param name="eventName">이벤트의 이름입니다.</param>
+      <param name="onData">콜백입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``1(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0})">
+      <summary>지정한 이름과 콜백이 사용된 이벤트를 등록합니다</summary>
+      <returns>이 구독을 나타내는 <see cref="T:System.IDisposable" />입니다.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />입니다.</param>
+      <param name="eventName">이벤트의 이름입니다.</param>
+      <param name="onData">콜백입니다.</param>
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``2(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1})">
+      <summary>지정한 이름과 콜백이 사용된 이벤트를 등록합니다</summary>
+      <returns>이 구독을 나타내는 <see cref="T:System.IDisposable" />입니다.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />입니다.</param>
+      <param name="eventName">이벤트의 이름입니다.</param>
+      <param name="onData">콜백입니다.</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``3(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2})">
+      <summary>지정한 이름과 콜백이 사용된 이벤트를 등록합니다</summary>
+      <returns>이 구독을 나타내는 <see cref="T:System.IDisposable" />입니다.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />입니다.</param>
+      <param name="eventName">이벤트의 이름입니다.</param>
+      <param name="onData">콜백입니다.</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``4(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3})">
+      <summary>지정한 이름과 콜백이 사용된 이벤트를 등록합니다</summary>
+      <returns>이 구독을 나타내는 <see cref="T:System.IDisposable" />입니다.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />입니다.</param>
+      <param name="eventName">이벤트의 이름입니다.</param>
+      <param name="onData">콜백입니다.</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``5(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3,``4})">
+      <summary>지정한 이름과 콜백이 사용된 이벤트를 등록합니다</summary>
+      <returns>이 구독을 나타내는 <see cref="T:System.IDisposable" />입니다.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />입니다.</param>
+      <param name="eventName">이벤트의 이름입니다.</param>
+      <param name="onData">콜백입니다.</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+      <typeparam name="T5"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``6(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3,``4,``5})">
+      <summary>지정한 이름과 콜백이 사용된 이벤트를 등록합니다</summary>
+      <returns>이 구독을 나타내는 <see cref="T:System.IDisposable" />입니다.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />입니다.</param>
+      <param name="eventName">이벤트의 이름입니다.</param>
+      <param name="onData">콜백입니다.</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+      <typeparam name="T5"></typeparam>
+      <typeparam name="T6"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``7(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3,``4,``5,``6})">
+      <summary>지정한 이름과 콜백이 사용된 이벤트를 등록합니다</summary>
+      <returns>이 구독을 나타내는 <see cref="T:System.IDisposable" />입니다.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />입니다.</param>
+      <param name="eventName">이벤트의 이름입니다.</param>
+      <param name="onData">콜백입니다.</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+      <typeparam name="T5"></typeparam>
+      <typeparam name="T6"></typeparam>
+      <typeparam name="T7"></typeparam>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.IConnection">
+      <summary>여기에 있는 콘텐츠는 업데이트되지 않습니다. 여기에 자료를 추가하지 마십시오.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Certificates">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 대한 X509CertificateCollection 인증서를 가져옵니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 대한 X509CertificateCollection 인증서입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.ChangeState(Microsoft.AspNet.SignalR.Client.ConnectionState,Microsoft.AspNet.SignalR.Client.ConnectionState)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 상태가 변경될 때 호출됩니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 상태가 변경되면 true이고, 그렇지 않으면 false입니다.</returns>
+      <param name="oldState">이전 상태입니다.</param>
+      <param name="newState">새 상태입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.ConnectionId">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 대한 연결 ID를 가져옵니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 대한 연결 ID입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.ConnectionToken">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 대한 연결 토큰을 가져오거나 설정합니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 대한 연결 토큰입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.CookieContainer">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />과 연관된 쿠키를 가져오거나 설정합니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />과 연관된 쿠키입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Credentials">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 대한 인증 정보를 가져오거나 설정합니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 대한 인증 정보입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Disconnect">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />을 중지하고 중단 메시지를 서버에 보냅니다.서버에서 연결 끊기 메시지를 수신한 후 이 함수가 호출됩니다.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.GroupsToken">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 대한 그룹 토큰을 가져오거나 설정합니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 대한 그룹 토큰입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Headers">
+      <summary>요청에 대한 헤더를 가져옵니다.</summary>
+      <returns>요청에 대한 헤더입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Items">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 대한 상태가 저장되는 사전을 가져옵니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 대한 상태가 저장되는 사전입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.JsonSerializer">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에서 사용되는 직렬 변환기를 가져옵니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에서 사용되는 직렬 변환기입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.KeepAliveData">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />의 연결 유지 데이터에 대한 개체를 가져오거나 설정합니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />의 연결 유지 데이터에 대한 개체입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.MessageId">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 대한 마지막 메시지 ID를 가져오거나 설정합니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 대한 마지막 메시지 ID입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnConnectionSlow">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 시간이 초과되려고 할 때 호출됩니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnError(System.Exception)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 오류가 발생했을 때 호출됩니다.</summary>
+      <param name="ex">예외 오류입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnReceived(Newtonsoft.Json.Linq.JToken)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에서 서버의 데이터를 수신했을 때 호출됩니다.</summary>
+      <param name="data">수신된 데이터입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnReconnected">
+      <summary>시간 초과 이후 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />이 다시 연결되었을 때 호출됩니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnReconnecting">
+      <summary>오류가 발생한 후 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에서 다시 연결을 시작할 때 호출됩니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.PrepareRequest(Microsoft.AspNet.SignalR.Client.Http.IRequest)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />을 위한 모든 요청을 준비합니다.</summary>
+      <param name="request">요청입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Protocol">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />의 프로토콜을 가져오거나 설정합니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />의 프로토콜입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Proxy">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 대한 프록시 정보를 가져오거나 설정합니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 대한 프록시 정보입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.QueryString">
+      <summary>생성자에 지정된 쿼리 문자열을 가져옵니다.</summary>
+      <returns>생성자에 지정된 쿼리 문자열입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Send(System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />을 통해 데이터를 비동기적으로 보냅니다.</summary>
+      <returns>데이터가 플러시된 경우를 나타내는 작업입니다.</returns>
+      <param name="data">보낼 데이터입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.State">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />의 현재 ConnectionState를 가져옵니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />의 현재 ConnectionState입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Stop">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />을 중지하고 중단 메시지를 서버에 보냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Trace(Microsoft.AspNet.SignalR.Client.TraceLevels,System.String,System.Object[])">
+      <summary>매개 변수로 지정된 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> 메서드를 추적합니다.</summary>
+      <param name="level">추적 수준입니다.</param>
+      <param name="format">형식입니다.</param>
+      <param name="args">인수입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Transport">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 대한 클라이언트 전송을 가져옵니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />에 대한 클라이언트 전송입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.TransportConnectTimeout">
+      <summary>시간 초과 전까지 연결을 전송하는 시간을 나타내는 TimeSpan을 가져오거나 설정합니다.</summary>
+      <returns>시간 초과 전까지 연결을 전송하는 시간을 나타내는 TimeSpan입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.UpdateLastKeepAlive">
+      <summary>다양한 연결 유지 시간 제한 값을 저장하는 개체를 업데이트합니다.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Url">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />의 URL을 가져옵니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />의 URL입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.IHubProxy">
+      <summary>서버 쪽 허브에 대한 클라이언트 쪽 프록시입니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IHubProxy.Invoke``1(System.String,System.Object[])">
+      <summary>메서드를 서버 쪽 허브에서 비동기적으로 실행합니다.</summary>
+      <returns>호출이 반환된 경우를 나타내는 작업입니다.</returns>
+      <param name="method">메서드의 이름입니다.</param>
+      <param name="args">인수입니다.</param>
+      <typeparam name="T">허브에서 반환된 결과의 유형입니다.</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IHubProxy.Invoke(System.String,System.Object[])">
+      <summary>메서드를 서버 쪽 허브에서 비동기적으로 실행합니다.</summary>
+      <returns>호출이 반환된 경우를 나타내는 작업입니다.</returns>
+      <param name="method">메서드의 이름입니다.</param>
+      <param name="args">인수입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IHubProxy.Item(System.String)">
+      <summary>허브에서의 상태를 가져오거나 설정합니다.</summary>
+      <returns>필드의 값입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IHubProxy.JsonSerializer">
+      <summary>연결에서 사용되는 직렬 변환기를 가져옵니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IHubProxy.Subscribe(System.String)">
+      <summary>허브에 대한 이벤트를 등록합니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.Subscription" />입니다.</returns>
+      <param name="eventName">이벤트의 이름입니다.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.KeepAliveData">
+      <summary>모든 연결 유지 속성을 저장하는 클래스를 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.KeepAliveData.#ctor(System.DateTime,System.TimeSpan,System.TimeSpan,System.TimeSpan)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="lastKeepAlive">마지막 연결 유지 속성입니다.</param>
+      <param name="timeout">시간 제한 속성입니다.</param>
+      <param name="timeoutWarning">시간 제한 경고입니다.</param>
+      <param name="checkInterval">간격을 확인합니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.KeepAliveData.#ctor(System.TimeSpan)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="timeout">시간 제한 속성입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.CheckInterval">
+      <summary>간격 속성을 확인하는 시간 범위를 가져오거나 설정합니다.</summary>
+      <returns>간격 속성을 확인하는 시간 범위입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.LastKeepAlive">
+      <summary>마지막 연결 유지 속성을 저장하는 DateTime을 가져오거나 설정합니다.</summary>
+      <returns>마지막 연결 유지 속성을 저장하는 DateTime입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.Timeout">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" />의 시간 제한을 가져오거나 설정합니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" />의 시간 제한입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.TimeoutWarning">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" />의 시간 제한 경고를 가져오거나 설정합니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" />의 시간 제한 경고입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.NegotiationResponse">
+      <summary>협상 응답에 대한 연결 속성을 제공합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.NegotiationResponse.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.NegotiationResponse" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.ConnectionId">
+      <summary>협상 응답을 위한 연결 ID를 가져오거나 설정합니다.</summary>
+      <returns>협상 응답을 위한 연결 ID입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.ConnectionToken">
+      <summary>협상 응답을 위한 연결 토큰을 가져오거나 설정합니다.</summary>
+      <returns>협상 응답을 위한 연결 토큰입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.DisconnectTimeout">
+      <summary>협상 응답을 위한 연결 끊기 시간 제한 속성을 가져오거나 설정합니다.</summary>
+      <returns>협상 응답을 위한 연결 끊기 시간 제한 속성입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.KeepAliveTimeout">
+      <summary>협상 응답을 위한 연결 유지 시간 제한을 가져오거나 설정합니다.</summary>
+      <returns>협상 응답을 위한 연결 유지 시간 제한입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.ProtocolVersion">
+      <summary>협상 응답을 위한 프로토콜 버전을 가져오거나 설정합니다.</summary>
+      <returns>협상 응답을 위한 프로토콜 버전입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.TransportConnectTimeout">
+      <summary>협상 응답을 위한 전송 연결 시간 제한을 가져오거나 설정합니다.</summary>
+      <returns>협상 응답을 위한 전송 연결 시간 제한입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.TryWebSockets">
+      <summary>협상 응답에서 WebSocket 사용을 시도할지 여부를 나타내는 값을 가져오거나 설정합니다.</summary>
+      <returns>협상 응답에서 WebSocket 사용을 시도하면 true, 그렇지 않으면 false입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.Url">
+      <summary>협상 응답을 위한 URL을 가져오거나 설정합니다.</summary>
+      <returns>협상 응답을 위한 URL입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ObservableConnection`1">
+      <summary>SignalR 서비스에 대한 클라이언트 연결을 제공하는 데이터 연결을 나타냅니다.</summary>
+      <typeparam name="T">연결에 있는 요소 유형입니다.</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ObservableConnection`1.#ctor(Microsoft.AspNet.SignalR.Client.Connection,System.Func{System.String,`0})">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.ObservableConnection`1" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="connection">클라이언트 연결입니다.</param>
+      <param name="convert">변환할 함수 문자열입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ObservableConnection`1.Subscribe(System.IObserver{`0})">
+      <summary>SignalR 서비스에 대해 식별할 수 있는 연결을 구독합니다.</summary>
+      <returns>SignalR 서비스에 대해 식별할 수 있는 연결입니다.</returns>
+      <param name="observer">감시자 알림입니다.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.SignalRError">
+      <summary>SignalR 클라이언트에서 발생한 오류를 나타냅니다. </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.#ctor(System.Exception)">
+      <summary>지정한 예외를 사용하여 <see cref="T:Microsoft.AspNet.SignalR.Client.SignalRError" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="exception">래핑 해제할 예외입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.Dispose">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.SignalRError" /> 클래스의 현재 인스턴스에서 사용된 리소스를 해제합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.DefaultDependencyResolver" /> 클래스의 현재 인스턴스에서 사용하는 관리되지 않는 리소스를 해제하고, 관리되는 리소스를 선택적으로 해제합니다.</summary>
+      <param name="disposing">관리된 리소스와 관리되지 않은 리소스를 모두 해제하려면 true이고, 관리되지 않은 리소스만 해제하려면 false입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.SignalRError.Exception">
+      <summary>래핑 해제된 기본 예외를 가져오거나 설정합니다. </summary>
+      <returns>래핑 해제된 원본 예외</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.SignalRError.ResponseBody">
+      <summary>오류에 대한 응답 본문을 가져오거나 설정합니다(WebException이며 응답이 읽기 가능한 경우).</summary>
+      <returns>오류에 대한 응답 본문입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.SignalRError.StatusCode">
+      <summary>오류에 대한 상태 코드를 가져오거나 설정합니다(WebException인 경우).</summary>
+      <returns>오류에 대한 상태 코드입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.ToString">
+      <summary>이 SignalR 오류의 문자열 표현을 반환합니다.</summary>
+      <returns>이 SignalR 오류의 문자열 표현입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.StateChange">
+      <summary>연결 상태의 변화를 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.StateChange.#ctor(Microsoft.AspNet.SignalR.Client.ConnectionState,Microsoft.AspNet.SignalR.Client.ConnectionState)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.StateChange" />의 새 인스턴스를 만듭니다.</summary>
+      <param name="oldState">연결의 이전 상태입니다.</param>
+      <param name="newState">연결의 새 상태입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.StateChange.NewState">
+      <summary>연결의 새 상태를 가져옵니다.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.StateChange.OldState">
+      <summary>연결의 이전 상태를 가져옵니다.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.TraceLevels">
+      <summary>SignalR 클라이언트와 연결된 추적 수준을 열거합니다.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.All">
+      <summary>연결된 모든 개체를 추적합니다.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.Events">
+      <summary>모든 이벤트를 추적합니다.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.Messages">
+      <summary>모든 메시지를 추적합니다.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.None">
+      <summary>아무것도 추적하지 않습니다.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.StateChanges">
+      <summary>모든 상태 변경을 추적합니다.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient">
+      <summary>기본 <see cref="T:Microsoft.AspNet.SignalR.Client.Http.IHttpClient" /> 구현입니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.Get(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Boolean)">
+      <summary>지정된 URL에 대한 비동기 http GET 요청을 만듭니다.</summary>
+      <returns>&lt;see cref="T:Task{IResponse}" /&gt;입니다.</returns>
+      <param name="url">요청을 보낼 URL입니다.</param>
+      <param name="prepareRequest">요청을 기본값으로 초기화하는 콜백입니다.</param>
+      <param name="isLongRunning">요청이 장기 실행 중인지를 나타냅니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.Initialize(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Http 클라이언트를 초기화합니다.</summary>
+      <param name="connection">현재 HTTP 연결입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.Post(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Collections.Generic.IDictionary{System.String,System.String},System.Boolean)">
+      <summary>지정된 URL에 대한 비동기 http POST 요청을 만듭니다.</summary>
+      <returns>&lt;see cref="T:Task{IResponse}" /&gt;입니다.</returns>
+      <param name="url">요청을 보낼 URL입니다.</param>
+      <param name="prepareRequest">요청을 기본값으로 초기화하는 콜백입니다.</param>
+      <param name="postData">양식 URL로 인코딩된 데이터입니다.</param>
+      <param name="isLongRunning">요청이 장기 실행 중인지를 나타냅니다.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler">
+      <summary>클라이언트의 기본 HTTP 처리기를 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler.#ctor(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="connection">기본 연결입니다.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper">
+      <summary>HTTP 요청 메시지의 래퍼를 제공합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.#ctor(System.Net.Http.HttpRequestMessage,System.Action)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="httpRequestMessage">HTTP 요청 메시지입니다.</param>
+      <param name="cancel">요청 메시지를 취소합니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.Abort">
+      <summary>현재 HTTP 요청 메시지를 취소합니다.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.Accept">
+      <summary>요청 메시지를 수락하는 HTTP 속성을 가져오거나 설정합니다.</summary>
+      <returns>요청 메시지를 수락하는 HTTP 속성입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.SetRequestHeaders(System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" />의 요청 헤더를 설정합니다.</summary>
+      <param name="headers">요청 헤더입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.UserAgent">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" />의 사용자 에이전트를 가져오거나 설정합니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" />의 사용자 에이전트입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper">
+      <summary>
+        <see cref="T:System.Net.Http.HttpResponseMessage" />에 대한 컨테이너 클래스를 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.#ctor(System.Net.Http.HttpResponseMessage)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="httpResponseMessage">이 HTTP 클라이언트에 대한 응답 메시지입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.Dispose">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper" />의 현재 인스턴스에서 사용된 모든 리소스를 해제합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper" />에서 사용하는 관리되지 않는 리소스를 해제하고, 관리되는 리소스를 선택적으로 해제합니다.</summary>
+      <param name="disposing">관리된 리소스와 관리되지 않은 리소스를 모두 해제하려면 true이고, 관리되지 않은 리소스만 해제하려면 false입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.GetStream">
+      <summary>이 메시지와 연관된 읽기 전용의 새 스트림 복사본을 가져옵니다.</summary>
+      <returns>이 메시지와 연관된 읽기 전용의 새 스트림 복사본입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.ReadAsString">
+      <summary>응답 메시지를 문자열로 읽습니다.</summary>
+      <returns>응답 메시지를 나타내는 문자열입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IHttpClient">
+      <summary>http 요청을 만들 수 있는 클라이언트입니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClient.Get(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Boolean)">
+      <summary>지정된 URL에 대한 비동기 http GET 요청을 만듭니다.</summary>
+      <returns>&lt;see cref="T:Task{IResponse}" /&gt;입니다.</returns>
+      <param name="url">요청을 보낼 URL입니다.</param>
+      <param name="prepareRequest">요청을 기본값으로 초기화하는 콜백입니다.</param>
+      <param name="isLongRunning">장기 실행 중인 요청인지를 나타냅니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClient.Initialize(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Http 클라이언트를 초기화합니다.</summary>
+      <param name="connection">연결</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClient.Post(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Collections.Generic.IDictionary{System.String,System.String},System.Boolean)">
+      <summary>지정된 URL에 대한 비동기 http POST 요청을 만듭니다.</summary>
+      <returns>&lt;see cref="T:Task{IResponse}" /&gt;입니다.</returns>
+      <param name="url">요청을 보낼 URL입니다.</param>
+      <param name="prepareRequest">요청을 기본값으로 초기화하는 콜백입니다.</param>
+      <param name="postData">양식 URL로 인코딩된 데이터입니다.</param>
+      <param name="isLongRunning">장기 실행 중인 요청인지를 나타냅니다.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IHttpClientExtensions">
+      <summary>여기에 있는 콘텐츠는 업데이트되지 않습니다. 여기에 자료를 추가하지 마십시오.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClientExtensions.Post(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Boolean)">
+      <summary>지정된 URL에 대한 비동기 http POST 요청을 만듭니다.</summary>
+      <returns>지정된 URL에 대한 비동기 http POST 요청입니다.</returns>
+      <param name="client">http 요청을 만들 수 있는 클라이언트입니다.</param>
+      <param name="url">요청을 보낼 URL입니다.</param>
+      <param name="prepareRequest">요청을 기본값으로 초기화하는 콜백입니다.</param>
+      <param name="isLongRunning">게시가 장기 실행 중인지를 나타냅니다.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IRequest">
+      <summary>HTTP 요청을 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IRequest.Abort"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.IRequest.Accept"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IRequest.SetRequestHeaders(System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>요청 헤더를 설정합니다.</summary>
+      <param name="headers">요청 헤더입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.IRequest.UserAgent"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IResponse">
+      <summary>HTTP 응답을 나타냅니다. </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IResponse.GetStream">
+      <summary>응답 본문을 나타내는 스트림을 가져옵니다. </summary>
+      <returns>응답 본문을 나타내는 스트림입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IResponseExtensions">
+      <summary>Provides method that is used to read the response object.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IResponseExtensions.ReadAsString(Microsoft.AspNet.SignalR.Client.Http.IResponse)">
+      <summary>Reads the response object and returns the content as string.</summary>
+      <returns>A task that represents the read operation.</returns>
+      <param name="response">The response object to read.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation">
+      <summary>클라이언트의 허브 호출을 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.Args">
+      <summary>클라이언트 허브 메서드를 호출하는 데 사용되는 인수 목록을 가져오거나 설정합니다.</summary>
+      <returns>클라이언트 허브 메서드를 호출하는 데 사용되는 인수 목록입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.CallbackId">
+      <summary>허브 호출 속성의 콜백 식별자를 가져오거나 설정합니다.</summary>
+      <returns>허브 호출 속성의 콜백 식별자입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.Hub">
+      <summary>호출되는 메서드가 속하는 허브의 이름을 가져오거나 설정합니다.</summary>
+      <returns>호출되는 메서드가 속하는 허브의 이름입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.Method">
+      <summary>호출할 클라이언트 허브 메서드의 이름을 가져오거나 설정합니다.</summary>
+      <returns>호출할 클라이언트 허브 메서드의 이름입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.State">
+      <summary>허브 상태가 마지막으로 클라이언트에 전송된 이후 변경된 서버에서의 허브 상태를 나타내는 키-값 저장소를 가져오거나 설정합니다.</summary>
+      <returns>허브 상태가 마지막으로 클라이언트에 전송된 이후 변경된 서버에서의 허브 상태를 나타내는 키-값 저장소입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy">
+      <summary>여기에 있는 콘텐츠는 업데이트되지 않습니다. 여기에 자료를 추가하지 마십시오.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.#ctor(Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection,System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="connection">허브 연결입니다.</param>
+      <param name="hubName">허브의 이름입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Invoke(System.String,System.Object[])">
+      <summary>지정된 매개 변수를 사용하여 메서드와 인수를 호출합니다.</summary>
+      <returns>
+        <see cref="T:System.Threading.Tasks.Task" />을 반환합니다.</returns>
+      <param name="method">메서드입니다.</param>
+      <param name="args">인수입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Invoke``1(System.String,System.Object[])">
+      <summary>지정된 매개 변수를 사용하여 메서드와 인수를 호출합니다.</summary>
+      <returns>
+        <see cref="T:System.Threading.Tasks.Task`1" />을 반환합니다.</returns>
+      <param name="method">메서드입니다.</param>
+      <param name="args">인수입니다.</param>
+      <typeparam name="T">유형입니다.</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.InvokeEvent(System.String,System.Collections.Generic.IList{Newtonsoft.Json.Linq.JToken})">
+      <summary>지정된 매개 변수를 사용하여 이벤트를 호출합니다.</summary>
+      <param name="eventName">이벤트 이름입니다.</param>
+      <param name="args">인수 목록 컬렉션입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Item(System.String)">
+      <summary>허브 프록시에 대한 항목을 가져오거나 설정합니다.</summary>
+      <returns>허브 프록시에 대한 항목입니다.</returns>
+      <param name="name">문자열 이름입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.JsonSerializer">
+      <summary>허브 프록시에 대한 JSON 직렬 변환기를 가져옵니다.</summary>
+      <returns>허브 프록시에 대한 JSON 직렬 변환기입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Subscribe(System.String)">
+      <summary>구독할 허브 프록시를 제공합니다.</summary>
+      <returns>구독할 허브 프록시입니다.</returns>
+      <param name="eventName">이벤트 이름입니다.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData">
+      <summary>허브 등록 데이터를 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData.Name">
+      <summary>데이터 이름을 가져오거나 설정합니다.</summary>
+      <returns>데이터 이름입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubResult">
+      <summary>허브 호출의 결과를 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubResult" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.Error">
+      <summary>허브 호출에서 반환된 오류 메시지를 가져오거나 설정합니다.</summary>
+      <returns>허브 호출에서 반환된 오류 메시지입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.ErrorData">
+      <summary>추가 오류 데이터입니다.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.Id">
+      <summary>콜백 식별자를 가져오거나 설정합니다.</summary>
+      <returns>콜백 식별자입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.IsHubException">
+      <summary>오류가 <see cref="T:Microsoft.AspNet.SignalR.Client.HubException" />인지 여부를 나타냅니다.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.Result">
+      <summary>허브 반환 값을 가져오거나 설정합니다.</summary>
+      <returns>허브 반환 값입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.State">
+      <summary>이 허브의 호출자 상태를 가져오거나 설정합니다.</summary>
+      <returns>이 허브의 호출자 상태입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.Hubservable">
+      <summary>허브 이벤트에 대한 <see cref="T:System.IObservable{object[]}" /> 구현을 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.Hubservable.#ctor(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.Hubservable.Subscribe(System.IObserver{System.Collections.Generic.IList{Newtonsoft.Json.Linq.JToken}})">
+      <summary>허브 이벤트에 지정된 감시자를 등록합니다.</summary>
+      <returns>수신된 구독 이벤트를 나타내는 <see cref="T:System.IDisposable" /> 개체입니다.</returns>
+      <param name="observer">등록할 감시자입니다.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection">
+      <summary>허브 연결을 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection.RegisterCallback(System.Action{Microsoft.AspNet.SignalR.Client.Hubs.HubResult})">
+      <summary>허브 연결에 콜백 함수를 등록합니다.</summary>
+      <returns>콜백 ID 문자열입니다.</returns>
+      <param name="callback">등록할 콜백 함수입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection.RemoveCallback(System.String)"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.Subscription">
+      <summary>허브 메서드에 대한 구독을 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.Subscription.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.Subscription" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Hubs.Subscription.Received">
+      <summary>구독을 수신하면 발생합니다.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.CompleteAbort"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.Dispose"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.TryCompleteAbort"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler">
+      <summary>전송 초기화를 처리하는 개체를 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.#ctor(System.TimeSpan,System.Threading.CancellationToken)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="failureTimeout">초기화 프로세스가 실패로 간주되는 데 필요한 시간입니다.</param>
+      <param name="disconnectToken">연결 끊기 토큰입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Fail"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Fail(System.Exception)"></member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.OnFailure">
+      <summary>전송 초기화가 실패하면 발생합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Success">
+      <summary>전송 초기화가 성공한 시기를 지정합니다.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Task">
+      <summary>전송 초기화와 연관된 작업을 가져오거나 설정합니다.</summary>
+      <returns>전송 초기화와 연관된 작업입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader">
+      <summary>Represents an asynchronous stream reader.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.#ctor(System.IO.Stream)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader" /> class. </summary>
+      <param name="stream">The stream to read asynchronously payloads from.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.BufferLock">
+      <summary>Gets the object that is used to lock the buffer.</summary>
+      <returns>The object that is used to lock the buffer.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Closed">
+      <summary>Gets or sets the method to invoke when the reader is closed while in the Processing state. </summary>
+      <returns>The method to invoke when the reader is closed while in the Processing state.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Data">
+      <summary>Gets or sets the method to invoke when there is a message to be received in the stream. </summary>
+      <returns>The method to invoke when there is a message to be received in the stream.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Opened">
+      <summary>Gets or sets the method to invoke when the stream is open. </summary>
+      <returns>The method to invoke when the stream is open.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Start">
+      <summary> Starts the reader. </summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport">
+      <summary>여기에 있는 콘텐츠는 업데이트되지 않습니다. 여기에 자료를 추가하지 마십시오.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="httpClient">http 요청을 만들 수 있는 클라이언트입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Client.Transports.IClientTransport})">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="httpClient">http 요청을 만들 수 있는 클라이언트입니다.</param>
+      <param name="transports">http 전송을 만들 수 있는 클라이언트입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Dispose">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> 클래스의 현재 인스턴스에서 사용된 모든 리소스를 해제합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" />에서 사용하는 관리되지 않는 리소스를 해제하고, 관리되는 리소스를 선택적으로 해제합니다.</summary>
+      <param name="disposing">관리된 리소스와 관리되지 않은 리소스를 모두 해제하려면 true이고, 관리되지 않은 리소스만 해제하려면 false입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.GetNegotiateResponse(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>클라이언트 서비스에 대한 전송 연결이 끊어집니다.</summary>
+      <param name="connection">전송 연결입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Name">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" />의 이름을 가져옵니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" />의 이름을 가져옵니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)">
+      <summary>자동 전송 연결을 시작합니다.</summary>
+      <returns>시작할 자동 전송 연결입니다.</returns>
+      <param name="connection">전송 연결입니다.</param>
+      <param name="disconnectToken">연결 끊기 토큰입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.SupportsKeepAlive">
+      <summary>활성 전송에서 연결 유지가 지원되는지 여부를 나타내는 값을 가져옵니다.</summary>
+      <returns>활성 전송에서 연결 유지가 지원되면 true이고, 그렇지 않으면 false입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport">
+      <summary>여기에 있는 콘텐츠는 업데이트되지 않습니다. 여기에 자료를 추가하지 마십시오.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.AbortHandler"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Dispose">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport" /> 클래스의 현재 인스턴스에서 사용된 리소스를 해제합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport" /> 클래스에서 사용하는 관리되지 않는 리소스를 해제하고, 이 개체와 연관된 관리되는 리소스를 선택적으로 해제합니다.</summary>
+      <param name="disposing">관리된 리소스와 관리되지 않은 리소스를 모두 해제하려면 true이고, 관리되지 않은 리소스만 해제하려면 false입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.GetReceiveQueryString(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.HttpClient"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>클라이언트 전송 연결이 끊어집니다.</summary>
+      <param name="connection">클라이언트 연결입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Name"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.OnStart(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken,Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.SupportsKeepAlive">
+      <summary>클라이언트 전송에서 연결 유지가 지원되는지를 나타내는 값을 가져옵니다.</summary>
+      <returns>클라이언트 전송에서 연결 유지가 지원되면 true이고, 그렇지 않으면 false입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport">
+      <summary>여기에 있는 콘텐츠는 업데이트되지 않습니다. 여기에 자료를 추가하지 마십시오.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>클라이언트 전송 연결이 끊어집니다.</summary>
+      <param name="connection">클라이언트 연결입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Name">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport" />의 이름을 가져옵니다.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport" />의 이름입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)">
+      <summary>클라이언트 전송 연결을 시작합니다.</summary>
+      <returns>시작할 클라이언트 전송 연결입니다.</returns>
+      <param name="connection">클라이언트 연결입니다.</param>
+      <param name="disconnectToken">연결 끊기 토큰입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.SupportsKeepAlive">
+      <summary>클라이언트 전송에서 연결 유지가 지원되는지를 나타내는 값을 가져옵니다.</summary>
+      <returns>클라이언트 전송에서 연결 유지가 지원되면 true이고, 그렇지 않으면 false입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport">
+      <summary>여기에 있는 콘텐츠는 업데이트되지 않습니다. 여기에 자료를 추가하지 마십시오.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="httpClient">HTTP 클라이언트입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.ErrorDelay">
+      <summary>연결 오류를 나타내는 시간 범위를 가져오거나 설정합니다.</summary>
+      <returns>연결 오류를 나타내는 시간 범위입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.OnStart(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken,Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.ReconnectDelay">
+      <summary>전송을 다시 연결할 때의 지연 시간을 나타내는 시간 범위를 가져오거나 설정합니다.</summary>
+      <returns>전송을 다시 연결할 때의 지연 시간을 나타내는 시간 범위입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.SupportsKeepAlive">
+      <summary> 전송에서 연결 유지가 지원되는지 여부를 나타냅니다. </summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler">
+      <summary>Represents a polling request handler.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler" /> class.</summary>
+      <param name="httpClient">The HTTP client to poll.</param>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnAbort">
+      <summary>Occurs when the current poll request was aborted, passing in the soon to be aborted request. </summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnAfterPoll">
+      <summary>Gets or sets a function that triggers before a new polling request is attempted.   Passes in an exception if the Poll errored, null otherwise. Expects the return as a task in order to allow modification of timing for subsequent polls.</summary>
+      <returns>A function that triggers before a new polling request is attempted.</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnError">
+      <summary>Occurs and passes the exception when the poll errors. </summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnMessage">
+      <summary> Sends the string based message to the callback. </summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnPolling">
+      <summary> Occurs when the polling request is in flight. </summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.PrepareRequest">
+      <summary> Allows modification of the IRequest parameter before using it in a poll.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.ResolveUrl">
+      <summary>Gets or sets a function used to generate the URL that is posted to for the poll. </summary>
+      <returns>A function used to generate the URL that is posted to for the poll.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.Start">
+      <summary> Starts the polling request handler. </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.Stop">
+      <summary> Fully stops the polling request handler. </summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport">
+      <summary>여기에 있는 콘텐츠는 업데이트되지 않습니다. 여기에 자료를 추가하지 마십시오.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="httpClient">클라이언트입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>서버의 연결이 끊어졌을 때 발생합니다.</summary>
+      <param name="connection">연결입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.OnStart(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken,Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.OpenConnection(Microsoft.AspNet.SignalR.Client.IConnection,System.Action{System.Exception})"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.ReconnectDelay">
+      <summary>연결 시간 초과 후 서버가 다시 연결하는 시간을 지정합니다.</summary>
+      <returns>연결 시간 초과 후 서버가 다시 연결하는 시간입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.SupportsKeepAlive">
+      <summary>전송에서 연결 유지가 지원되는지 여부를 나타냅니다.</summary>
+      <returns>전송에서 연결 유지가 지원되면 true이고, 그렇지 않으면 false입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper">
+      <summary>여기에 있는 콘텐츠는 업데이트되지 않습니다. 여기에 자료를 추가하지 마십시오.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.AppendCustomQueryString(Microsoft.AspNet.SignalR.Client.IConnection,System.String)">
+      <summary>사용자 지정 쿼리 문자열에 '?' 또는 '&amp;' 문자가 없는 경우 이를 추가합니다.</summary>
+      <returns>수정된 사용자 지정 쿼리 문자열입니다.</returns>
+      <param name="connection">클라이언트 연결입니다.</param>
+      <param name="baseUrl">기본 URL입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.GetNegotiationResponse(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.GetReceiveQueryString(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.ProcessResponse(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Boolean@,System.Boolean@)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.ProcessResponse(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Boolean@,System.Boolean@,System.Action)">
+      <summary>응답 메시지를 처리합니다.</summary>
+      <param name="connection">클라이언트 연결입니다.</param>
+      <param name="response">처리할 응답 메시지입니다.</param>
+      <param name="disconnected">이 메서드가 반환될 때 프로세스 연결이 끊어졌는지를 나타내는 값이 포함됩니다.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport">
+      <summary>여기에 있는 콘텐츠는 업데이트되지 않습니다. 여기에 자료를 추가하지 마십시오.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.#ctor"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Dispose">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport" /> 클래스의 현재 인스턴스에서 사용된 리소스를 해제합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport" /> 클래스에서 사용하는 관리되지 않는 리소스를 해제하고, 이 개체와 연관된 관리되는 리소스를 선택적으로 해제합니다.</summary>
+      <param name="disposing">관리된 리소스와 관리되지 않은 리소스를 모두 해제하려면 true이고, 관리되지 않은 리소스만 해제하려면 false입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>클라이언트 전송 연결이 끊어집니다.</summary>
+      <param name="connection">클라이언트 연결입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Name"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnClose(System.Boolean)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnError"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnMessage(System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnOpen"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.PerformConnect"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.ReconnectDelay"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.SupportsKeepAlive">
+      <summary>전송에서 연결 유지가 지원되는지 여부를 나타내는 값을 가져오거나 설정합니다.</summary>
+      <returns>전송에서 연결 유지가 지원되면 true이고, 그렇지 않으면 false입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer">
+      <summary>여기에 있는 콘텐츠는 업데이트되지 않습니다. 여기에 자료를 추가하지 마십시오.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.Add(System.ArraySegment{System.Byte})">
+      <summary>청크에 버퍼를 추가합니다.</summary>
+      <param name="buffer">추가할 버퍼입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.Add(System.Byte[],System.Int32)">
+      <summary>지정된 버퍼를 추가합니다.</summary>
+      <param name="buffer">추가할 버퍼입니다.</param>
+      <param name="length">버퍼의 길이입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.HasChunks">
+      <summary>버퍼에 청크가 있는지를 나타내는 값을 가져옵니다.</summary>
+      <returns>버퍼에 청크가 있으면 true이고, 그렇지 않으면 false입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.ReadLine">
+      <summary>현재 버퍼에서 문자 줄을 읽고 데이터를 문자열로 반환합니다.</summary>
+      <returns>버퍼의 다음 줄입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader">
+      <summary>.NET을 위한 이벤트 원본 구현을 제공합니다.이는 사양에 맞지 않지만 SignalR의 서버를 지원하기에 충분합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader.#ctor(Microsoft.AspNet.SignalR.Client.IConnection,System.IO.Stream)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader" /> 클래스의 새 인스턴스를 초기화합니다. </summary>
+      <param name="connection">이 이벤트 원본과 연관된 연결입니다.</param>
+      <param name="stream">이벤트 원본 페이로드가 읽혀질 스트림입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader.Message"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType">
+      <summary>서버 측 이벤트와 연관된 이벤트 유형을 열거합니다.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType.Data">
+      <summary>데이터 이벤트 유형입니다.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType.Id">
+      <summary>ID 이벤트 유형입니다.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent">
+      <summary>서버에서 보낸 데이터를 구문 분석하기 위한 정적 메서드를 제공합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.#ctor(Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType,System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="type">서버에서 보낸 이벤트 유형입니다.</param>
+      <param name="data">서버에서 보낸 이벤트 데이터입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.Data">
+      <summary>서버에서 보낸 이벤트 데이터를 가져오거나 설정합니다.</summary>
+      <returns>서버에서 보낸 이벤트 데이터입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.EventType">
+      <summary>서버에서 보낸 이벤트 유형을 가져오거나 설정합니다.</summary>
+      <returns>서버에서 보낸 이벤트 유형입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.ToString">
+      <summary>이 개체의 문자열 표현을 반환합니다.</summary>
+      <returns>이 개체의 문자열 표현입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.TryParse(System.String,Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent@)">
+      <summary>지정한 데이터를 <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent" /> 개체로 구문 분석합니다.</summary>
+      <returns>지정된 데이터가 올바른 서버 쪽 이벤트이면 true이고, 그렇지 않으면 false입니다.</returns>
+      <param name="line">구문 분석할 데이터입니다.</param>
+      <param name="sseEvent">이 메서드가 반환되면 SseEvent 개체가 결과에 포함됩니다.</param>
+    </member>
+  </members>
+</doc>

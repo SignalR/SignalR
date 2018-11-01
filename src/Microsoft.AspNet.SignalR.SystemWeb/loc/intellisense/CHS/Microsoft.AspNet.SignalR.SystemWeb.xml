@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.SystemWeb</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.RequestExtensions.GetHttpContext(Microsoft.AspNet.SignalR.IRequest)">
+      <summary>从环境中获取 HttpContextBase。</summary>
+      <returns>环境中的 <see cref="T:System.Web.HttpContextBase" />。</returns>
+      <param name="request">HTTP 请求。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator">
+      <summary>表示程序集定位器的生成管理器。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.#ctor">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator" /> 类的新实例。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.GetAssemblies">
+      <summary>返回与生成管理器关联的程序集的列表。</summary>
+      <returns>与生成管理器关联的程序集的列表。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData">
+      <summary>表示与计算机密钥关联的受保护数据。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.#ctor">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData" /> 类的新实例。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Protect(System.String,System.String)">
+      <summary>保护指定的数据。</summary>
+      <returns>受保护的数据。</returns>
+      <param name="data">要保护的数据。</param>
+      <param name="purpose">保护的目的。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Unprotect(System.String,System.String)">
+      <summary>取消保护受保护的数据。</summary>
+      <returns>已取消保护的数据。</returns>
+      <param name="protectedValue">数据的受保护值。</param>
+      <param name="purpose">去除保护的原因。</param>
+    </member>
+    <member name="T:System.Web.Routing.SignalRRouteExtensions">
+      <summary>提供 SignalR 的路由扩展。</summary>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String)">
+      <summary>使用默认依赖关系解析程序将 <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> 映射到指定的路径。</summary>
+      <returns>注册的路由。</returns>
+      <param name="routes">路由表。</param>
+      <param name="name">路由的名称。</param>
+      <param name="url">路由的路径。</param>
+      <typeparam name="T">
+        <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> 的类型。</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>使用默认依赖关系解析程序将 <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> 映射到指定的路径。</summary>
+      <returns>注册的路由。</returns>
+      <param name="routes">路由表。</param>
+      <param name="name">路由的名称。</param>
+      <param name="url">路由的路径。</param>
+      <param name="configuration">配置选项。</param>
+      <typeparam name="T">
+        <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> 的类型。</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection(System.Web.Routing.RouteCollection,System.String,System.String,System.Type,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>使用默认依赖关系解析程序将 <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> 映射到指定的路径。</summary>
+      <returns>注册的路由。</returns>
+      <param name="routes">路由表。</param>
+      <param name="name">路由的名称。</param>
+      <param name="url">路由的路径。</param>
+      <param name="type">
+        <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> 的类型。</param>
+      <param name="configuration">配置选项。</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection)">
+      <summary>初始化默认集线器路由 (/signalr)。</summary>
+      <returns>注册的路由。</returns>
+      <param name="routes">路由表。</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>初始化默认集线器路由 (/signalr)。</summary>
+      <returns>注册的路由。</returns>
+      <param name="routes">路由表。</param>
+      <param name="configuration">配置选项。</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,System.String,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>初始化默认集线器路由 (/signalr)。</summary>
+      <returns>注册的路由。</returns>
+      <param name="routes">路由表。</param>
+      <param name="path">路由的路径。</param>
+      <param name="configuration">配置选项。</param>
+    </member>
+  </members>
+</doc>

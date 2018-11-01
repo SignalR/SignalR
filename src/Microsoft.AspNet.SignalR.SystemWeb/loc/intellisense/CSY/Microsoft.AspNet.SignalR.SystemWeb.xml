@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.SystemWeb</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.RequestExtensions.GetHttpContext(Microsoft.AspNet.SignalR.IRequest)">
+      <summary>Získá hodnotu HttpContextBase z prostředí.</summary>
+      <returns>
+        <see cref="T:System.Web.HttpContextBase" /> z prostředí.</returns>
+      <param name="request">Žádost HTTP</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator">
+      <summary>Představuje správce sestavení pro lokátor sestavení.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.#ctor">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.GetAssemblies">
+      <summary>Vrátí seznam sestavení přidružený ke správci sestavení.</summary>
+      <returns>Seznam sestavení přidružený ke správci sestavení.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData">
+      <summary>Představuje chráněná data přidružená ke klíči počítače.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.#ctor">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Protect(System.String,System.String)">
+      <summary>Chrání zadaná data.</summary>
+      <returns>Chráněná data.</returns>
+      <param name="data">Data určená k ochraně.</param>
+      <param name="purpose">Účel ochrany.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Unprotect(System.String,System.String)">
+      <summary>Zruší ochranu chráněných dat.</summary>
+      <returns>Data, která již nejsou chráněna.</returns>
+      <param name="protectedValue">Chráněná hodnota dat.</param>
+      <param name="purpose">Důvod odebrání ochrany.</param>
+    </member>
+    <member name="T:System.Web.Routing.SignalRRouteExtensions">
+      <summary>Poskytuje rozšíření směrování funkce SignalR.</summary>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String)">
+      <summary>Pomocí výchozího překladače závislostí provede mapování připojení <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> na zadanou cestu.</summary>
+      <returns>Registrovaná trasa.</returns>
+      <param name="routes">Tabulka trasy.</param>
+      <param name="name">Název trasy</param>
+      <param name="url">Cesta trasy.</param>
+      <typeparam name="T">Typ připojení <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />.</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>Pomocí výchozího překladače závislostí provede mapování připojení <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> na zadanou cestu.</summary>
+      <returns>Registrovaná trasa.</returns>
+      <param name="routes">Tabulka trasy.</param>
+      <param name="name">Název trasy</param>
+      <param name="url">Cesta trasy.</param>
+      <param name="configuration">Možnosti konfigurace.</param>
+      <typeparam name="T">Typ připojení <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />.</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection(System.Web.Routing.RouteCollection,System.String,System.String,System.Type,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>Pomocí výchozího překladače závislostí provede mapování připojení <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> na zadanou cestu.</summary>
+      <returns>Registrovaná trasa.</returns>
+      <param name="routes">Tabulka trasy.</param>
+      <param name="name">Název trasy</param>
+      <param name="url">Cesta trasy.</param>
+      <param name="type">Typ připojení <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />.</param>
+      <param name="configuration">Možnosti konfigurace.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection)">
+      <summary>Inicializuje výchozí trasu rozbočovače (/signalr).</summary>
+      <returns>Registrovaná trasa.</returns>
+      <param name="routes">Tabulka trasy.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>Inicializuje výchozí trasu rozbočovače (/signalr).</summary>
+      <returns>Registrovaná trasa.</returns>
+      <param name="routes">Tabulka trasy.</param>
+      <param name="configuration">Možnosti konfigurace.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,System.String,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>Inicializuje výchozí trasu rozbočovače (/signalr).</summary>
+      <returns>Registrovaná trasa.</returns>
+      <param name="routes">Tabulka trasy.</param>
+      <param name="path">Cesta trasy.</param>
+      <param name="configuration">Možnosti konfigurace.</param>
+    </member>
+  </members>
+</doc>

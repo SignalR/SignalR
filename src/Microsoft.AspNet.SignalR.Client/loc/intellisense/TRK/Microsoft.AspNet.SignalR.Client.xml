@@ -1,0 +1,1584 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.Client</name>
+  </assembly>
+  <members>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Connection">
+      <summary>SignalR hizmetleri için istemci bağlantıları sağlar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.#ctor(System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="url">Bağlanılacak URL.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="url">Bağlanılacak URL.</param>
+      <param name="queryString">Sunucuya geçirilecek sorgu dizesi verileri.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.#ctor(System.String,System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="url">Bağlanılacak URL.</param>
+      <param name="queryString">Sunucuya geçirilecek sorgu dizesi verileri.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.AddClientCertificate(System.Security.Cryptography.X509Certificates.X509Certificate)">
+      <summary>İsteğe bir istemci sertifikası ekler.</summary>
+      <param name="certificate">İstemci Sertifikası.</param>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Closed">
+      <summary>Bağlantı durdurulduğunda oluşur.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.ConnectionId">
+      <summary>Bağlantı için bağlantı kimliğini alır veya ayarlar.</summary>
+      <returns>Bağlantı için bağlantı kimliği.</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.ConnectionSlow">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> zaman aşımına uğramak üzere olduğunda oluşur.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.ConnectionToken">
+      <summary>Bağlantı için bağlantı belirtecini alır veya ayarlar.</summary>
+      <returns>Bağlantı için bağlantı belirteci.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.CookieContainer">
+      <summary>Bağlantı ile ilişkili tanımlama bilgilerini alır veya ayarlar.</summary>
+      <returns>Bağlantıyla ilişkili tanımlama bilgileri.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Credentials">
+      <summary>Bağlantı için kimlik doğrulama bilgilerini alır veya ayarlar.</summary>
+      <returns>Bağlantı için kimlik doğrulama bilgileri.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Dispose">
+      <summary>Bağlantıyı durdurur, bağlantı durdurma çağrısına eşdeğerdir.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Dispose(System.Boolean)">
+      <summary>Bağlantıyı durdurur, bağlantı durdurma çağrısına eşdeğerdir.</summary>
+      <param name="disposing">Silmeyi gerçekleştirmek için true, hiçbir işlem yapmamak için false olarak ayarlayın.</param>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Error">
+      <summary>Bağlantı bir hata ile karşılaştığında oluşur.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.GroupsToken">
+      <summary>Bağlantı için grup belirteçlerini alır veya ayarlar.</summary>
+      <returns>Bağlantı için grup belirteci.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Headers">
+      <summary>İstekler için üstbilgileri alır veya ayarlar </summary>
+      <returns>İstekler için üstbilgiler.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Items">
+      <summary>Bağlantı için durumu depolamak üzere bir sözlük alır.</summary>
+      <returns>Bağlantı için durumu depolamak üzere bir sözlük.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.JsonSerializer">
+      <summary>Bağlantı tarafından kullanılan serileştiricileri alır veya ayarlar.</summary>
+      <returns>Bağlantı tarafından kullanılan serileştirici.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.MessageId">
+      <summary>Bağlantı için en son ileti kimliğini alır veya ayarlar.</summary>
+      <returns>Bağlantı için en son ileti kimliği.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#Certificates">
+      <summary>X509Certificate nesnelerini depolayan bir koleksiyon alır.</summary>
+      <returns>X509Certificate nesnelerini depolayan bir koleksiyon.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#ChangeState(Microsoft.AspNet.SignalR.Client.ConnectionState,Microsoft.AspNet.SignalR.Client.ConnectionState)">
+      <summary>Bağlantının durumu değişeceği zaman çağrılır.</summary>
+      <returns>Bağlantının durumu değişecekse true, aksi takdirde false.</returns>
+      <param name="oldState">Eski durum.</param>
+      <param name="newState">Yeni durum.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#Disconnect">
+      <summary>Sunucuya durdurma iletisi göndermeden <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> öğesini durdurur.Bu işlev, sunucudan bir bağlantı kesme iletisi almamızdan sonra çağrılır.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#KeepAliveData">
+      <summary>Çeşitli etkin tutulan bağlantı zaman aşımı değerlerini depolayan bir nesneyi alır veya ayarlar.</summary>
+      <returns>Çeşitli etkin tutulan bağlantı zaman aşımı değerlerini depolayan bir nesne.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnConnectionSlow">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> zaman aşımına uğramak üzere olduğunda çağrılır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnError(System.Exception)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> bir hata ile karşılaştığında çağrılır.</summary>
+      <param name="error">Bağlantı hatası.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnReceived(Newtonsoft.Json.Linq.JToken)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> sunucudan veri aldığında çağrılır.</summary>
+      <param name="message">Alınan ileti.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnReconnected">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> bir zaman aşımından sonra başarıyla yeniden bağlandığında çağrılır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#PrepareRequest(Microsoft.AspNet.SignalR.Client.Http.IRequest)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> için tüm istekleri hazırlar.</summary>
+      <param name="request">İstek.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#UpdateLastKeepAlive">
+      <summary>LastKeepAlive öğesini geçerli saate ayarlar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnClosed"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnMessageReceived(Newtonsoft.Json.Linq.JToken)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> sunucudan ileti aldığında çağrılır.</summary>
+      <param name="message">Alınan ileti.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnReconnecting"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnSending">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> bir uyarı veya anımsatıcı bildirimi aldığında çağrılır.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> uyarı veya anımsatıcı bildirimleri gönderir.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Protocol">
+      <summary>Bağlantı için protokolü alır veya ayarlar.</summary>
+      <returns>Bağlantı için protokol.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Proxy">
+      <summary>Bağlantı için proxy bilgilerini alır veya ayarlar.</summary>
+      <returns>Bağlantı için proxy bilgileri.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.QueryString">
+      <summary>Oluşturucuda belirtilen sorgu dizesini alır.</summary>
+      <returns>Oluşturucuda belirtilen sorgu dizesi.</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Received">
+      <summary>Bağlantı sunucudan veri aldığında oluşur.</summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Reconnected">
+      <summary>Bağlantı zaman aşımından sonra başarıyla yeniden bağlandığında oluşur.</summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Reconnecting">
+      <summary>Bağlantı bir hatanın ardından yeniden bağlanmayı denediğinde oluşur.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Send(System.Object)">
+      <summary>Bağlantı üzerinden zaman uyumsuz olarak JSON şeklinde serileştirilecek bir nesneyi gönderir.</summary>
+      <returns>Verilerin gönderildiği zamanı temsil eden bir görev.</returns>
+      <param name="value">Serileştirilecek değer.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Send(System.String)">
+      <summary>Verileri bağlantı üzerinden eşzamansız olarak gönderir.</summary>
+      <returns>Verilerin gönderildiği zamanı temsil eden bir görev.</returns>
+      <param name="data">Gönderilecek veri.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Start">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> değerini başlatır.</summary>
+      <returns>Bağlantının açıldığını temsil eden bir görev.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Start(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> değerini başlatır.</summary>
+      <returns>Bağlantının açıldığını temsil eden bir görev.</returns>
+      <param name="httpClient">HTTP istemci bağlantısı.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Start(Microsoft.AspNet.SignalR.Client.Transports.IClientTransport)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> değerini başlatır.</summary>
+      <returns>Bağlantının açıldığını temsil eden bir görev.</returns>
+      <param name="transport">Kullanılacak aktarım.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.State">
+      <summary>Bağlantının geçerli ConnectionState öğesini alır.</summary>
+      <returns>Bağlantının geçerli ConnectionState öğesi.</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.StateChanged">
+      <summary>Bağlantı durumu değiştiğinde oluşur.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Stop">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> öğesini durdurur ve sunucuya durdurma iletisi gönderir.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Stop(System.TimeSpan)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> öğesini durdurur ve sunucuya durdurma iletisi gönderir.&lt;param name="timeout"&lt;Zaman aşımı&gt;/param&lt;.</summary>
+      <param name="timeout">Bağlantı zaman aşımı.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Trace(Microsoft.AspNet.SignalR.Client.TraceLevels,System.String,System.Object[])">
+      <summary>Parametrelerle belirtilen bir bağlantı yöntemini izler.</summary>
+      <param name="level">İzleme düzeyi.</param>
+      <param name="format">Biçim.</param>
+      <param name="args">Bağımsız değişken.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.TraceLevel">
+      <summary>Bağlantı için izleme düzeyini alır veya ayarlar.</summary>
+      <returns>Bağlantı için izleme düzeyi.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.TraceWriter">
+      <summary>Bağlantıyı izlemek için metin yazıcıyı alır veya ayarlar.</summary>
+      <returns>Bağlantıyı izlemek için metin yazıcı.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Transport">
+      <summary>Bağlantı için istemci taşımasını alır veya ayarlar.</summary>
+      <returns>Bağlantı için istemci taşıması.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.TransportConnectTimeout">
+      <summary>Zaman aşımından önce bağlantının taşınacağı süreyi temsil eden bir TimeSpan alır veya ayarlar.</summary>
+      <returns>Zaman aşımından önce bağlantının taşınacağı süreyi temsil eden bir TimeSpan.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Url">
+      <summary>Bağlantı için url alır veya ayarlar.</summary>
+      <returns>Bağlantı için url.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ConnectionExtensions">
+      <summary>Buradaki içerik güncellenmeyecektir, lütfen buraya materyal eklemeyin.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.AsObservable(Microsoft.AspNet.SignalR.Client.Connection)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.AsObservable``1(Microsoft.AspNet.SignalR.Client.Connection)">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.AsObservable``1(Microsoft.AspNet.SignalR.Client.Connection,System.Func{System.String,``0})">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.EnsureReconnecting(Microsoft.AspNet.SignalR.Client.IConnection)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.GetValue``1(Microsoft.AspNet.SignalR.Client.IConnection,System.String)">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.JsonDeserializeObject``1(Microsoft.AspNet.SignalR.Client.IConnection,System.String)">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.JsonSerializeObject(Microsoft.AspNet.SignalR.Client.IConnection,System.Object)"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ConnectionState">
+      <summary>Bir SignalR bağlantısının bağlantı durumunu temsil eder.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Connected">
+      <summary>Bağlantı durumu bağlandı.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Connecting">
+      <summary>Bağlantı durumu bağlanıyor.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Disconnected">
+      <summary>Bağlantı durumu bağlantı kesildi.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Reconnecting">
+      <summary>Bağlantı durumu yeniden bağlanıyor.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ErrorExtensions">
+      <summary>Basitleştirilmiş hata tanıma için genişletme yöntemi sağlar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ErrorExtensions.GetError(System.Exception)">
+      <summary> Karmaşık özel durumları açarak hata tanımayı basitleştirir.</summary>
+      <returns>SignalRError biçimindeki açılmış özel durum.</returns>
+      <param name="ex">Oluşturulan özel durum.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HeaderDictionary">
+      <summary>SignalR istemcisi için bir anahtar kümesinden değer kümesine eşlemeyi temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.#ctor(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeaderDictionary" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="connection">İstemci bağlantısı.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Add(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+      <summary>Sözlüğe belirli bir öğe ekler.</summary>
+      <param name="item">Eklenecek öğe.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Add(System.String,System.String)">
+      <summary>Bir anahtar/değer çiftini sözlüğe ekler.</summary>
+      <param name="key">Eklenecek anahtar.</param>
+      <param name="value">Eklenecek değer.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Clear">
+      <summary>Sözlüğün içeriğini siler.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Contains(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+      <summary>Bir öğenin sözlükte bulunup bulunmadığını belirtir.</summary>
+      <returns>Bir öğe sözlükte bulunuyorsa true, aksi takdirde false.</returns>
+      <param name="item">Aranacak öğe.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.ContainsKey(System.String)">
+      <summary>Belirtilen bir anahtarın sözlükte bulunup bulunmadığını belirtir.</summary>
+      <returns>Belirtilen bir anahtar sözlükte bulunuyorsa true, aksi takdirde false.</returns>
+      <param name="key">Aranacak anahtar.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.CopyTo(System.Collections.Generic.KeyValuePair{System.String,System.String}[],System.Int32)">
+      <summary>Belirtilen bir dizi dizininde anahtar/değer çifti öğelerini mevcut bir tek boyutlu Diziye kopyalar.</summary>
+      <param name="array">Sözlükten kopyalanan öğelerin hedefi olan tek boyutlu dizi.</param>
+      <param name="arrayIndex">Dizide kopyalamanın başladığı sıfır tabanlı dizinleme.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Count">
+      <summary>Sözlükte bulunan anahtar/değer çiftlerinin sayısını alır.</summary>
+      <returns>Sözlükte bulunan anahtar/değer çiftlerinin sayısı.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.GetEnumerator">
+      <summary>Sözlükte yinelenen bir numaralandırıcı döndürür.</summary>
+      <returns>Sözlükte yinelenen numaralandırıcı.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.IsReadOnly">
+      <summary>Sözlüğün salt okunur olup olmadığını alır.</summary>
+      <returns>Sözlük salt okunursa true; değilse false.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Item(System.String)">
+      <summary>Belirtilen anahtarla ilişkili değeri alır veya ayarlar.</summary>
+      <returns>Belirtilen anahtarla ilişkili değer.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Keys">
+      <summary>Sözlükteki anahtarların koleksiyonunu alır.</summary>
+      <returns>Sözlükteki anahtarların koleksiyonu.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Remove(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+      <summary>Belirli bir anahtar/ değer çifti öğesini sözlükten kaldırır.</summary>
+      <returns>Kaldırılan öğeye sahip sözlük.</returns>
+      <param name="item">Kaldırılacak öğe.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Remove(System.String)">
+      <summary>Belirtilen anahtarı sözlükten kaldırır.</summary>
+      <returns>Kaldırılan anahtara sahip sözlük.</returns>
+      <param name="key">Kaldırılacak anahtar.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.System#Collections#IEnumerable#GetEnumerator">
+      <summary>Bir toplulukta tekrarlanan bir numaralandırıcı döndürür.</summary>
+      <returns>Bir koleksiyonda tekrarlanan numaralandırıcı.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.TryGetValue(System.String,System.String@)">
+      <summary>Belirtilen anahtarla ilişkili değeri alır.</summary>
+      <returns>Sözlük, belirtilen anahtara sahip bir öğe içeriyorsa true; içermiyorsa, false.</returns>
+      <param name="key">Alınacak değerin anahtarı.</param>
+      <param name="value">Bu yöntem döndürüldüğünde, anahtar bulunduysa belirtilen anahtarla ilişkilendirilen değeri, bulunmadıysa değer parametresinin türü için varsayılan değeri içerir.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Values">
+      <summary>Sözlükteki değerlerin koleksiyonunu alır.</summary>
+      <returns>Sözlükteki değerlerin koleksiyonu.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor">
+      <summary>Sunucudan yanıt vermek ve bir yanıt başarılı olursa vuruş gerçekleştirmek için HeartbeatMonitor öğesini temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.#ctor(Microsoft.AspNet.SignalR.Client.IConnection,System.Object)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> Sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="connection">Arabirim bağlantısı.</param>
+      <param name="connectionStateLock">Bağlantı durumu kilidi.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Beat(System.TimeSpan)">
+      <summary>Kullanıcıyı bilgilendirmemiz veya yeniden bağlanmaya çalışmamız gerektiğini belirleyen mantık.</summary>
+      <param name="timeElapsed">Geçen süre.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Dispose">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> sınıfının geçerli örneği tarafından kullanılan tüm kaynakları serbest bırakır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> sınıfı tarafından kullanılan yönetilmeyen kaynakları serbest bırakır ve yönetilen kaynakları isteğe bağlı olarak serbest bırakır.</summary>
+      <param name="disposing">Hem yönetilen hem de yönetilmeyen kaynakları serbest bırakmak için true; yalnızca yönetilmeyen kaynakları serbest bırakmak için false.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.HasBeenWarned">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> öğesinin uyarılıp uyarılmadığını belirten bir değer alır veya ayarlar.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> uyarıldıysa true aksi takdirde, false.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Start">
+      <summary>LastKeepAlive öğesini güncelleştirir ve zamanlayıcıyı başlatır.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.TimedOut">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> öğesinin bir zaman aşımına sahip olup olmadığını belirten bir değer alır veya ayarlar.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" />, bir zaman aşımına sahipse true aksi takdirde, false.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HttpClientException">
+      <summary>HTTP istemcisi bağlanırken oluşturulan özel durum.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" /> sınıfının yeni bir örneğini başlatır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor(System.Net.Http.HttpResponseMessage)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="responseMessage">Yanıt iletisi.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor(System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="message">Hata iletisi.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor(System.String,System.Exception)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="message">Hata iletisi.</param>
+      <param name="ex">Özel durum.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HttpClientException.Response">
+      <summary>Bu istemciyle ilişkili yanıtı alır veya ayarlar.</summary>
+      <returns>Bu istemciyle ilişkili yanıt.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HubConnection">
+      <summary>Hub'larla etkileşim için bir <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="url">Bağlanılacak url.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="url">Bağlanılacak url.</param>
+      <param name="useDefaultUrl">Varsayılan "/signalr" yolunun belirtilen url'ye eklenmesinin gerekip gerekmediğini belirler.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="url">Bağlanılacak url.</param>
+      <param name="queryString">Sunucuya geçirilecek sorgu dizesi verileri.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.String},System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="url">Bağlanılacak url.</param>
+      <param name="queryString">Sunucuya geçirilecek sorgu dizesi verileri.</param>
+      <param name="useDefaultUrl">Varsayılan "/signalr" yolunun belirtilen url'ye eklenmesinin gerekip gerekmediğini belirler.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="url">Bağlanılacak url.</param>
+      <param name="queryString">Sunucuya geçirilecek sorgu dizesi verileri.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.String,System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="url">Bağlanılacak url.</param>
+      <param name="queryString">Sunucuya geçirilecek sorgu dizesi verileri.</param>
+      <param name="useDefaultUrl">Varsayılan "/signalr" yolunun belirtilen url'ye eklenmesinin gerekip gerekmediğini belirler.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.CreateHubProxy(System.String)">
+      <summary>Belirtilen ada sahip hub için bir <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /> oluşturur.</summary>
+      <returns>Bir <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /></returns>
+      <param name="hubName">Hub'ın adı.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.Microsoft#AspNet#SignalR#Client#Hubs#IHubConnection#RegisterCallback(System.Action{Microsoft.AspNet.SignalR.Client.Hubs.HubResult})"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.Microsoft#AspNet#SignalR#Client#Hubs#IHubConnection#RemoveCallback(System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnClosed"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnMessageReceived(Newtonsoft.Json.Linq.JToken)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnReconnecting"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnSending"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HubException"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubException.#ctor"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubException.#ctor(System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubException.#ctor(System.String,System.Object)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HubException.ErrorData"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HubProxyExtensions">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /> öğesinde yapılan genişletmeler.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.GetValue``1(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String)">
+      <summary>Bir durum değişkeninin değerini alır.</summary>
+      <returns>Durum değişkeninin değeri.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />.</param>
+      <param name="name">Durum değişkeninin adı.</param>
+      <typeparam name="T">Durum değişkeninin türü</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.Observe(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String)">
+      <summary>
+        <see cref="T:IObservable{T}" /> öğesine sahip <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /> öğesini kaydeder.</summary>
+      <returns>Bir <see cref="T:IObservable{object[]}" />.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />
+      </param>
+      <param name="eventName">Olayın adı.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action)">
+      <summary>Belirtilen ad ve geri çağırmaya sahip bir olay için kaydeder</summary>
+      <returns>Bu aboneliği temsil eden bir <see cref="T:System.IDisposable" />.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />.</param>
+      <param name="eventName">Olayın adı.</param>
+      <param name="onData">Geri çağırma</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{System.Object})">
+      <summary>Belirtilen ad ve geri çağırmaya sahip bir olay için kaydeder</summary>
+      <returns>Bu aboneliği temsil eden bir <see cref="T:System.IDisposable" />.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />.</param>
+      <param name="eventName">Olayın adı.</param>
+      <param name="onData">Geri çağırma</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``1(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0})">
+      <summary>Belirtilen ad ve geri çağırmaya sahip bir olay için kaydeder</summary>
+      <returns>Bu aboneliği temsil eden bir <see cref="T:System.IDisposable" />.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />.</param>
+      <param name="eventName">Olayın adı.</param>
+      <param name="onData">Geri çağırma</param>
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``2(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1})">
+      <summary>Belirtilen ad ve geri çağırmaya sahip bir olay için kaydeder</summary>
+      <returns>Bu aboneliği temsil eden bir <see cref="T:System.IDisposable" />.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />.</param>
+      <param name="eventName">Olayın adı.</param>
+      <param name="onData">Geri çağırma</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``3(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2})">
+      <summary>Belirtilen ad ve geri çağırmaya sahip bir olay için kaydeder</summary>
+      <returns>Bu aboneliği temsil eden bir <see cref="T:System.IDisposable" />.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />.</param>
+      <param name="eventName">Olayın adı.</param>
+      <param name="onData">Geri çağırma</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``4(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3})">
+      <summary>Belirtilen ad ve geri çağırmaya sahip bir olay için kaydeder</summary>
+      <returns>Bu aboneliği temsil eden bir <see cref="T:System.IDisposable" />.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />.</param>
+      <param name="eventName">Olayın adı.</param>
+      <param name="onData">Geri çağırma</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``5(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3,``4})">
+      <summary>Belirtilen ad ve geri çağırmaya sahip bir olay için kaydeder</summary>
+      <returns>Bu aboneliği temsil eden bir <see cref="T:System.IDisposable" />.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />.</param>
+      <param name="eventName">Olayın adı.</param>
+      <param name="onData">Geri çağırma</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+      <typeparam name="T5"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``6(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3,``4,``5})">
+      <summary>Belirtilen ad ve geri çağırmaya sahip bir olay için kaydeder</summary>
+      <returns>Bu aboneliği temsil eden bir <see cref="T:System.IDisposable" />.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />.</param>
+      <param name="eventName">Olayın adı.</param>
+      <param name="onData">Geri çağırma</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+      <typeparam name="T5"></typeparam>
+      <typeparam name="T6"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``7(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3,``4,``5,``6})">
+      <summary>Belirtilen ad ve geri çağırmaya sahip bir olay için kaydeder</summary>
+      <returns>Bu aboneliği temsil eden bir <see cref="T:System.IDisposable" />.</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />.</param>
+      <param name="eventName">Olayın adı.</param>
+      <param name="onData">Geri çağırma</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+      <typeparam name="T5"></typeparam>
+      <typeparam name="T6"></typeparam>
+      <typeparam name="T7"></typeparam>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.IConnection">
+      <summary>Buradaki içerik güncellenmeyecektir, lütfen buraya materyal eklemeyin.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Certificates">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için X509CertificateCollection sertifikalarını alır.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için X509CertificateCollection sertifikaları.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.ChangeState(Microsoft.AspNet.SignalR.Client.ConnectionState,Microsoft.AspNet.SignalR.Client.ConnectionState)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> durumu değişeceği zaman çağrılır.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> durumu değişecekse true aksi takdirde, false.</returns>
+      <param name="oldState">Eski durum.</param>
+      <param name="newState">Yeni durum.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.ConnectionId">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için bağlantı kimliğini alır.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için bağlantı kimliği.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.ConnectionToken">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için bağlantı belirtecini alır veya ayarlar.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için bağlantı belirteci.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.CookieContainer">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> ile ilişkili tanımlama bilgilerini alır veya ayarlar.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> ile ilişkili tanımlama bilgileri.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Credentials">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için kimlik doğrulama bilgilerini alır veya ayarlar.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için kimlik doğrulama bilgileri.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Disconnect">
+      <summary>Sunucuya durdurma iletisi göndermeden <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> öğesini durdurur.Bu işlev, sunucudan bir bağlantı kesme iletisi almamızdan sonra çağrılır.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.GroupsToken">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için grup belirteçlerini alır veya ayarlar.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için grup belirteci.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Headers">
+      <summary>İstekler için üstbilgileri alır.</summary>
+      <returns>İstekler için üstbilgiler.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Items">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için durumu depolamak üzere bir sözlük alır.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için durumu depolamak üzere bir sözlük.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.JsonSerializer">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> tarafından kullanılan serileştiriciyi alır.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> tarafından kullanılan serileştirici.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.KeepAliveData">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için verileri etkin tutacak nesneyi alır veya ayarlar.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için verileri etkin tutacak nesne.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.MessageId">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için en son ileti kimliğini alır veya ayarlar.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için en son ileti kimliği.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnConnectionSlow">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> zaman aşımına uğramak üzere olduğunda çağrılır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnError(System.Exception)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> bir hata ile karşılaştığında çağrılır.</summary>
+      <param name="ex">Özel durum hatası.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnReceived(Newtonsoft.Json.Linq.JToken)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> sunucudan veri aldığında çağrılır.</summary>
+      <param name="data">Alınan veri.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnReconnected">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> bir zaman aşımından sonra başarıyla yeniden bağlandığında çağrılır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnReconnecting">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> bir hatanın ardından yeniden bağlanmayı denediğinde çağrılır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.PrepareRequest(Microsoft.AspNet.SignalR.Client.Http.IRequest)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için tüm istekleri hazırlar.</summary>
+      <param name="request">İstek.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Protocol">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için protokolü alır veya ayarlar.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için protokol.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Proxy">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için proxy bilgilerini alır veya ayarlar.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için proxy bilgileri.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.QueryString">
+      <summary>Oluşturucuda belirtilen sorgu dizesini alır.</summary>
+      <returns>Oluşturucuda belirtilen sorgu dizesi.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Send(System.String)">
+      <summary>Verileri <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> üzerinden eşzamansız olarak gönderir.</summary>
+      <returns>Verilerin gönderildiği zamanı temsil eden bir görev.</returns>
+      <param name="data">Gönderilecek veri.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.State">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için geçerli ConnectionState öğesini alır.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için geçerli ConnectionState öğesi.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Stop">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> öğesini durdurur ve sunucuya durdurma iletisi gönderir.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Trace(Microsoft.AspNet.SignalR.Client.TraceLevels,System.String,System.Object[])">
+      <summary>Parametrelerle belirtilen bir <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> yöntemini izler.</summary>
+      <param name="level">İzleme düzeyi.</param>
+      <param name="format">Biçim.</param>
+      <param name="args">Bağımsız değişken.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Transport">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için istemci taşımasını alır.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için istemci taşıma.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.TransportConnectTimeout">
+      <summary>Zaman aşımından önce bağlantının taşınacağı süreyi temsil eden bir TimeSpan alır veya ayarlar.</summary>
+      <returns>Zaman aşımından önce bağlantının taşınacağı süreyi temsil eden bir TimeSpan.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.UpdateLastKeepAlive">
+      <summary>Çeşitli etkin tutulan bağlantı zaman aşımı değerlerini depolayan nesneyi güncelleştirir.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Url">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> için url'yi alır.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> öğesinin url'si.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.IHubProxy">
+      <summary>Sunucu taraflı hub için istemci taraflı proxy.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IHubProxy.Invoke``1(System.String,System.Object[])">
+      <summary>Sunucu taraflı hub'da zaman uyumsuz olarak bir yöntem yürütür.</summary>
+      <returns>Çağırmanın ne zaman döndürüldüğünü temsil eden bir görev.</returns>
+      <param name="method">Yöntemin adı.</param>
+      <param name="args">Bağımsız değişkenler</param>
+      <typeparam name="T">Hub'dan döndürülen sonuç türü</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IHubProxy.Invoke(System.String,System.Object[])">
+      <summary>Sunucu taraflı hub'da zaman uyumsuz olarak bir yöntem yürütür.</summary>
+      <returns>Çağırmanın ne zaman döndürüldüğünü temsil eden bir görev.</returns>
+      <param name="method">Yöntemin adı.</param>
+      <param name="args">Bağımsız değişkenler</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IHubProxy.Item(System.String)">
+      <summary>Hub'da durumu alır veya ayarlar.</summary>
+      <returns>Alanın değeri</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IHubProxy.JsonSerializer">
+      <summary>Bağlantı tarafından kullanılan serileştiriciyi alır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IHubProxy.Subscribe(System.String)">
+      <summary>Hub için bir olay kaydeder.</summary>
+      <returns>Bir <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.Subscription" />.</returns>
+      <param name="eventName">Olayın adı</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.KeepAliveData">
+      <summary>Tüm Etkin Tutulan Bağlantı özelliklerini depolayan sınıfı temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.KeepAliveData.#ctor(System.DateTime,System.TimeSpan,System.TimeSpan,System.TimeSpan)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="lastKeepAlive">En son etkin tutulan bağlantı özellikleri.</param>
+      <param name="timeout">Zaman aşımı özelliği.</param>
+      <param name="timeoutWarning">Zaman aşımı uyarısı.</param>
+      <param name="checkInterval">Aralığı denetler.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.KeepAliveData.#ctor(System.TimeSpan)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="timeout">Zaman aşımı özelliği.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.CheckInterval">
+      <summary>Aralık özelliğini denetleme süresini alır veya ayarlar.</summary>
+      <returns>Aralık özelliğini denetleme süresi.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.LastKeepAlive">
+      <summary>En son etkin tutulan bağlantı özelliklerini depolamak için DateTime öğesini alır veya ayarlar.</summary>
+      <returns>En son etkin tutulan bağlantı özelliklerini depolamak için DateTime öğesi.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.Timeout">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> zaman aşımını alır veya ayarlar.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> zaman aşımı.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.TimeoutWarning">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> zaman aşımı uyarısını alır veya ayarlar.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> zaman aşımı uyarısı.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.NegotiationResponse">
+      <summary>Anlaşma yanıtının bağlantı özelliklerini sağlar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.NegotiationResponse.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.NegotiationResponse" /> sınıfının yeni bir örneğini başlatır.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.ConnectionId">
+      <summary>Anlaşma yanıtı için bağlantı kimliğini alır veya ayarlar.</summary>
+      <returns>Anlaşma yanıtı için bağlantı kimliği.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.ConnectionToken">
+      <summary>Anlaşma yanıtı için bağlantı belirtecini alır veya ayarlar.</summary>
+      <returns>Anlaşma yanıtı için bağlantı belirteci.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.DisconnectTimeout">
+      <summary>Anlaşma yanıtı için bağlantı kesme zaman aşımı özelliğini alır veya ayarlar.</summary>
+      <returns>Anlaşma yanıtı için bağlantı kesme zaman aşımı özelliği.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.KeepAliveTimeout">
+      <summary>Anlaşma yanıtı için etkin tutulan bağlantı zaman aşımını alır veya ayarlar.</summary>
+      <returns>Anlaşma yanıtı için etkin tutulan bağlantı zaman aşımı.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.ProtocolVersion">
+      <summary>Anlaşma yanıtı için protokol sürümünü alır veya ayarlar.</summary>
+      <returns>Anlaşma yanıtı için protokol sürümü.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.TransportConnectTimeout">
+      <summary>Anlaşma yanıtı için taşıma bağlantıları zaman aşımını alır veya ayarlar.</summary>
+      <returns>Anlaşma yanıtı için taşıma bağlantıları zaman aşımı.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.TryWebSockets">
+      <summary>Anlaşma yanıtının, web yuvalarını kullanmayı deneyip denemeyeceğini belirten bir değer alır veya ayarlar.</summary>
+      <returns>Anlaşma yanıtı web yuvalarını kullanmaya çalışacaksa true aksi takdirde, false.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.Url">
+      <summary>Anlaşma yanıtı için URL alır veya ayarlar.</summary>
+      <returns>Anlaşma yanıtı için URL.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ObservableConnection`1">
+      <summary>SignalR hizmetleri için istemci bağlantısı sağlayan veri bağlantısını temsil eder.</summary>
+      <typeparam name="T">Bağlantıdaki öğelerin türü.</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ObservableConnection`1.#ctor(Microsoft.AspNet.SignalR.Client.Connection,System.Func{System.String,`0})">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.ObservableConnection`1" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="connection">İstemci bağlantıları.</param>
+      <param name="convert">Dönüştürülecek işlev dizesi.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ObservableConnection`1.Subscribe(System.IObserver{`0})">
+      <summary>SignalR hizmetleri için gözlemlenebilir bir bağlantıya abone olur.</summary>
+      <returns>SignalR hizmetleri için gözlemlenebilir bir bağlantı.</returns>
+      <param name="observer">Gözlemci bildirimleri.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.SignalRError">
+      <summary>SignalR istemcisi tarafından oluşturulan hataları temsil eder. </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.#ctor(System.Exception)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.SignalRError" /> sınıfının yeni bir örneğini belirtilen özel durumla başlatır.</summary>
+      <param name="exception">Açılacak özel durum.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.Dispose">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.SignalRError" /> sınıfının geçerli örneği tarafından kullanılan kaynakları serbest bırakır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.DefaultDependencyResolver" /> sınıfının geçerli örneği tarafından kullanılan yönetilmeyen kaynakları serbest bırakır ve yönetilen kaynakları isteğe bağlı olarak serbest bırakır.</summary>
+      <param name="disposing">Hem yönetilen hem de yönetilmeyen kaynakları serbest bırakmak için true; yalnızca yönetilmeyen kaynakları serbest bırakmak için false.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.SignalRError.Exception">
+      <summary>Temel alınan açılmış özel durumu alır veya ayarlar. </summary>
+      <returns>Açılmış neden olan özel durum.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.SignalRError.ResponseBody">
+      <summary>Bir WebException ise ve yanıt okunabiliyorsa, hatanın yanıt gövdesini alır veya ayarlar.</summary>
+      <returns>Hatanın yanıt gövdesi.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.SignalRError.StatusCode">
+      <summary>Hatanın durum kodunu (WebException ise) alır veya ayarlar.</summary>
+      <returns>Hatanın durum kodu.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.ToString">
+      <summary>Bu SignalR hatasının dize gösterimini döndürür.</summary>
+      <returns>Bu SignalR hatasının dize gösterimi.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.StateChange">
+      <summary>Bağlantı durumundaki bir değişikliği temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.StateChange.#ctor(Microsoft.AspNet.SignalR.Client.ConnectionState,Microsoft.AspNet.SignalR.Client.ConnectionState)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.StateChange" /> öğesinin yeni bir örneğini oluşturur.</summary>
+      <param name="oldState">Bağlantının eski durumu.</param>
+      <param name="newState">Bağlantının yeni durumu.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.StateChange.NewState">
+      <summary>Bağlantının yeni durumunu alır.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.StateChange.OldState">
+      <summary>Bağlantının eski durumunu alır.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.TraceLevels">
+      <summary>SignalR istemcisiyle ilişkili izleme düzeyini numaralandırır.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.All">
+      <summary>Tüm ilişkili nesneleri izler.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.Events">
+      <summary>Tüm olayları izler.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.Messages">
+      <summary>Tüm iletileri izler.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.None">
+      <summary>Herhangi bir şeyi izlemez.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.StateChanges">
+      <summary>Tüm durum değişikliklerini izler.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient">
+      <summary>Varsayılan <see cref="T:Microsoft.AspNet.SignalR.Client.Http.IHttpClient" /> uygulaması.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient" /> sınıfının yeni bir örneğini başlatır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.Get(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Boolean)">
+      <summary>Belirtilen url'ye zaman uyumsuz http GET isteği yapar.</summary>
+      <returns>Bir &lt;see cref="T:Task{IResponse}" /&gt;.</returns>
+      <param name="url">İsteğin gönderileceği url.</param>
+      <param name="prepareRequest">İsteği varsayılan değerlerle başlatan geri arama.</param>
+      <param name="isLongRunning">İsteğin uzun süredir çalışıp çalışmadığını belirtir.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.Initialize(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Http İstemcilerini başlatır.</summary>
+      <param name="connection">Geçerli HTTP bağlantısı.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.Post(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Collections.Generic.IDictionary{System.String,System.String},System.Boolean)">
+      <summary>Belirtilen url'ye zaman uyumsuz http POST isteği yapar.</summary>
+      <returns>Bir &lt;see cref="T:Task{IResponse}" /&gt;.</returns>
+      <param name="url">İsteğin gönderileceği url.</param>
+      <param name="prepareRequest">İsteği varsayılan değerlerle başlatan geri arama.</param>
+      <param name="postData">form url'sinin kodlanmış verileri.</param>
+      <param name="isLongRunning">İsteğin uzun süredir çalışıp çalışmadığını belirtir</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler">
+      <summary>İstemcinin varsayılan HTTP işleyicisini temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler.#ctor(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="connection">Varsayılan bağlantı.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper">
+      <summary>HTTP istek iletisinin bir sarmalayıcısını sağlar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.#ctor(System.Net.Http.HttpRequestMessage,System.Action)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="httpRequestMessage">HTTP isteği iletisi.</param>
+      <param name="cancel">İstek iletisini iptal eder.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.Abort">
+      <summary>Geçerli HTTP istek iletisini iptal eder.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.Accept">
+      <summary>İstek iletisini kabul eden HTTP özelliğini alır veya ayarlar.</summary>
+      <returns>İstek iletisini kabul eden HTTP özelliği.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.SetRequestHeaders(System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" /> istek üstbilgilerini ayarlar.</summary>
+      <param name="headers">İstek üstbilgileri.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.UserAgent">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" /> kullanıcı aracısını alır veya ayarlar.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" /> kullanıcı aracısı.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper">
+      <summary>
+        <see cref="T:System.Net.Http.HttpResponseMessage" /> için bir kapsayıcı sınıfını temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.#ctor(System.Net.Http.HttpResponseMessage)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="httpResponseMessage">Bu HTTP istemcisi için yanıt iletisi.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.Dispose">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper" /> öğesinin geçerli örneği tarafından kullanılan tüm kaynakları serbest bırakır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper" /> sınıfı tarafından kullanılan yönetilmeyen kaynakları serbest bırakır ve yönetilen kaynakları isteğe bağlı olarak serbest bırakır.</summary>
+      <param name="disposing">Hem yönetilen hem de yönetilmeyen kaynakları serbest bırakmak için true; yalnızca yönetilmeyen kaynakları serbest bırakmak için false.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.GetStream">
+      <summary>Bu iletiyle ilişkili akışın yeni ve salt okunur bir kopyasını alır.</summary>
+      <returns>Bu iletiyle ilişkili akışın yeni ve salt okunur bir kopyası.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.ReadAsString">
+      <summary>Yanıt iletisini dize olarak okur.</summary>
+      <returns>Yanıt iletisini temsil eden bir dize.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IHttpClient">
+      <summary>Http isteği yapabilen istemci.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClient.Get(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Boolean)">
+      <summary>Belirtilen url'ye zaman uyumsuz http GET isteği yapar.</summary>
+      <returns>Bir &lt;see cref="T:Task{IResponse}" /&gt;.</returns>
+      <param name="url">İsteğin gönderileceği url.</param>
+      <param name="prepareRequest">İsteği varsayılan değerlerle başlatan geri arama.</param>
+      <param name="isLongRunning">Bunun uzun süredir çalışan bir istek olup olmadığını belirtir</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClient.Initialize(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Http İstemcilerini başlatır.</summary>
+      <param name="connection">Bağlantı</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClient.Post(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Collections.Generic.IDictionary{System.String,System.String},System.Boolean)">
+      <summary>Belirtilen url'ye zaman uyumsuz http POST isteği yapar.</summary>
+      <returns>Bir &lt;see cref="T:Task{IResponse}" /&gt;.</returns>
+      <param name="url">İsteğin gönderileceği url.</param>
+      <param name="prepareRequest">İsteği varsayılan değerlerle başlatan geri arama.</param>
+      <param name="postData">form url'sinin kodlanmış verileri.</param>
+      <param name="isLongRunning">Bunun uzun süredir çalışan bir istek olup olmadığını belirtir</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IHttpClientExtensions">
+      <summary>Buradaki içerik güncellenmeyecektir, lütfen buraya materyal eklemeyin.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClientExtensions.Post(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Boolean)">
+      <summary>Belirtilen URL'ye zaman uyumsuz http POST isteği yapar.</summary>
+      <returns>Belirtilen URL'ye gönderilen zaman uyumsuz http POST isteği.</returns>
+      <param name="client">Http isteği yapabilen istemci.</param>
+      <param name="url">İsteğin gönderileceği URL.</param>
+      <param name="prepareRequest">İsteği varsayılan değerlerle başlatan geri arama.</param>
+      <param name="isLongRunning">İletinin uzun süredir çalışıp çalışmadığını belirtir.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IRequest">
+      <summary>HTTP isteğini temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IRequest.Abort"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.IRequest.Accept"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IRequest.SetRequestHeaders(System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>İstek üstbilgilerini ayarlar.</summary>
+      <param name="headers">İstek üstbilgileri.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.IRequest.UserAgent"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IResponse">
+      <summary>HTTP yanıtını temsil eder. </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IResponse.GetStream">
+      <summary>Yanıt gövdesini temsil eden akışı alır. </summary>
+      <returns>Yanıt gövdesini temsil eden akış.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IResponseExtensions">
+      <summary>Provides method that is used to read the response object.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IResponseExtensions.ReadAsString(Microsoft.AspNet.SignalR.Client.Http.IResponse)">
+      <summary>Reads the response object and returns the content as string.</summary>
+      <returns>A task that represents the read operation.</returns>
+      <param name="response">The response object to read.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation">
+      <summary>İstemcinin hub çağrısını temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation" /> sınıfının yeni bir örneğini başlatır.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.Args">
+      <summary>İstemci hub yönteminin birlikte çağrılacağı bağımsız değişken listesini alır veya ayarlar.</summary>
+      <returns>İstemci hub yönteminin birlikte çağrılacağı bağımsız değişken listesi.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.CallbackId">
+      <summary>Hub çağırma özelliğinin geri çağırma tanımlayıcısını alır veya ayarlar.</summary>
+      <returns>Hub çağırma özelliğinin geri çağırma tanımlayıcısı.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.Hub">
+      <summary>Çağrılan yöntemin ait olduğu hub'ın adını alır veya ayarlar.</summary>
+      <returns>Çağrılan yöntemin ait olduğu hub'ın adı.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.Method">
+      <summary>Çağrılacak istemci hub yönteminin adını alır veya ayarlar.</summary>
+      <returns>Çağrılacak istemci hub yönteminin adı.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.State">
+      <summary>Hub durumunun istemciye son gönderiminden sonra değişen sunucudaki hub durumunu temsil eden bir anahtar değer deposunu alır veya ayarlar.</summary>
+      <returns>Hub durumunun istemciye son gönderiminden sonra değişen sunucudaki hub durumunu temsil eden bir anahtar değer deposu.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy">
+      <summary>Buradaki içerik güncellenmeyecektir, lütfen buraya materyal eklemeyin.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.#ctor(Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection,System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="connection">Hub bağlantısı.</param>
+      <param name="hubName">Hub'ın adı.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Invoke(System.String,System.Object[])">
+      <summary>Belirtilen parametreleri kullanarak yöntemi ve bağımsız değişkeni çağırır.</summary>
+      <returns>
+        <see cref="T:System.Threading.Tasks.Task" /> döndürür.</returns>
+      <param name="method">Yöntem.</param>
+      <param name="args">Bağımsız değişken.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Invoke``1(System.String,System.Object[])">
+      <summary>Belirtilen parametreleri kullanarak yöntemi ve bağımsız değişkeni çağırır.</summary>
+      <returns>
+        <see cref="T:System.Threading.Tasks.Task`1" /> döndürür.</returns>
+      <param name="method">Yöntem.</param>
+      <param name="args">Bağımsız değişken.</param>
+      <typeparam name="T">Tür.</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.InvokeEvent(System.String,System.Collections.Generic.IList{Newtonsoft.Json.Linq.JToken})">
+      <summary>Belirtilen parametreleri kullanarak olayı çağırır.</summary>
+      <param name="eventName">Olay adı.</param>
+      <param name="args">Bağımsız değişken listesinin koleksiyonu.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Item(System.String)">
+      <summary>Hub proxy için bir öğe alır veya ayarlar.</summary>
+      <returns>Hub proxy için bir öğe.</returns>
+      <param name="name">Dize adı.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.JsonSerializer">
+      <summary>Hub proxy için JSON serileştiriciyi alır.</summary>
+      <returns>Hub proxy için JSON serileştirici.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Subscribe(System.String)">
+      <summary>Abone olunacak hub proxy'i sağlar.</summary>
+      <returns>Abone olunacak hub proxy.</returns>
+      <param name="eventName">Olay adı.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData">
+      <summary>Bir hub kayıt verisini temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData" /> sınıfının yeni bir örneğini başlatır.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData.Name">
+      <summary>Verilerin adını alır veya ayarlar.</summary>
+      <returns>Verilerin adı.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubResult">
+      <summary>Bir hub çağrısının sonucunu temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubResult" /> sınıfının yeni bir örneğini başlatır.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.Error">
+      <summary>Hub çağrısından döndürülen hata iletisini alır veya ayarlar.</summary>
+      <returns>Hub çağrısından döndürülen hata iletisi.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.ErrorData">
+      <summary>Ek hata verileri</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.Id">
+      <summary>Geri çağırma tanımlayıcısını alır veya ayarlar.</summary>
+      <returns>Geri çağırma tanımlayıcısı.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.IsHubException">
+      <summary>Hatanın bir <see cref="T:Microsoft.AspNet.SignalR.Client.HubException" /> olup olmadığını gösterir.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.Result">
+      <summary>Hub'ın dönüş değerini alır veya ayarlar.</summary>
+      <returns>Hub'ın dönüş değeri.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.State">
+      <summary>Bu hub'ın çağıran durumunu alır veya ayarlar.</summary>
+      <returns>Bu hub'daki arayan durumu.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.Hubservable">
+      <summary>Bir hub olayının <see cref="T:System.IObservable{object[]}" /> uygulamasını temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.Hubservable.#ctor(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.Hubservable.Subscribe(System.IObserver{System.Collections.Generic.IList{Newtonsoft.Json.Linq.JToken}})">
+      <summary>Hub olayı için belirtilen gözlemciyi kaydeder.</summary>
+      <returns>Bir aboneliğin alınan olayını temsil eden <see cref="T:System.IDisposable" /> nesnesi.</returns>
+      <param name="observer">Kaydedilecek gözlemci.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection">
+      <summary>Bir hub bağlantısını temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection.RegisterCallback(System.Action{Microsoft.AspNet.SignalR.Client.Hubs.HubResult})">
+      <summary>Hub bağlantısı için bir geri çağırma işlevini kaydeder.</summary>
+      <returns>Geri çağırma kimliği dizesi.</returns>
+      <param name="callback">Kaydedilecek geri çağırma işlevi.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection.RemoveCallback(System.String)"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.Subscription">
+      <summary>Bir hub yöntemine aboneliği temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.Subscription.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.Subscription" /> sınıfının yeni bir örneğini başlatır.</summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Hubs.Subscription.Received">
+      <summary>Abonelik alındığında gerçekleşir.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.CompleteAbort"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.Dispose"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.TryCompleteAbort"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler">
+      <summary>Aktarım başlatmasını işleyen nesneyi temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.#ctor(System.TimeSpan,System.Threading.CancellationToken)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="failureTimeout">Başlatma işleminin başarısız olarak değerlendirilmesi için gereken süre.</param>
+      <param name="disconnectToken">Bağlantı kesme belirteci.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Fail"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Fail(System.Exception)"></member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.OnFailure">
+      <summary>Aktarımın başlatılması başarısız olduğunda oluşur.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Success">
+      <summary>Aktarım başlatmanın başarılı olduğu zamanı belirtir.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Task">
+      <summary>Aktarımı başlatma ile ilişkili görevi alır veya ayarlar.</summary>
+      <returns>Aktarımı başlatma ile ilişkili görev.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader">
+      <summary>Represents an asynchronous stream reader.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.#ctor(System.IO.Stream)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader" /> class. </summary>
+      <param name="stream">The stream to read asynchronously payloads from.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.BufferLock">
+      <summary>Gets the object that is used to lock the buffer.</summary>
+      <returns>The object that is used to lock the buffer.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Closed">
+      <summary>Gets or sets the method to invoke when the reader is closed while in the Processing state. </summary>
+      <returns>The method to invoke when the reader is closed while in the Processing state.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Data">
+      <summary>Gets or sets the method to invoke when there is a message to be received in the stream. </summary>
+      <returns>The method to invoke when there is a message to be received in the stream.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Opened">
+      <summary>Gets or sets the method to invoke when the stream is open. </summary>
+      <returns>The method to invoke when the stream is open.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Start">
+      <summary> Starts the reader. </summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport">
+      <summary>Buradaki içerik güncellenmeyecektir, lütfen buraya materyal eklemeyin.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="httpClient">Http isteği yapabilen istemci.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Client.Transports.IClientTransport})">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="httpClient">Http isteği yapabilen istemci.</param>
+      <param name="transports">Http taşımaları yapabilen istemci.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Dispose">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> sınıfının geçerli örneği tarafından kullanılan tüm kaynakları serbest bırakır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> sınıfı tarafından kullanılan yönetilmeyen kaynakları serbest bırakır ve yönetilen kaynakları isteğe bağlı olarak serbest bırakır.</summary>
+      <param name="disposing">Hem yönetilen hem de yönetilmeyen kaynakları serbest bırakmak için true; yalnızca yönetilmeyen kaynakları serbest bırakmak için false.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.GetNegotiateResponse(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>İstemci hizmetleri için taşıma bağlantısını kaybeder.</summary>
+      <param name="connection">Taşıma bağlantısı.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Name">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> öğesinin adını alır.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> öğesinin adını alır.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)">
+      <summary>Otomatik taşıma bağlantısını başlatır.</summary>
+      <returns>Başlatılacak otomatik taşıma bağlantısı.</returns>
+      <param name="connection">Taşıma bağlantısı.</param>
+      <param name="disconnectToken">Bağlantı kesme belirteci.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.SupportsKeepAlive">
+      <summary>Etkin taşımanın etkin tutulan bağlantıyı destekleyip desteklemediğini belirten bir değer alır.</summary>
+      <returns>Etkin taşıma etkin tutulan bağlantıyı destekliyorsa true, aksi takdirde false.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport">
+      <summary>Buradaki içerik güncellenmeyecektir, lütfen buraya materyal eklemeyin.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.AbortHandler"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Dispose">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport" /> sınıfının geçerli örneği tarafından kullanılan kaynakları serbest bırakır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport" /> sınıfı tarafından kullanılan yönetilmeyen kaynakları serbest bırakır ve bu nesneyle ilişkili yönetilen kaynakları isteğe bağlı olarak serbest bırakır.</summary>
+      <param name="disposing">Hem yönetilen hem de yönetilmeyen kaynaklar serbest bırakılacaksa true; yalnızca yönetilmeyen kaynaklar serbest bırakılacaksa false.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.GetReceiveQueryString(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.HttpClient"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>İstemci taşımasının bağlantısını kaybeder.</summary>
+      <param name="connection">İstemci bağlantısı.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Name"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.OnStart(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken,Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.SupportsKeepAlive">
+      <summary>İstemci taşımasının etkin tutulan bağlantıyı destekleyip desteklemediğini belirten bir değer alır.</summary>
+      <returns>İstemci taşıması etkin tutulan bağlantıyı destekliyorsa true, aksi takdirde false.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport">
+      <summary>Buradaki içerik güncellenmeyecektir, lütfen buraya materyal eklemeyin.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>İstemci taşımasının bağlantısını kaybeder.</summary>
+      <param name="connection">İstemci bağlantısı.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Name">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport" /> öğesinin adını alır.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport" /> öğesinin adı.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)">
+      <summary>İstemci taşıma bağlantısını başlatır.</summary>
+      <returns>Başlatılacak istemci taşıma bağlantısı.</returns>
+      <param name="connection">İstemci bağlantısı.</param>
+      <param name="disconnectToken">Bağlantı kesme belirteci.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.SupportsKeepAlive">
+      <summary>İstemci taşımasının etkin tutulan bağlantıyı destekleyip desteklemediğini belirten bir değer alır.</summary>
+      <returns>İstemci taşıması etkin tutulan bağlantıyı destekliyorsa true, aksi takdirde false.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport">
+      <summary>Buradaki içerik güncellenmeyecektir, lütfen buraya materyal eklemeyin.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport" /> sınıfının yeni bir örneğini başlatır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="httpClient">HTTP istemcisi.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.ErrorDelay">
+      <summary>Gecikme hatasını temsil eden süreyi alır veya ayarlar.</summary>
+      <returns>Gecikme hatasını temsil eden süre.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.OnStart(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken,Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.ReconnectDelay">
+      <summary>Taşımayı yeniden bağlama gecikmesini temsil eden süreyi alır veya ayarlar.</summary>
+      <returns>Taşımayı yeniden bağlama gecikmesini temsil eden süre.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.SupportsKeepAlive">
+      <summary> Taşımanın etkin tutulan bağlantıyı destekleyip desteklemediğini belirtir </summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler">
+      <summary>Represents a polling request handler.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler" /> class.</summary>
+      <param name="httpClient">The HTTP client to poll.</param>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnAbort">
+      <summary>Occurs when the current poll request was aborted, passing in the soon to be aborted request. </summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnAfterPoll">
+      <summary>Gets or sets a function that triggers before a new polling request is attempted.   Passes in an exception if the Poll errored, null otherwise. Expects the return as a task in order to allow modification of timing for subsequent polls.</summary>
+      <returns>A function that triggers before a new polling request is attempted.</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnError">
+      <summary>Occurs and passes the exception when the poll errors. </summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnMessage">
+      <summary> Sends the string based message to the callback. </summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnPolling">
+      <summary> Occurs when the polling request is in flight. </summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.PrepareRequest">
+      <summary> Allows modification of the IRequest parameter before using it in a poll.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.ResolveUrl">
+      <summary>Gets or sets a function used to generate the URL that is posted to for the poll. </summary>
+      <returns>A function used to generate the URL that is posted to for the poll.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.Start">
+      <summary> Starts the polling request handler. </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.Stop">
+      <summary> Fully stops the polling request handler. </summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport">
+      <summary>Buradaki içerik güncellenmeyecektir, lütfen buraya materyal eklemeyin.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport" /> sınıfının yeni bir örneğini başlatır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="httpClient">İstemci.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Sunucu bağlantısını kaybettiğinde oluşur.</summary>
+      <param name="connection">Bağlantı.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.OnStart(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken,Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.OpenConnection(Microsoft.AspNet.SignalR.Client.IConnection,System.Action{System.Exception})"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.ReconnectDelay">
+      <summary>Sunucunun bir bağlantı zaman aşımından sonra yeniden bağlanacağı süreyi belirtir.</summary>
+      <returns>Sunucunun bir bağlantı zaman aşımından sonra yeniden bağlanacağı süre.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.SupportsKeepAlive">
+      <summary>Taşımanın etkin tutulan bağlantıyı destekleyip desteklemediğini belirtir.</summary>
+      <returns>Taşıma etkin tutulan bağlantıyı destekliyorsa true, aksi takdirde false.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper">
+      <summary>Buradaki içerik güncellenmeyecektir, lütfen buraya materyal eklemeyin.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.AppendCustomQueryString(Microsoft.AspNet.SignalR.Client.IConnection,System.String)">
+      <summary>Özel sorgu dizesinde yoksa başına ‘?’ veya ‘&amp;’ karakteri ekler.</summary>
+      <returns>Değiştirilen özel sorgu dizesi.</returns>
+      <param name="connection">İstemci bağlantısı.</param>
+      <param name="baseUrl">Taban URL.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.GetNegotiationResponse(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.GetReceiveQueryString(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.ProcessResponse(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Boolean@,System.Boolean@)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.ProcessResponse(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Boolean@,System.Boolean@,System.Action)">
+      <summary>Yanıt iletisini işler.</summary>
+      <param name="connection">İstemci bağlantısı.</param>
+      <param name="response">İşlenecek yanıt iletisi.</param>
+      <param name="disconnected">Bu yöntem döndürüldüğünde, işlem bağlantısının kesilip kesilmediğini belirten bir değer içerir.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport">
+      <summary>Buradaki içerik güncellenmeyecektir, lütfen buraya materyal eklemeyin.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.#ctor"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Dispose">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport" /> sınıfının geçerli örneği tarafından kullanılan kaynakları serbest bırakır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport" /> sınıfı tarafından kullanılan yönetilmeyen kaynakları serbest bırakır ve bu nesneyle ilişkili yönetilen kaynakları isteğe bağlı olarak serbest bırakır.</summary>
+      <param name="disposing">Hem yönetilen hem de yönetilmeyen kaynaklar serbest bırakılacaksa true; yalnızca yönetilmeyen kaynaklar serbest bırakılacaksa false.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>İstemci taşımasının bağlantısını kaybeder.</summary>
+      <param name="connection">İstemci bağlantısı.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Name"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnClose(System.Boolean)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnError"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnMessage(System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnOpen"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.PerformConnect"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.ReconnectDelay"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.SupportsKeepAlive">
+      <summary>Taşımanın etkin tutulan bağlantıyı destekleyip desteklemediğini belirten bir değer alır veya ayarlar.</summary>
+      <returns>Taşıma etkin tutulan bağlantıyı destekliyorsa true, aksi takdirde false.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer">
+      <summary>Buradaki içerik güncellenmeyecektir, lütfen buraya materyal eklemeyin.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer" /> sınıfının yeni bir örneğini başlatır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.Add(System.ArraySegment{System.Byte})">
+      <summary>Öbeğe bir arabellek ekler.</summary>
+      <param name="buffer">Eklenecek arabellek.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.Add(System.Byte[],System.Int32)">
+      <summary>Belirtilen bir arabellek ekler.</summary>
+      <param name="buffer">Eklenecek arabellek.</param>
+      <param name="length">Arabelleğin uzunluğu.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.HasChunks">
+      <summary>Arabelleğin öbeğe sahip olup olmadığını belirten bir değer alır.</summary>
+      <returns>Arabellekte öbekler varsa true, aksi takdirde false.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.ReadLine">
+      <summary>Geçerli arabellekten bir karakter satırını okur ve verileri dize olarak döndürür.</summary>
+      <returns>Arabellekte sonraki satır.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader">
+      <summary>.NET için olay kaynağı uygulaması sağlar.Bu, belirtime uygun olmamasına karşın SignalR sunucusunu desteklemek için yeterlidir.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader.#ctor(Microsoft.AspNet.SignalR.Client.IConnection,System.IO.Stream)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader" /> sınıfının yeni bir örneğini başlatır. </summary>
+      <param name="connection">Bu olay kaynağı ile ilişkili bağlantı.</param>
+      <param name="stream">Olay kaynağı yüklerinin okunacağı akış.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader.Message"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType">
+      <summary>Sunucu tarafı olaylarıyla ilişkili olay türlerini numaralandırır.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType.Data">
+      <summary>Veri olayı türü.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType.Id">
+      <summary>Kimlik olayı türü.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent">
+      <summary>Sunucu tarafından gönderilen olay verilerini ayrıştırmak için bir statik yöntem sağlar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.#ctor(Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType,System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="type">Sunucu tarafından gönderilen olay türü.</param>
+      <param name="data">Sunucu tarafından gönderilen olay verileri.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.Data">
+      <summary>Sunucu tarafından gönderilen olay verilerini alır veya ayarlar.</summary>
+      <returns>Sunucu tarafından gönderilen olay verileri.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.EventType">
+      <summary>Sunucu tarafından gönderilen olay türünü alır veya ayarlar.</summary>
+      <returns>Sunucu tarafından gönderilen olay türü.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.ToString">
+      <summary>Bu nesnenin dize gösterimini döndürür.</summary>
+      <returns>Bu nesnenin dize gösterimi.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.TryParse(System.String,Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent@)">
+      <summary>Belirtilen verileri <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent" /> nesnesine ayrıştırır.</summary>
+      <returns>Belirtilen veriler geçerli bir sunucu taraflı olay ise true, değilse false.</returns>
+      <param name="line">Ayrıştırılması denenecek veriler.</param>
+      <param name="sseEvent">Bu yöntem döndürüldüğünde, sonuç SseEvent nesnesini içerir.</param>
+    </member>
+  </members>
+</doc>

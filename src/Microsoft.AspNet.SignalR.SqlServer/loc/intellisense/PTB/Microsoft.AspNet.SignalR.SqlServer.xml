@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.SqlServer</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseSqlServer(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.SqlScaleoutConfiguration)">
+      <summary>Usa o servidor SQL como backplane de mensagem para expandir a implementação do barramento de mensagem.</summary>
+      <returns>O resolvedor de dependência.</returns>
+      <param name="resolver">O resolvedor de dependência.</param>
+      <param name="configuration">O servidor SQL para expandir a configuração.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseSqlServer(Microsoft.AspNet.SignalR.IDependencyResolver,System.String)">
+      <summary>Usa o servidor SQL como backplane de mensagem para expandir a implementação do barramento de mensagem.</summary>
+      <returns>O resolvedor de dependência.</returns>
+      <param name="resolver">O resolvedor de dependência.</param>
+      <param name="connectionString">A cadeia de caracteres de conexão.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration">
+      <summary> Configurações para a implementação do barramento de mensagem de expansão do SQL Server. </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.#ctor(System.String)">
+      <summary>Inicia uma nova instância da classe <see cref="T:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration" />.</summary>
+      <param name="connectionString">A cadeia de caracteres de conexão do SQL Server a ser usada.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.ConnectionString">
+      <summary>Obtém ou define a cadeia de caracteres de conexão do SQL Server a ser usada. </summary>
+      <returns>A cadeia de caracteres de conexão do SQL Server a ser usada.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.TableCount">
+      <summary>Obtém ou define o número de tabelas no qual armazenar mensagens.O uso de mais tabelas reduz a contenção de bloqueio e pode aumentar a taxa de transferência.Isso deve ser consistente entre todos os nós da web farm.O padrão é 1.</summary>
+      <returns>O número de tabelas no qual armazenar mensagens.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior">
+      <summary>Define o comportamento do comando SQL.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.AddSqlDependency(System.Data.IDbCommand,System.Action{System.Data.SqlClient.SqlNotificationEventArgs})">
+      <summary>Cria uma dependência SQL para o comando SQL especificado.</summary>
+      <param name="command">O comando SQL.</param>
+      <param name="callback">O método que é notificado para notificações de dependência de alteração.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.StartSqlDependencyListener">
+      <summary>Inicia o ouvinte da notificação de dependência SQL.</summary>
+      <returns>verdadeiro se o ouvinte da notificação foi iniciado; caso contrário, falso. </returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.UpdateLoopRetryDelays">
+      <summary>Obtém a lista que especifica o intervalo de tempo entre as repetições e a contagem de repetições.</summary>
+      <returns>A lista que especifica o intervalo de tempo entre as repetições e a contagem de repetições.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory">
+      <summary>Representa a fábrica associada ao provedor de banco de dados.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory.CreateConnection">
+      <summary>Cria uma conexão para o fornecedor de banco de dados.</summary>
+      <returns>A conexão criada.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory.CreateParameter">
+      <summary>Cria um parâmetro associado ao provedor.</summary>
+      <returns>O parâmetro criado.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus">
+      <summary>Usa tabelas do SQL Server para aplicativos escaláveis do SignalR nos farms da Web.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.SqlScaleoutConfiguration)">
+      <summary> Cria uma nova instância da classe SqlMessageBus. </summary>
+      <param name="resolver">O resolvedor a ser usado.</param>
+      <param name="configuration">As opções de configuração escaláveis do SQL.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.Dispose(System.Boolean)">
+      <summary>Libera os recursos não gerenciados usados pela classe de <see cref="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus" /> e, opcionalmente, libera os recursos gerenciados.</summary>
+      <param name="disposing">verdadeiro para liberar os recursos gerenciados e os não gerenciados; falso para liberar apenas os recursos não gerenciados.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})"></member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.StreamCount"></member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException">
+      <summary>A exceção que é lançada durante a inicialização ou a operação de recebimento de Bus de Mensagem SQL com falha.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException.#ctor(System.String)">
+      <summary>Inicia uma nova instância da classe <see cref="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException" />.</summary>
+      <param name="message">A mensagem de erro que descreve a exceção.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlPayload">
+      <summary>Representa a carga de SQL.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlPayload.FromBytes(System.Data.IDataRecord)">
+      <summary>Apresenta uma mensagem de expansão dos registros de dados.</summary>
+      <returns>A mensagem de expansão apresentada.</returns>
+      <param name="record">O objeto de registro de dados.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlPayload.ToBytes(System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>Apresenta uma lista de mensagens como um byte.</summary>
+      <returns>As mensagens apresentadas como bytes.</returns>
+      <param name="messages">A lista de mensagens.</param>
+    </member>
+  </members>
+</doc>

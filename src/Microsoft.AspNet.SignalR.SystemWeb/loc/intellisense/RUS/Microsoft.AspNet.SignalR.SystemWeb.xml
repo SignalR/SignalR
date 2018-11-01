@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.SystemWeb</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.RequestExtensions.GetHttpContext(Microsoft.AspNet.SignalR.IRequest)">
+      <summary>Получает HttpContextBase из среды.</summary>
+      <returns>
+        <see cref="T:System.Web.HttpContextBase" /> из среды.</returns>
+      <param name="request">HTTP-запрос.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator">
+      <summary>Представляет диспетчера построения для локатора сборки.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.#ctor">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.GetAssemblies">
+      <summary>Возвращает список сборок, связанных с менеджером построений.</summary>
+      <returns>Список сборок, связанных с менеджером построений.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData">
+      <summary>Представляет защищенные данные, связанные с ключом компьютера.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.#ctor">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Protect(System.String,System.String)">
+      <summary>Защищает указанные данные.</summary>
+      <returns>Защищенные данные.</returns>
+      <param name="data">Защищаемые данные.</param>
+      <param name="purpose">Цель защиты.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Unprotect(System.String,System.String)">
+      <summary>Снимает защиту с защищенных данных.</summary>
+      <returns>Незащищенные данные.</returns>
+      <param name="protectedValue">Защищенное значение данных.</param>
+      <param name="purpose">Причина снятия защиты.</param>
+    </member>
+    <member name="T:System.Web.Routing.SignalRRouteExtensions">
+      <summary>Предоставляет расширения маршрутизации для SignalR.</summary>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String)">
+      <summary>Сопоставляет <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> с используемым по умолчанию сопоставителем зависимостей и указанный путь.</summary>
+      <returns>Зарегистрированный маршрут.</returns>
+      <param name="routes">Таблица маршрутов.</param>
+      <param name="name">Имя маршрута.</param>
+      <param name="url">Путь маршрута.</param>
+      <typeparam name="T">Тип <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />.</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>Сопоставляет <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> с используемым по умолчанию сопоставителем зависимостей и указанный путь.</summary>
+      <returns>Зарегистрированный маршрут.</returns>
+      <param name="routes">Таблица маршрутов.</param>
+      <param name="name">Имя маршрута.</param>
+      <param name="url">Путь маршрута.</param>
+      <param name="configuration">Параметры конфигурации.</param>
+      <typeparam name="T">Тип <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />.</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection(System.Web.Routing.RouteCollection,System.String,System.String,System.Type,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>Сопоставляет <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> с используемым по умолчанию сопоставителем зависимостей и указанный путь.</summary>
+      <returns>Зарегистрированный маршрут.</returns>
+      <param name="routes">Таблица маршрутов.</param>
+      <param name="name">Имя маршрута.</param>
+      <param name="url">Путь маршрута.</param>
+      <param name="type">Тип <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />.</param>
+      <param name="configuration">Параметры конфигурации.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection)">
+      <summary>Инициализирует маршрут концентратора по умолчанию (/signalr).</summary>
+      <returns>Зарегистрированный маршрут.</returns>
+      <param name="routes">Таблица маршрутов.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>Инициализирует маршрут концентратора по умолчанию (/signalr).</summary>
+      <returns>Зарегистрированный маршрут.</returns>
+      <param name="routes">Таблица маршрутов.</param>
+      <param name="configuration">Параметры конфигурации.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,System.String,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>Инициализирует маршрут концентратора по умолчанию (/signalr).</summary>
+      <returns>Зарегистрированный маршрут.</returns>
+      <param name="routes">Таблица маршрутов.</param>
+      <param name="path">Путь маршрута.</param>
+      <param name="configuration">Параметры конфигурации.</param>
+    </member>
+  </members>
+</doc>

@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.ServiceBus</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseServiceBus(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration)">
+      <summary>Utiliser le bus des services comme infrastructure d'intégration des messages pour faire monter en charge l'implémentation du bus de messages.</summary>
+      <returns>Programme de résolution des dépendances.</returns>
+      <param name="resolver">Programme de résolution des dépendances.</param>
+      <param name="configuration">Bus des services pour la configuration de la montée en charge.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseServiceBus(Microsoft.AspNet.SignalR.IDependencyResolver,System.String,System.String)">
+      <summary>Utiliser le bus des services comme infrastructure d'intégration des messages pour faire monter en charge l'implémentation du bus de messages.</summary>
+      <returns>Programme de résolution des dépendances.</returns>
+      <param name="resolver">Programme de résolution des dépendances.</param>
+      <param name="connectionString">Chaîne de connexion.</param>
+      <param name="topicPrefix">Préfixe de la rubrique.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration">
+      <summary>Provides settings for the Service Bus scale-out message bus implementation.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.#ctor(System.String,System.String)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration" /> class.</summary>
+      <param name="connectionString">The connection string.</param>
+      <param name="topicPrefix">The topic prefix.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.ConnectionString">
+      <summary>Gets or sets the Service Bus connection string to use.</summary>
+      <returns>The Service Bus connection string to use.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.TimeToLive">
+      <summary>Gets or sets the message’s time to live value. </summary>
+      <returns>The message’s time to live value.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.TopicCount">
+      <summary>Gets or sets the number of topics to send messages over. Defaults to 1. </summary>
+      <returns>The number of topics to send messages over.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.TopicPrefix">
+      <summary>Gets or sets the topic prefix to use. </summary>
+      <returns>The topic prefix to use.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessage">
+      <summary>Fournit les méthodes de transformation des messages SignalR.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessage.FromBrokeredMessage(Microsoft.ServiceBus.Messaging.BrokeredMessage)">
+      <summary>Crée une nouvelle instance de la classe <see cref="T:Microsoft.AspNet.SignalR.Messaging.ScaleoutMessage" /> à partir du message découplé spécifié.</summary>
+      <returns>Instance de <see cref="T:Microsoft.AspNet.SignalR.Messaging.ScaleoutMessage" /> créée.</returns>
+      <param name="brokeredMessage">Message découplé.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessage.ToStream(System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>Crée le flux sous-jacent pour les messages SignalR.</summary>
+      <returns>Flux sous-jacent pour les messages SignalR.</returns>
+      <param name="messages">Message SignalR.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus">
+      <summary>Utilise les rubriques Windows Azure Service Bus pour faire monter en charge les application SignalR dans les batterie de serveurs Web.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration)">
+      <summary>Initialise une nouvelle instance de la classe <see cref="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus" />.</summary>
+      <param name="resolver">Programme de résolution des dépendances.</param>
+      <param name="configuration">Configuration de la montée en charge du bus de messages Service Bus.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.Dispose(System.Boolean)">
+      <summary>Libère les ressources non managées utilisées par la classe <see cref="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus" /> et libère éventuellement les ressources managées.</summary>
+      <param name="disposing">true pour libérer à la fois les ressources managées et non managées ; false pour ne libérer que les ressources non managées.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>Envoie le flux de message via Windows Azure Service Bus.</summary>
+      <returns>Flux de message à envoyer.</returns>
+      <param name="streamIndex">Index de flux.</param>
+      <param name="messages">Collection du message.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.StreamCount">
+      <summary>Obtient le nombre de flux de données multimédia dans le bus des services.</summary>
+      <returns>Nombre de flux de données multimédia dans le bus des services.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBus.Infrastructure.ServiceBusTaskExtensions">
+      <summary>Représente des extensions de tâche de bus des services.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.Infrastructure.ServiceBusTaskExtensions.SendAsync(Microsoft.ServiceBus.Messaging.TopicClient,Microsoft.ServiceBus.Messaging.BrokeredMessage)">
+      <summary>Envoie de manière asynchrone la tâche à partir du client spécifié.</summary>
+      <returns>La tâche envoyée.</returns>
+      <param name="client">Client.</param>
+      <param name="message">Message.</param>
+    </member>
+  </members>
+</doc>

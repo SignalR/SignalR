@@ -1,0 +1,1583 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.Client</name>
+  </assembly>
+  <members>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Connection">
+      <summary>SignalR サービス用のクライアント接続を提供します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.#ctor(System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="url">接続先の URL。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="url">接続先の URL。</param>
+      <param name="queryString">サーバーに渡すクエリ文字列データ。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.#ctor(System.String,System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="url">接続先の URL。</param>
+      <param name="queryString">サーバーに渡すクエリ文字列データ。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.AddClientCertificate(System.Security.Cryptography.X509Certificates.X509Certificate)">
+      <summary>要求にクライアント証明書を追加します。</summary>
+      <param name="certificate">クライアント証明書。</param>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Closed">
+      <summary>接続が停止すると発生します。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.ConnectionId">
+      <summary>接続の接続 ID を取得または設定します。</summary>
+      <returns>接続の接続 ID。</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.ConnectionSlow">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> が間もなくタイムアウトするときに発生します。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.ConnectionToken">
+      <summary>接続の接続トークンを取得または設定します。</summary>
+      <returns>接続の接続トークン。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.CookieContainer">
+      <summary>接続に関連付けられた Cookie を取得または設定します。</summary>
+      <returns>接続に関連付けられた Cookie。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Credentials">
+      <summary>接続の認証情報を取得または設定します。</summary>
+      <returns>接続の認証情報。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Dispose">
+      <summary>接続を停止します。接続の停止を呼び出すのと同じです。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Dispose(System.Boolean)">
+      <summary>接続を停止します。接続の停止を呼び出すのと同じです。</summary>
+      <param name="disposing">廃棄を実行するには true、何も実行しない場合は false に設定します。</param>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Error">
+      <summary>Connection でエラーが検出されると発生します。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.GroupsToken">
+      <summary>接続のグループ トークンを取得または設定します。</summary>
+      <returns>接続のグループ トークン。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Headers">
+      <summary>要求のヘッダーを取得または設定します。</summary>
+      <returns>要求のヘッダー。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Items">
+      <summary>接続の状態を格納するためのディクショナリを取得します。</summary>
+      <returns>接続の状態を格納するためのディクショナリ。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.JsonSerializer">
+      <summary>接続に使用されるシリアライザーを取得または設定します。</summary>
+      <returns>接続に使用されるシリアライザー。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.MessageId">
+      <summary>接続の最後のメッセージの ID を取得または設定します。</summary>
+      <returns>接続の最後のメッセージ ID。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#Certificates">
+      <summary>X509Certificate オブジェクトを格納するコレクションを取得します。</summary>
+      <returns>X509Certificate オブジェクトを格納するコレクション。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#ChangeState(Microsoft.AspNet.SignalR.Client.ConnectionState,Microsoft.AspNet.SignalR.Client.ConnectionState)">
+      <summary>接続によって状態が変わると呼び出されます。</summary>
+      <returns>接続によって状態が変わった場合は true。それ以外の場合は false。</returns>
+      <param name="oldState">以前の状態。</param>
+      <param name="newState">新しい状態。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#Disconnect">
+      <summary>サーバーに中止メッセージを送信せずに <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> を停止します。この関数は、サーバーから切断メッセージを受信した後で呼び出されます。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#KeepAliveData">
+      <summary>多様なキープ アライブ タイムアウト値を格納するオブジェクトを取得または設定します。</summary>
+      <returns>多様なキープ アライブ タイムアウト値を格納するオブジェクト。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnConnectionSlow">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> が間もなくタイムアウトするときに呼び出されます。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnError(System.Exception)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> でエラーが発生するときに呼び出されます。</summary>
+      <param name="error">接続エラー。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnReceived(Newtonsoft.Json.Linq.JToken)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> がサーバーからデータを受信すると呼び出されます。</summary>
+      <param name="message">受信したメッセージ。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnReconnected">
+      <summary>タイムアウトの後で <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> が正常に再接続すると呼び出されます。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#PrepareRequest(Microsoft.AspNet.SignalR.Client.Http.IRequest)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> のすべての要求を準備します。</summary>
+      <param name="request">要求。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#UpdateLastKeepAlive">
+      <summary>LastKeepAlive を現在の時刻に設定します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnClosed"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnMessageReceived(Newtonsoft.Json.Linq.JToken)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> がサーバーからメッセージを受信すると呼び出されます。</summary>
+      <param name="message">受信したメッセージ。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnReconnecting"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnSending">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> がアラートまたはリマインダー通知を送信すると呼び出されます。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> がアラートまたはリマインダー通知を送信します。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Protocol">
+      <summary>接続のプロトコルを取得または設定します。</summary>
+      <returns>接続のプロトコル。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Proxy">
+      <summary>接続のプロキシ情報を取得または設定します。</summary>
+      <returns>接続のプロキシ情報。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.QueryString">
+      <summary>コンストラクターで指定されているクエリ文字列を取得します。</summary>
+      <returns>コンストラクターで指定されているクエリ文字列。</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Received">
+      <summary>Connection がサーバーからデータを受信すると発生します。</summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Reconnected">
+      <summary>タイムアウトの後で Connection が再接続に成功すると発生します。</summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Reconnecting">
+      <summary>エラー後 Connection が再接続を開始すると発生します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Send(System.Object)">
+      <summary>接続上で JSON に非同期にシリアル化されるオブジェクトを送信します。</summary>
+      <returns>データが送信されたことを表すタスク。</returns>
+      <param name="value">シリアル化する値。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Send(System.String)">
+      <summary>接続上でデータを非同期に送信します。</summary>
+      <returns>データが送信されたことを表すタスク。</returns>
+      <param name="data">送信するデータ。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Start">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> を開始します。</summary>
+      <returns>接続が開始されたことを表すタスク。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Start(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> を開始します。</summary>
+      <returns>接続が開始されたことを表すタスク。</returns>
+      <param name="httpClient">HTTP クライアント接続。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Start(Microsoft.AspNet.SignalR.Client.Transports.IClientTransport)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> を開始します。</summary>
+      <returns>接続が開始されたことを表すタスク。</returns>
+      <param name="transport">使用するトランスポート。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.State">
+      <summary>接続の現在の ConnectionState を取得します。</summary>
+      <returns>接続の現在の ConnectionState。</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.StateChanged">
+      <summary>Connection の状態が変化すると発生します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Stop">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> を停止し、サーバーに中止メッセージを送信します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Stop(System.TimeSpan)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> を停止し、サーバーに中止メッセージを送信します。&lt;param name="timeout"&gt;タイムアウト&lt;/param&gt;。</summary>
+      <param name="timeout">接続タイムアウト</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Trace(Microsoft.AspNet.SignalR.Client.TraceLevels,System.String,System.Object[])">
+      <summary>パラメーターに指定された接続メソッドをトレースします。</summary>
+      <param name="level">トレース レベル。</param>
+      <param name="format">書式を指定します。</param>
+      <param name="args">引数。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.TraceLevel">
+      <summary>接続のトレース レベルを取得または設定します。</summary>
+      <returns>接続のトレース レベル。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.TraceWriter">
+      <summary>接続をトレースするテキスト ライターを取得または設定します。</summary>
+      <returns>接続をトレースするテキスト ライター。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Transport">
+      <summary>接続のクライアント トランスポートを取得または設定します。</summary>
+      <returns>接続のクライアント トランスポート。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.TransportConnectTimeout">
+      <summary>トランスポート接続がタイムアウトになるまでの時間の長さを表す TimeSpan を取得または設定します。</summary>
+      <returns>トランスポート接続がタイムアウトになるまでの時間の長さを表す TimeSpan。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Url">
+      <summary>接続の URL を取得または設定します。</summary>
+      <returns>接続の URL。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ConnectionExtensions">
+      <summary>ここの内容は更新されません。ここに素材を追加しないでください。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.AsObservable(Microsoft.AspNet.SignalR.Client.Connection)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.AsObservable``1(Microsoft.AspNet.SignalR.Client.Connection)">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.AsObservable``1(Microsoft.AspNet.SignalR.Client.Connection,System.Func{System.String,``0})">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.EnsureReconnecting(Microsoft.AspNet.SignalR.Client.IConnection)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.GetValue``1(Microsoft.AspNet.SignalR.Client.IConnection,System.String)">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.JsonDeserializeObject``1(Microsoft.AspNet.SignalR.Client.IConnection,System.String)">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.JsonSerializeObject(Microsoft.AspNet.SignalR.Client.IConnection,System.Object)"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ConnectionState">
+      <summary>SignalR 接続の接続状態を表します。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Connected">
+      <summary>接続状態は接続済みです。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Connecting">
+      <summary>接続状態は接続中です。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Disconnected">
+      <summary>接続状態は切断済みです。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Reconnecting">
+      <summary>接続状態は再接続中です。</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ErrorExtensions">
+      <summary>エラー認識を単純化するための拡張メソッドを提供します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ErrorExtensions.GetError(System.Exception)">
+      <summary> 複雑な例外をラップ解除することでエラーの認識を単純化します。</summary>
+      <returns>SignalRError の形式でラップ解除された例外。</returns>
+      <param name="ex">スローされた例外。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HeaderDictionary">
+      <summary>キーのセットから SignalR クライアント値のセットへのマッピングを表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.#ctor(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeaderDictionary" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="connection">クライアント接続。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Add(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+      <summary>指定した項目をディクショナリに追加します。</summary>
+      <param name="item">追加する項目。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Add(System.String,System.String)">
+      <summary>指定したキーと値のペアをディクショナリに追加します。</summary>
+      <param name="key">追加するキー。</param>
+      <param name="value">追加する値。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Clear">
+      <summary>ディクショナリの内容を消去します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Contains(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+      <summary>項目がディクショナリに含まれるかどうかを指定します。</summary>
+      <returns>項目がディクショナリに含まれる場合は true。それ以外の場合は false。</returns>
+      <param name="item">検索する項目。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.ContainsKey(System.String)">
+      <summary>指定したキーがディクショナリに含まれるかどうかを指定します。</summary>
+      <returns>指定したキーがディクショナリに含まれる場合は true。それ以外の場合は false。</returns>
+      <param name="key">検索するキー。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.CopyTo(System.Collections.Generic.KeyValuePair{System.String,System.String}[],System.Int32)">
+      <summary>指定された配列インデックスから始まるキーと値のペア要素を既存の 1 次元配列にコピーします。</summary>
+      <param name="array">ディクショナリからコピーされた要素のコピー先である 1 次元の配列。</param>
+      <param name="arrayIndex">コピーの開始位置となる、配列の 0 から始まるインデックス。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Count">
+      <summary>ディクショナリに含まれるキーと値のペア数を取得します。</summary>
+      <returns>ディクショナリに含まれるキーと値のペア数。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.GetEnumerator">
+      <summary>ディクショナリを反復処理する列挙子を返します。</summary>
+      <returns>ディクショナリを反復処理する列挙子。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.IsReadOnly">
+      <summary>ディクショナリが読み取り専用かどうかを取得します。</summary>
+      <returns>ディクショナリが読み取り専用である場合は true。それ以外の場合は false。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Item(System.String)">
+      <summary>指定されたキーに関連付けられた値を取得または設定します。</summary>
+      <returns>指定されたキーに関連付けられている値。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Keys">
+      <summary>ディクショナリ内のキーのコレクションを取得します。</summary>
+      <returns>ディクショナリ内のキーのコレクション。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Remove(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+      <summary>特定のキーと値のペアの項目をディクショナリから削除します。</summary>
+      <returns>削除された項目を含むディクショナリ。</returns>
+      <param name="item">削除する項目。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Remove(System.String)">
+      <summary>特定のキーをディクショナリから削除します。</summary>
+      <returns>削除されたキーを含むディクショナリ。</returns>
+      <param name="key">削除するキー。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.System#Collections#IEnumerable#GetEnumerator">
+      <summary>コレクションを反復処理する列挙子を返します。</summary>
+      <returns>コレクションを反復処理する列挙子。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.TryGetValue(System.String,System.String@)">
+      <summary>指定されたキーに関連付けられている値を取得します。</summary>
+      <returns>指定されたキーを持つ要素がディクショナリに格納されている場合は true。それ以外の場合は false。</returns>
+      <param name="key">取得する値のキー。</param>
+      <param name="value">このメソッドから制御が戻るとき、指定されたキーが見つかった場合はそのキーに関連付けられている値、それ以外の場合は値パラメーターの型に対する既定値を含みます。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Values">
+      <summary>ディクショナリ内の値のコレクションを取得します。</summary>
+      <returns>ディクショナリ内の値のコレクション。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor">
+      <summary>サーバーからの応答を監視し、応答が成功した場合にハートビートを継続する HeartbeatMonitor を表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.#ctor(Microsoft.AspNet.SignalR.Client.IConnection,System.Object)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="connection">インターフェイス接続。</param>
+      <param name="connectionStateLock">接続状態のロック。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Beat(System.TimeSpan)">
+      <summary>ユーザーに通知するか、再接続を試行するかを決定するロジック。</summary>
+      <param name="timeElapsed">経過時間。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Dispose">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> クラスの現在のインスタンスによって使用されているすべてのリソースを解放します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> クラスによって使用されているアンマネージ リソースを解放し、オプションでマネージ リソースも解放します。</summary>
+      <param name="disposing">マネージ リソースとアンマネージ リソースの両方を解放する場合は true。アンマネージ リソースだけを解放する場合は false。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.HasBeenWarned">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> が警告を受けたかどうかを示す値を取得または設定します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> が警告を受けた場合は true。それ以外の場合は false。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Start">
+      <summary>LastKeepAlive を更新し、タイマーを開始します。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.TimedOut">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> でタイムアウトが発生したかどうかを示す値を取得または設定します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> でタイムアウトが発生した場合は true。それ以外の場合は false。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HttpClientException">
+      <summary>HTTP クライアントが接続しているときにスローされる例外。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor(System.Net.Http.HttpResponseMessage)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="responseMessage">応答メッセージ。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor(System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="message">エラー メッセージ。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor(System.String,System.Exception)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="message">エラー メッセージ。</param>
+      <param name="ex">例外。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HttpClientException.Response">
+      <summary>このクライアントに関連付けられた応答を取得または設定します。</summary>
+      <returns>このクライアントに関連付けられた応答。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HubConnection">
+      <summary>ハブと対話するための <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="url">接続先の URL。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="url">接続先の URL。</param>
+      <param name="useDefaultUrl">既定の "/signalr" パスを指定された URL の最後に付ける必要があるかどうかを示します。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="url">接続先の URL。</param>
+      <param name="queryString">サーバーに渡すクエリ文字列データ。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.String},System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="url">接続先の URL。</param>
+      <param name="queryString">サーバーに渡すクエリ文字列データ。</param>
+      <param name="useDefaultUrl">既定の "/signalr" パスを指定された URL の最後に付ける必要があるかどうかを示します。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="url">接続先の URL。</param>
+      <param name="queryString">サーバーに渡すクエリ文字列データ。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.String,System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="url">接続先の URL。</param>
+      <param name="queryString">サーバーに渡すクエリ文字列データ。</param>
+      <param name="useDefaultUrl">既定の "/signalr" パスを指定された URL の最後に付ける必要があるかどうかを示します。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.CreateHubProxy(System.String)">
+      <summary>指定された名前でハブの <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /> を作成します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</returns>
+      <param name="hubName">ハブの名前。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.Microsoft#AspNet#SignalR#Client#Hubs#IHubConnection#RegisterCallback(System.Action{Microsoft.AspNet.SignalR.Client.Hubs.HubResult})"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.Microsoft#AspNet#SignalR#Client#Hubs#IHubConnection#RemoveCallback(System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnClosed"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnMessageReceived(Newtonsoft.Json.Linq.JToken)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnReconnecting"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnSending"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HubException"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubException.#ctor"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubException.#ctor(System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubException.#ctor(System.String,System.Object)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HubException.ErrorData"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HubProxyExtensions">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /> に対する拡張。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.GetValue``1(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String)">
+      <summary>状態変数の値を取得します。</summary>
+      <returns>状態変数の値。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="name">状態変数の名前。</param>
+      <typeparam name="T">状態変数の型。</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.Observe(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String)">
+      <summary>
+        <see cref="T:IObservable{T}" /> を持つ <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /> イベントを登録します。</summary>
+      <returns>
+        <see cref="T:IObservable{object[]}" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">イベントの名前。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action)">
+      <summary>指定された名前とコールバックを持つイベントに登録します。</summary>
+      <returns>このサブスクリプションを表す <see cref="T:System.IDisposable" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">イベントの名前。</param>
+      <param name="onData">コールバック。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{System.Object})">
+      <summary>指定された名前とコールバックを持つイベントに登録します。</summary>
+      <returns>このサブスクリプションを表す <see cref="T:System.IDisposable" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">イベントの名前。</param>
+      <param name="onData">コールバック。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``1(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0})">
+      <summary>指定された名前とコールバックを持つイベントに登録します。</summary>
+      <returns>このサブスクリプションを表す <see cref="T:System.IDisposable" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">イベントの名前。</param>
+      <param name="onData">コールバック。</param>
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``2(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1})">
+      <summary>指定された名前とコールバックを持つイベントに登録します。</summary>
+      <returns>このサブスクリプションを表す <see cref="T:System.IDisposable" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">イベントの名前。</param>
+      <param name="onData">コールバック。</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``3(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2})">
+      <summary>指定された名前とコールバックを持つイベントに登録します。</summary>
+      <returns>このサブスクリプションを表す <see cref="T:System.IDisposable" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">イベントの名前。</param>
+      <param name="onData">コールバック。</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``4(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3})">
+      <summary>指定された名前とコールバックを持つイベントに登録します。</summary>
+      <returns>このサブスクリプションを表す <see cref="T:System.IDisposable" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">イベントの名前。</param>
+      <param name="onData">コールバック。</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``5(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3,``4})">
+      <summary>指定された名前とコールバックを持つイベントに登録します。</summary>
+      <returns>このサブスクリプションを表す <see cref="T:System.IDisposable" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">イベントの名前。</param>
+      <param name="onData">コールバック。</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+      <typeparam name="T5"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``6(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3,``4,``5})">
+      <summary>指定された名前とコールバックを持つイベントに登録します。</summary>
+      <returns>このサブスクリプションを表す <see cref="T:System.IDisposable" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">イベントの名前。</param>
+      <param name="onData">コールバック。</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+      <typeparam name="T5"></typeparam>
+      <typeparam name="T6"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``7(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3,``4,``5,``6})">
+      <summary>指定された名前とコールバックを持つイベントに登録します。</summary>
+      <returns>このサブスクリプションを表す <see cref="T:System.IDisposable" />。</returns>
+      <param name="proxy">
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />。</param>
+      <param name="eventName">イベントの名前。</param>
+      <param name="onData">コールバック。</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+      <typeparam name="T5"></typeparam>
+      <typeparam name="T6"></typeparam>
+      <typeparam name="T7"></typeparam>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.IConnection">
+      <summary>ここの内容は更新されません。ここに素材を追加しないでください。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Certificates">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> の X509CertificateCollection の証明書を取得します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> の X509CertificateCollection の証明書。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.ChangeState(Microsoft.AspNet.SignalR.Client.ConnectionState,Microsoft.AspNet.SignalR.Client.ConnectionState)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> によって状態が変わると呼び出されます。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> によって状態が変わった場合は true。それ以外の場合は false。</returns>
+      <param name="oldState">以前の状態。</param>
+      <param name="newState">新しい状態。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.ConnectionId">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> の接続 ID を取得します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> の接続 ID。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.ConnectionToken">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> の接続トークンを取得または設定します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> の接続トークン。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.CookieContainer">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> に関連付けられた Cookie を取得または設定します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> に関連付けられた Cookie。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Credentials">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> の認証情報を取得または設定します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> の認証情報。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Disconnect">
+      <summary>サーバーに中止メッセージを送信せずに <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> を停止します。この関数は、サーバーから切断メッセージを受信した後で呼び出されます。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.GroupsToken">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> のグループ トークンを取得または設定します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> のグループ トークン。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Headers">
+      <summary>要求のヘッダーを取得します。</summary>
+      <returns>要求のヘッダー。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Items">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> の状態を格納するためのディクショナリを取得します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> の状態を格納するためのディクショナリ。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.JsonSerializer">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> によって使用されるシリアライザーを取得します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> によって使用されるシリアライザー。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.KeepAliveData">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> のデータのキープ アライブを実行するオブジェクトを取得または設定します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> のデータのキープ アライブを実行するオブジェクト。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.MessageId">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> の最後のメッセージ ID を取得または設定します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> の最後のメッセージ ID。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnConnectionSlow">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> が間もなくタイムアウトするときに呼び出されます。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnError(System.Exception)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> でエラーが発生するときに呼び出されます。</summary>
+      <param name="ex">例外エラー。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnReceived(Newtonsoft.Json.Linq.JToken)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> がサーバーからデータを受信すると呼び出されます。</summary>
+      <param name="data">受信したデータ。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnReconnected">
+      <summary>タイムアウトの後で <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> が正常に再接続すると呼び出されます。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnReconnecting">
+      <summary>エラー後 <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> が再接続を開始すると呼び出されます。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.PrepareRequest(Microsoft.AspNet.SignalR.Client.Http.IRequest)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> のすべての要求を準備します。</summary>
+      <param name="request">要求。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Protocol">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> のプロトコルを取得または設定します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> のプロトコル。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Proxy">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> のプロキシ情報を取得または設定します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> のプロキシ情報。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.QueryString">
+      <summary>コンストラクターで指定されているクエリ文字列を取得します。</summary>
+      <returns>コンストラクターで指定されているクエリ文字列。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Send(System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> でデータを非同期に送信します。</summary>
+      <returns>データが送信されたことを表すタスク。</returns>
+      <param name="data">送信するデータ。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.State">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> の現在の ConnectionState を取得します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> の現在の ConnectionState。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Stop">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> を停止し、サーバーに中止メッセージを送信します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Trace(Microsoft.AspNet.SignalR.Client.TraceLevels,System.String,System.Object[])">
+      <summary>パラメーターによって指定される <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> メソッドをトレースします。</summary>
+      <param name="level">トレース レベル。</param>
+      <param name="format">書式を指定します。</param>
+      <param name="args">引数。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Transport">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> のクライアント トランスポートを取得します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> のクライアント トランスポート。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.TransportConnectTimeout">
+      <summary>トランスポート接続がタイムアウトになるまでの時間の長さを表す TimeSpan を取得または設定します。</summary>
+      <returns>トランスポート接続がタイムアウトになるまでの時間の長さを表す TimeSpan。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.UpdateLastKeepAlive">
+      <summary>多様なキープ アライブ タイムアウト値を格納するオブジェクトを更新します。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Url">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> の URL を取得します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> の URL。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.IHubProxy">
+      <summary>サーバー側ハブのクライアント側プロキシ。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IHubProxy.Invoke``1(System.String,System.Object[])">
+      <summary>サーバー側のハブに対してメソッドを非同期に実行します。</summary>
+      <returns>呼び出しから返ったときを表すタスク。</returns>
+      <param name="method">メソッドの名前。</param>
+      <param name="args">引数。</param>
+      <typeparam name="T">ハブから返される結果の型。</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IHubProxy.Invoke(System.String,System.Object[])">
+      <summary>サーバー側のハブに対してメソッドを非同期に実行します。</summary>
+      <returns>呼び出しから返ったときを表すタスク。</returns>
+      <param name="method">メソッドの名前。</param>
+      <param name="args">引数。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IHubProxy.Item(System.String)">
+      <summary>ハブの状態を取得または設定します。</summary>
+      <returns>フィールドの値。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IHubProxy.JsonSerializer">
+      <summary>接続に使用されるシリアライザーを取得します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IHubProxy.Subscribe(System.String)">
+      <summary>ハブのイベントを登録します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.Subscription" />。</returns>
+      <param name="eventName">イベントの名前。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.KeepAliveData">
+      <summary>すべてのキープ アライブ プロパティを格納するクラスを表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.KeepAliveData.#ctor(System.DateTime,System.TimeSpan,System.TimeSpan,System.TimeSpan)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="lastKeepAlive">最後のキープ アライブ プロパティ。</param>
+      <param name="timeout">タイムアウト プロパティ。</param>
+      <param name="timeoutWarning">タイムアウト警告。</param>
+      <param name="checkInterval">間隔を確認します。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.KeepAliveData.#ctor(System.TimeSpan)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="timeout">タイムアウト プロパティ。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.CheckInterval">
+      <summary>間隔プロパティを確認する期間を取得または設定します。</summary>
+      <returns>間隔プロパティを確認する期間。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.LastKeepAlive">
+      <summary>最後のキープ アライブ プロパティを格納する DateTime を取得または設定します。</summary>
+      <returns>最後のキープ アライブ プロパティを格納する DateTime。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.Timeout">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> のタイムアウトを取得または設定します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> のタイムアウト。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.TimeoutWarning">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> のタイムアウト警告を取得または設定します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> のタイムアウト警告。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.NegotiationResponse">
+      <summary>ネゴシエーション応答の接続プロパティを提供します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.NegotiationResponse.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.NegotiationResponse" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.ConnectionId">
+      <summary>ネゴシエーション応答の接続 ID を取得または設定します。</summary>
+      <returns>ネゴシエーション応答の接続 ID。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.ConnectionToken">
+      <summary>ネゴシエーション応答の接続トークンを取得または設定します。</summary>
+      <returns>ネゴシエーション応答の接続トークン。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.DisconnectTimeout">
+      <summary>ネゴシエーション応答の接続タイムアウト プロパティを取得または設定します。</summary>
+      <returns>ネゴシエーション応答の接続タイムアウト プロパティ。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.KeepAliveTimeout">
+      <summary>ネゴシエーション応答のキープ アライブ タイムアウトを取得または設定します。</summary>
+      <returns>ネゴシエーション応答のキープ アライブ タイムアウト。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.ProtocolVersion">
+      <summary>ネゴシエーション応答のプロトコル バージョンを取得または設定します。</summary>
+      <returns>ネゴシエーション応答のプロトコル バージョン。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.TransportConnectTimeout">
+      <summary>ネゴシエーション応答のトランスポート接続タイムアウトを取得または設定します。</summary>
+      <returns>ネゴシエーション応答のトランスポート接続タイムアウト。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.TryWebSockets">
+      <summary>ネゴシエーション応答が Web ソケットの使用を試みるかどうかを示す値を取得または設定します。</summary>
+      <returns>ネゴシエーション応答が Web ソケットの使用を試みる場合は true。それ以外の場合は false。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.Url">
+      <summary>ネゴシエーション応答の URL を取得または設定します。</summary>
+      <returns>ネゴシエーション応答の URL。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ObservableConnection`1">
+      <summary>SignalR サービスのクライアント接続を提供するデータ接続を表します。</summary>
+      <typeparam name="T">接続内の要素の種類。</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ObservableConnection`1.#ctor(Microsoft.AspNet.SignalR.Client.Connection,System.Func{System.String,`0})">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.ObservableConnection`1" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="connection">クライアント接続。</param>
+      <param name="convert">変換する関数の文字列</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ObservableConnection`1.Subscribe(System.IObserver{`0})">
+      <summary>SignalR サービスの監視可能な接続にサブスクライブします。</summary>
+      <returns>SignalR サービスの監視可能な接続。</returns>
+      <param name="observer">監視者の通知。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.SignalRError">
+      <summary>SignalR クライアントによってスローされたエラーを表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.#ctor(System.Exception)">
+      <summary>指定された例外を使用して <see cref="T:Microsoft.AspNet.SignalR.Client.SignalRError" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="exception">ラップ解除する例外。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.Dispose">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.SignalRError" /> クラスの現在のインスタンスによって使用されているリソースを解放します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.DefaultDependencyResolver" /> クラスの現在のインスタンスによって使用されているアンマネージ リソースを解放し、オプションでマネージ リソースも解放します。</summary>
+      <param name="disposing">マネージ リソースとアンマネージ リソースの両方を解放する場合は true。アンマネージ リソースだけを解放する場合は false。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.SignalRError.Exception">
+      <summary>ラップされていない基礎となる例外を取得または設定します。</summary>
+      <returns>ラップ解除された基になる例外。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.SignalRError.ResponseBody">
+      <summary>エラーが WebException で応答が読み取り可能である場合のエラーの応答本体を取得または設定します。</summary>
+      <returns>エラーの応答本体。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.SignalRError.StatusCode">
+      <summary>エラーのステータス コード (エラーが WebException であった場合) を取得または設定します。</summary>
+      <returns>エラーのステータス コード。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.ToString">
+      <summary>この SignalR エラーの文字列表現を返します。</summary>
+      <returns>この SignalR エラーの文字列表現。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.StateChange">
+      <summary>接続状態の変化を表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.StateChange.#ctor(Microsoft.AspNet.SignalR.Client.ConnectionState,Microsoft.AspNet.SignalR.Client.ConnectionState)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.StateChange" /> の新しいインスタンスを作成します。</summary>
+      <param name="oldState">接続の以前の状態。</param>
+      <param name="newState">接続の新しい状態。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.StateChange.NewState">
+      <summary>接続の新しい状態を取得します。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.StateChange.OldState">
+      <summary>接続の以前の状態を取得します。</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.TraceLevels">
+      <summary>SignalR クライアントに関連付けられているトレース レベルを列挙します。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.All">
+      <summary>すべての関連オブジェクトをトレースします。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.Events">
+      <summary>すべてのイベントをトレースします。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.Messages">
+      <summary>すべてのメッセージをトレースします。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.None">
+      <summary>何もトレースしません。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.StateChanges">
+      <summary>すべての状態変更をトレースします。</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient">
+      <summary>既定の <see cref="T:Microsoft.AspNet.SignalR.Client.Http.IHttpClient" /> の実装。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.Get(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Boolean)">
+      <summary>指定された URL への非同期 HTTP GET 要求を作成します。</summary>
+      <returns>&lt;see cref="T:Task{IResponse}" /&gt;。</returns>
+      <param name="url">要求の送信先となる URL。</param>
+      <param name="prepareRequest">既定値で要求を初期化するコールバック。</param>
+      <param name="isLongRunning">要求が長時間実行されているかどうかを指定します。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.Initialize(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>HTTP クライアントを初期化します。</summary>
+      <param name="connection">現在の HTTP 接続。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.Post(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Collections.Generic.IDictionary{System.String,System.String},System.Boolean)">
+      <summary>指定された URL への非同期 HTTP POST 要求を作成します。</summary>
+      <returns>&lt;see cref="T:Task{IResponse}" /&gt;。</returns>
+      <param name="url">要求の送信先となる URL。</param>
+      <param name="prepareRequest">既定値で要求を初期化するコールバック。</param>
+      <param name="postData">フォームの URL エンコード データ。</param>
+      <param name="isLongRunning">要求が長時間実行されているかどうかを指定します</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler">
+      <summary>クライアントの既定の HTTP ハンドラーを表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler.#ctor(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="connection">既定の接続。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper">
+      <summary>HTTP 要求メッセージのラッパーを提供します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.#ctor(System.Net.Http.HttpRequestMessage,System.Action)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="httpRequestMessage">HTTP 要求メッセージ。</param>
+      <param name="cancel">要求メッセージを取り消します。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.Abort">
+      <summary>現在の HTTP 要求メッセージを取り消します。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.Accept">
+      <summary>要求メッセージを受け入れる HTTP プロパティを取得または設定します。</summary>
+      <returns>要求メッセージを受け入れる HTTP プロパティ。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.SetRequestHeaders(System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" /> の要求ヘッダーを設定します。</summary>
+      <param name="headers">要求のヘッダー。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.UserAgent">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" /> のユーザー エージェントを取得または設定します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" /> のユーザー エージェント。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper">
+      <summary>
+        <see cref="T:System.Net.Http.HttpResponseMessage" /> のコンテナー クラスを表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.#ctor(System.Net.Http.HttpResponseMessage)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="httpResponseMessage">この HTTP クライアントの応答メッセージ。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.Dispose">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper" /> の現在のインスタンスによって使用されているすべてのリソースを解放します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper" /> クラスによって使用されているアンマネージ リソースを解放し、オプションでマネージ リソースも解放します。</summary>
+      <param name="disposing">マネージ リソースとアンマネージ リソースの両方を解放する場合は true。アンマネージ リソースだけを解放する場合は false。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.GetStream">
+      <summary>このメッセージに関連付けられたストリームの新しい読み取り専用のコピーを取得します。</summary>
+      <returns>このメッセージに関連付けられたストリームの新しい読み取り専用のコピー。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.ReadAsString">
+      <summary>応答メッセージを文字列として読み取ります。</summary>
+      <returns>応答メッセージを表す文字列。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IHttpClient">
+      <summary>HTTP 要求を作成できるクライアント。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClient.Get(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Boolean)">
+      <summary>指定された URL への非同期 HTTP GET 要求を作成します。</summary>
+      <returns>&lt;see cref="T:Task{IResponse}" /&gt;。</returns>
+      <param name="url">要求の送信先となる URL。</param>
+      <param name="prepareRequest">既定値で要求を初期化するコールバック。</param>
+      <param name="isLongRunning">長時間実行されている要求かどうかを示します。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClient.Initialize(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>HTTP クライアントを初期化します。</summary>
+      <param name="connection">Connection</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClient.Post(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Collections.Generic.IDictionary{System.String,System.String},System.Boolean)">
+      <summary>指定された URL への非同期 HTTP POST 要求を作成します。</summary>
+      <returns>&lt;see cref="T:Task{IResponse}" /&gt;。</returns>
+      <param name="url">要求の送信先となる URL。</param>
+      <param name="prepareRequest">既定値で要求を初期化するコールバック。</param>
+      <param name="postData">フォームの URL エンコード データ。</param>
+      <param name="isLongRunning">長時間実行されている要求かどうかを示します。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IHttpClientExtensions">
+      <summary>ここの内容は更新されません。ここに素材を追加しないでください。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClientExtensions.Post(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Boolean)">
+      <summary>指定された URL への非同期 HTTP POST 要求を作成します。</summary>
+      <returns>指定された URL への非同期 HTTP POST 要求。</returns>
+      <param name="client">HTTP 要求を作成できるクライアント。</param>
+      <param name="url">要求の送信先となる URL。</param>
+      <param name="prepareRequest">既定値で要求を初期化するコールバック。</param>
+      <param name="isLongRunning">ポストが長時間実行されているかどうかを示します。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IRequest">
+      <summary>HTTP 要求を表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IRequest.Abort"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.IRequest.Accept"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IRequest.SetRequestHeaders(System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>要求のヘッダーを設定します。</summary>
+      <param name="headers">要求のヘッダー。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.IRequest.UserAgent"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IResponse">
+      <summary>HTTP 応答を表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IResponse.GetStream">
+      <summary>応答の本体を表すストリームを取得します。 </summary>
+      <returns>応答の本体を表すストリーム。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IResponseExtensions">
+      <summary>Provides method that is used to read the response object.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IResponseExtensions.ReadAsString(Microsoft.AspNet.SignalR.Client.Http.IResponse)">
+      <summary>Reads the response object and returns the content as string.</summary>
+      <returns>A task that represents the read operation.</returns>
+      <param name="response">The response object to read.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation">
+      <summary>クライアントのハブ呼び出しを表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.Args">
+      <summary>クライアントのハブ メソッドの呼び出しに使用される引数の一覧を取得または設定します。</summary>
+      <returns>クライアントのハブ メソッドの呼び出しに使用される引数の一覧。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.CallbackId">
+      <summary>ハブ呼び出しプロパティのコールバック識別子を取得または設定します。</summary>
+      <returns>ハブ呼び出しプロパティのコールバック識別子。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.Hub">
+      <summary>呼び出されるメソッドが属しているハブの名前を取得または設定します。</summary>
+      <returns>呼び出されるメソッドが属しているハブの名前。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.Method">
+      <summary>呼び出されるクライアント ハブ メソッドの名前を取得または設定します。</summary>
+      <returns>呼び出されるクライアント ハブ メソッドの名前。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.State">
+      <summary>前回ハブの状態がクライアントに送信されてから変更されたサーバー上のハブの状態を表すキー値のストアを取得または設定します。</summary>
+      <returns>前回ハブの状態がクライアントに送信されてから変更されたサーバー上のハブの状態を表すキー値のストア。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy">
+      <summary>ここの内容は更新されません。ここに素材を追加しないでください。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.#ctor(Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection,System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="connection">ハブ接続。</param>
+      <param name="hubName">ハブの名前。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Invoke(System.String,System.Object[])">
+      <summary>指定されたパラメーターを使用してメソッドおよび引数を呼び出します。</summary>
+      <returns>
+        <see cref="T:System.Threading.Tasks.Task" /> を返します。</returns>
+      <param name="method">メソッド。</param>
+      <param name="args">引数。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Invoke``1(System.String,System.Object[])">
+      <summary>指定されたパラメーターを使用してメソッドおよび引数を呼び出します。</summary>
+      <returns>
+        <see cref="T:System.Threading.Tasks.Task`1" /> を返します。</returns>
+      <param name="method">メソッド。</param>
+      <param name="args">引数。</param>
+      <typeparam name="T">型。</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.InvokeEvent(System.String,System.Collections.Generic.IList{Newtonsoft.Json.Linq.JToken})">
+      <summary>指定されたパラメーターを使用してイベントを呼び出します。</summary>
+      <param name="eventName">イベント名。</param>
+      <param name="args">引数一覧のコレクション。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Item(System.String)">
+      <summary>ハブ プロキシの項目を取得または設定します。</summary>
+      <returns>ハブ プロキシの項目。</returns>
+      <param name="name">文字列名。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.JsonSerializer">
+      <summary>ハブ プロキシの JSON シリアライザーを取得します。</summary>
+      <returns>ハブ プロキシの JSON シリアライザー。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Subscribe(System.String)">
+      <summary>サブスクライブするハブ プロキシを提供します。</summary>
+      <returns>サブスクライブするハブ プロキシ。</returns>
+      <param name="eventName">イベント名。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData">
+      <summary>ハブ登録データを表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData.Name">
+      <summary>データの名前を取得または設定します。</summary>
+      <returns>データの名前。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubResult">
+      <summary>ハブ呼び出しの結果を表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubResult" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.Error">
+      <summary>ハブ呼び出しから返されるエラー メッセージを取得または設定します。</summary>
+      <returns>ハブ呼び出しから返されるエラー メッセージ。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.ErrorData">
+      <summary>追加のエラー データ</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.Id">
+      <summary>コールバック識別子を取得または設定します。</summary>
+      <returns>コールバック識別子。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.IsHubException">
+      <summary>Error が <see cref="T:Microsoft.AspNet.SignalR.Client.HubException" /> かどうかを示します。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.Result">
+      <summary>ハブの戻り値を取得または設定します。</summary>
+      <returns>ハブの戻り値。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.State">
+      <summary>このハブの呼び出し元状態を取得または設定します。</summary>
+      <returns>このハブからの呼び出し元状態。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.Hubservable">
+      <summary>ハブ イベントの <see cref="T:System.IObservable{object[]}" /> の実装を表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.Hubservable.#ctor(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.Hubservable.Subscribe(System.IObserver{System.Collections.Generic.IList{Newtonsoft.Json.Linq.JToken}})">
+      <summary>ハブ イベント用に指定されたオブザーバーを登録します。</summary>
+      <returns>受け取ったサブスクリプションのイベントを表す <see cref="T:System.IDisposable" /> オブジェクト。</returns>
+      <param name="observer">登録するオブザーバー。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection">
+      <summary>ハブ接続を表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection.RegisterCallback(System.Action{Microsoft.AspNet.SignalR.Client.Hubs.HubResult})">
+      <summary>ハブ接続のコールバック関数を表します。</summary>
+      <returns>コールバック ID 文字列。</returns>
+      <param name="callback">登録するコールバック関数。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection.RemoveCallback(System.String)"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.Subscription">
+      <summary>ハブ メソッドのサブスクリプションを表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.Subscription.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.Subscription" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Hubs.Subscription.Received">
+      <summary>サブスクリプションを受け取ると発生します。</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.CompleteAbort"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.Dispose"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.TryCompleteAbort"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler">
+      <summary>トランスポートの初期化を処理するオブジェクトを表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.#ctor(System.TimeSpan,System.Threading.CancellationToken)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="failureTimeout">初期化処理を失敗と見なすために必要な時間。</param>
+      <param name="disconnectToken">切断トークン。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Fail"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Fail(System.Exception)"></member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.OnFailure">
+      <summary>トランスポートの初期化が失敗した場合に発生します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Success">
+      <summary>トランスポートの初期化が成功した場合に指定します。</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Task">
+      <summary>トランスポートの初期化に関連付けられたタスクを取得または設定します。</summary>
+      <returns>トランスポートの初期化に関連付けられたタスク。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader">
+      <summary>Represents an asynchronous stream reader.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.#ctor(System.IO.Stream)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader" /> class. </summary>
+      <param name="stream">The stream to read asynchronously payloads from.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.BufferLock">
+      <summary>Gets the object that is used to lock the buffer.</summary>
+      <returns>The object that is used to lock the buffer.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Closed">
+      <summary>Gets or sets the method to invoke when the reader is closed while in the Processing state. </summary>
+      <returns>The method to invoke when the reader is closed while in the Processing state.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Data">
+      <summary>Gets or sets the method to invoke when there is a message to be received in the stream. </summary>
+      <returns>The method to invoke when there is a message to be received in the stream.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Opened">
+      <summary>Gets or sets the method to invoke when the stream is open. </summary>
+      <returns>The method to invoke when the stream is open.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Start">
+      <summary> Starts the reader. </summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport">
+      <summary>ここの内容は更新されません。ここに素材を追加しないでください。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="httpClient">HTTP 要求を作成できるクライアント。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Client.Transports.IClientTransport})">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="httpClient">HTTP 要求を作成できるクライアント。</param>
+      <param name="transports">HTTP トランスポートを実行できるクライアント。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Dispose">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> クラスの現在のインスタンスによって使用されているすべてのリソースを解放します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> クラスによって使用されているアンマネージ リソースを解放し、オプションでマネージ リソースも解放します。</summary>
+      <param name="disposing">マネージ リソースとアンマネージ リソースの両方を解放する場合は true。アンマネージ リソースだけを解放する場合は false。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.GetNegotiateResponse(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>クライアント サービスのトランスポート接続を切断します。</summary>
+      <param name="connection">トランスポート接続。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Name">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> の名前を取得します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> の名前を取得します。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)">
+      <summary>自動トランスポートの接続を開始します。</summary>
+      <returns>開始する自動トランスポートの接続。</returns>
+      <param name="connection">トランスポート接続。</param>
+      <param name="disconnectToken">切断トークン。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.SupportsKeepAlive">
+      <summary>アクティブなトランスポートがキープ アライブをサポートしているかどうかを示す値を取得します。</summary>
+      <returns>アクティブなトランスポートがキープ アライブをサポートする場合は true。それ以外の場合は false。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport">
+      <summary>ここの内容は更新されません。ここに素材を追加しないでください。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.AbortHandler"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Dispose">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport" /> クラスの現在のインスタンスによって使用されているリソースを解放します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport" /> クラスによって使用されているアンマネージ リソースを解放し、オプションでこのオブジェクトに関連付けられたマネージ リソースも解放します。</summary>
+      <param name="disposing">マネージ リソースとアンマネージ リソースの両方を解放する場合は true。アンマネージ リソースだけを解放する場合は false。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.GetReceiveQueryString(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.HttpClient"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>クライアント トランスポートの接続を切断します。</summary>
+      <param name="connection">クライアント接続。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Name"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.OnStart(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken,Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.SupportsKeepAlive">
+      <summary>クライアント トランスポートがキープ アライブをサポートしているかどうかを示す値を取得します。</summary>
+      <returns>クライアント トランスポートがキープ アライブをサポートする場合は true。それ以外の場合は false。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport">
+      <summary>ここの内容は更新されません。ここに素材を追加しないでください。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>クライアント トランスポートの接続を切断します。</summary>
+      <param name="connection">クライアント接続。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Name">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport" /> の名前を取得します。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport" /> の名前。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)">
+      <summary>クライアント トランスポートの接続を開始します。</summary>
+      <returns>開始するクライアント トランスポートの接続。</returns>
+      <param name="connection">クライアント接続。</param>
+      <param name="disconnectToken">切断トークン。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.SupportsKeepAlive">
+      <summary>クライアント トランスポートがキープ アライブをサポートしているかどうかを示す値を取得します。</summary>
+      <returns>クライアント トランスポートがキープ アライブをサポートする場合は true。それ以外の場合は false。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport">
+      <summary>ここの内容は更新されません。ここに素材を追加しないでください。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="httpClient">HTTP クライアント。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.ErrorDelay">
+      <summary>遅延エラーを表す期間を取得または設定します。</summary>
+      <returns>遅延エラーを表す期間。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.OnStart(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken,Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.ReconnectDelay">
+      <summary>トランスポートの再接続の遅延を表す期間を取得または設定します。</summary>
+      <returns>トランスポートの再接続の遅延を表す期間。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.SupportsKeepAlive">
+      <summary> トランスポートがキープ アライブをサポートするかどうかを示します </summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler">
+      <summary>Represents a polling request handler.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler" /> class.</summary>
+      <param name="httpClient">The HTTP client to poll.</param>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnAbort">
+      <summary>Occurs when the current poll request was aborted, passing in the soon to be aborted request. </summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnAfterPoll">
+      <summary>Gets or sets a function that triggers before a new polling request is attempted.   Passes in an exception if the Poll errored, null otherwise. Expects the return as a task in order to allow modification of timing for subsequent polls.</summary>
+      <returns>A function that triggers before a new polling request is attempted.</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnError">
+      <summary>Occurs and passes the exception when the poll errors. </summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnMessage">
+      <summary> Sends the string based message to the callback. </summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnPolling">
+      <summary> Occurs when the polling request is in flight. </summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.PrepareRequest">
+      <summary> Allows modification of the IRequest parameter before using it in a poll.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.ResolveUrl">
+      <summary>Gets or sets a function used to generate the URL that is posted to for the poll. </summary>
+      <returns>A function used to generate the URL that is posted to for the poll.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.Start">
+      <summary> Starts the polling request handler. </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.Stop">
+      <summary> Fully stops the polling request handler. </summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport">
+      <summary>ここの内容は更新されません。ここに素材を追加しないでください。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="httpClient">クライアント。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>サーバーの接続が失われた場合に発生します。</summary>
+      <param name="connection">接続。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.OnStart(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken,Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.OpenConnection(Microsoft.AspNet.SignalR.Client.IConnection,System.Action{System.Exception})"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.ReconnectDelay">
+      <summary>接続のタイムアウト後にサーバーが再接続する時間を指定します。</summary>
+      <returns>接続のタイムアウト後にサーバーが再接続する時間。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.SupportsKeepAlive">
+      <summary>トランスポートがキープ アライブをサポートするかどうかを示します。</summary>
+      <returns>トランスポートがキープ アライブをサポートする場合は true。それ以外の場合は false。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper">
+      <summary>ここの内容は更新されません。ここに素材を追加しないでください。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.AppendCustomQueryString(Microsoft.AspNet.SignalR.Client.IConnection,System.String)">
+      <summary>'?' または '&amp;' 文字がカスタム クエリ文字列に存在しない場合は、クエリ文字列の前に付けます。</summary>
+      <returns>修正されたカスタム クエリ文字列。</returns>
+      <param name="connection">クライアント接続。</param>
+      <param name="baseUrl">ベース URI。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.GetNegotiationResponse(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.GetReceiveQueryString(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.ProcessResponse(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Boolean@,System.Boolean@)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.ProcessResponse(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Boolean@,System.Boolean@,System.Action)">
+      <summary>応答メッセージを処理します。</summary>
+      <param name="connection">クライアント接続。</param>
+      <param name="response">処理する応答メッセージ。</param>
+      <param name="disconnected">このメソッドが返すときに、プロセスが切断したかどうかを示す値が含まれます。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport">
+      <summary>ここの内容は更新されません。ここに素材を追加しないでください。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.#ctor"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Dispose">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport" /> クラスの現在のインスタンスによって使用されているリソースを解放します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport" /> クラスによって使用されているアンマネージ リソースを解放し、オプションでこのオブジェクトに関連付けられたマネージ リソースも解放します。</summary>
+      <param name="disposing">マネージ リソースとアンマネージ リソースの両方を解放する場合は true。アンマネージ リソースだけを解放する場合は false。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>クライアント トランスポートの接続を切断します。</summary>
+      <param name="connection">クライアント接続。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Name"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnClose(System.Boolean)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnError"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnMessage(System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnOpen"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.PerformConnect"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.ReconnectDelay"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.SupportsKeepAlive">
+      <summary>トランスポートがキープ アライブをサポートするかどうかを示す値を取得または設定します。</summary>
+      <returns>トランスポートがキープ アライブをサポートする場合は true。それ以外の場合は false。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer">
+      <summary>ここの内容は更新されません。ここに素材を追加しないでください。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.Add(System.ArraySegment{System.Byte})">
+      <summary>バッファーをチャンクに追加します。</summary>
+      <param name="buffer">追加するバッファー。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.Add(System.Byte[],System.Int32)">
+      <summary>指定されたバッファーを追加します。</summary>
+      <param name="buffer">追加するバッファー。</param>
+      <param name="length">バッファーの長さ。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.HasChunks">
+      <summary>バッファーにチャンクがあるかどうかを示す値を取得します。</summary>
+      <returns>バッファーにチャンクがある場合は true。それ以外の場合は false。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.ReadLine">
+      <summary>現在のバッファーから 1 行の文字を読み取り、データを文字列として返します。</summary>
+      <returns>バッファーの次の行。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader">
+      <summary>.NET のイベント ソースの実装を提供します。これは仕様ではありませんが、SignalR のサーバーをサポートするには十分です。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader.#ctor(Microsoft.AspNet.SignalR.Client.IConnection,System.IO.Stream)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader" /> クラスの新しいインスタンスを初期化します。 </summary>
+      <param name="connection">このイベント ソースに関連付けられた接続。</param>
+      <param name="stream">イベント ソース ペイロードの読み取り元のストリーム。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader.Message"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType">
+      <summary>サーバー側イベントに関連付けられたイベントの種類を列挙します。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType.Data">
+      <summary>データ イベントの種類。</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType.Id">
+      <summary>ID イベントの種類。</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent">
+      <summary>サーバー送信イベント データを解析するための静的メソッドを提供します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.#ctor(Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType,System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="type">サーバー送信イベントの種類。</param>
+      <param name="data">サーバー送信イベント データ。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.Data">
+      <summary>サーバー送信イベント データを取得または設定します。</summary>
+      <returns>サーバー送信イベント データ。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.EventType">
+      <summary>サーバー送信イベントの種類を取得または設定します。</summary>
+      <returns>サーバー送信イベントの種類。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.ToString">
+      <summary>このオブジェクトの文字列表現を返します。</summary>
+      <returns>このオブジェクトの文字列表現。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.TryParse(System.String,Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent@)">
+      <summary>指定されたデータを <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent" /> オブジェクトに解析します。</summary>
+      <returns>指定されたデータが有効なサーバー側イベントの場合は true。それ以外の場合は false。</returns>
+      <param name="line">解析を試みるデータ。</param>
+      <param name="sseEvent">このメソッドから制御が戻ったときは、結果の SseEvent オブジェクトが格納されています。</param>
+    </member>
+  </members>
+</doc>

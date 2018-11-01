@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.SqlServer</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseSqlServer(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.SqlScaleoutConfiguration)">
+      <summary>SQL Server를 메시징 백플레인으로 사용하여 메시지 버스 구현을 확장합니다.</summary>
+      <returns>종속성 확인자입니다.</returns>
+      <param name="resolver">종속성 확인자입니다.</param>
+      <param name="configuration">구성을 확장할 SQL Server입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseSqlServer(Microsoft.AspNet.SignalR.IDependencyResolver,System.String)">
+      <summary>SQL Server를 메시징 백플레인으로 사용하여 메시지 버스 구현을 확장합니다.</summary>
+      <returns>종속성 확인자입니다.</returns>
+      <param name="resolver">종속성 확인자입니다.</param>
+      <param name="connectionString">연결 문자열입니다.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration">
+      <summary> SQL Server 확장 메시지 버스 구현을 위한 설정입니다. </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.#ctor(System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="connectionString">사용할 SQL Server 연결 문자열입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.ConnectionString">
+      <summary>사용할 SQL Server 연결 문자열을 가져오거나 설정합니다. </summary>
+      <returns>사용할 SQL Server 연결 문자열입니다.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.TableCount">
+      <summary>메시지를 저장할 테이블의 수를 가져오거나 설정합니다.더 많은 테이블을 사용하면 잠금 경합이 감소하고 처리량이 증가할 수 있습니다.이는 웹 팜의 모든 노드에서 동일해야 합니다.기본값은 1입니다.</summary>
+      <returns>메시지를 저장할 테이블의 수입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior">
+      <summary>SQL 명령 동작을 정의합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.AddSqlDependency(System.Data.IDbCommand,System.Action{System.Data.SqlClient.SqlNotificationEventArgs})">
+      <summary>지정된 SQL 명령에 대한 SQL 종속성을 만듭니다.</summary>
+      <param name="command">SQL 명령입니다.</param>
+      <param name="callback">종속성 알림 변경에 대한 알림이 표시되는 메서드입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.StartSqlDependencyListener">
+      <summary>SQL 종속성 알림 수신기를 시작합니다.</summary>
+      <returns>알림 수신기가 시작되면 true이고, 그렇지 않으면 false입니다. </returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.UpdateLoopRetryDelays">
+      <summary>재시도 시간 간격 및 재시도 횟수를 지정하는 목록을 가져옵니다.</summary>
+      <returns>재시도 시간 간격 및 재시도 횟수를 지정하는 목록입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory">
+      <summary>데이터베이스 공급자와 연결된 팩터리를 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory.CreateConnection">
+      <summary>데이터베이스 공급자에 대한 연결을 만듭니다.</summary>
+      <returns>만든 연결입니다.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory.CreateParameter">
+      <summary>공급자와 연결된 매개 변수를 만듭니다.</summary>
+      <returns>만든 매개 변수입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus">
+      <summary>웹 팜에서 SQL Server 테이블을 사용하여 SignalR 응용 프로그램을 확장합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.SqlScaleoutConfiguration)">
+      <summary> SqlMessageBus 클래스의 새 인스턴스를 만듭니다. </summary>
+      <param name="resolver">사용할 확인자입니다.</param>
+      <param name="configuration">SQL 확장 구성 옵션입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus" />에서 사용하는 관리되지 않는 리소스를 해제하고, 관리되는 리소스를 선택적으로 해제합니다.</summary>
+      <param name="disposing">관리된 리소스와 관리되지 않은 리소스를 모두 해제하려면 true이고, 관리되지 않은 리소스만 해제하려면 false입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})"></member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.StreamCount"></member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException">
+      <summary>SQL 메시지 버스의 초기화 또는 수신 작업이 실패하면 발생하는 예외입니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException.#ctor(System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="message">예외를 설명하는 오류 메시지입니다.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlPayload">
+      <summary>SQL 페이로드를 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlPayload.FromBytes(System.Data.IDataRecord)">
+      <summary>데이터 레코드의 확장 메시지를 제공합니다.</summary>
+      <returns>제공된 확장 메시지입니다.</returns>
+      <param name="record">데이터 레코드 개체입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlPayload.ToBytes(System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>메시지 목록을 바이트로 제공합니다.</summary>
+      <returns>바이트로 제공된 메시지입니다.</returns>
+      <param name="messages">메시지 목록입니다.</param>
+    </member>
+  </members>
+</doc>

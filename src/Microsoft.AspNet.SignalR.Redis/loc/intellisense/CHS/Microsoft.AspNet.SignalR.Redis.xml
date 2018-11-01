@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.Redis</name>
+  </assembly>
+  <members>
+    <member name="T:Microsoft.AspNet.SignalR.DependencyResolverExtensions">
+      <summary>此处的内容将不会更新；请不要在此处添加材料。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseRedis(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.RedisScaleoutConfiguration)">
+      <summary>使用 Redis 作为消息底板来扩展 Web 场中的 ASP.NET SignalR 应用程序。</summary>
+      <returns>依赖关系解析程序。</returns>
+      <param name="resolver">依赖关系解析程序。</param>
+      <param name="configuration">Redis 扩展配置选项。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseRedis(Microsoft.AspNet.SignalR.IDependencyResolver,System.String,System.Int32,System.String,System.String)">
+      <summary>使用 Redis 作为消息底板来扩展 Web 场中的 ASP.NET SignalR 应用程序。</summary>
+      <returns>依赖关系解析程序。</returns>
+      <param name="resolver">依赖关系解析程序。</param>
+      <param name="server">Redis 服务器地址。</param>
+      <param name="port">Redis 服务器端口。</param>
+      <param name="password">Redis 服务器密码。</param>
+      <param name="eventKey">要使用的 Redis 事件键。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration">
+      <summary>Redis 扩展消息总线实现的设置。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.#ctor(System.Func{BookSleeve.RedisConnection},System.String)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration" /> 类的新实例。</summary>
+      <param name="connectionFactory">连接工厂。</param>
+      <param name="eventKey">事件键。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.#ctor(System.String,System.Int32,System.String,System.String)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration" /> 类的新实例。</summary>
+      <param name="server">服务器。</param>
+      <param name="port">端口。</param>
+      <param name="password">密码。</param>
+      <param name="eventKey">事件键。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.Database">
+      <summary>获取或设置要使用的 Redis 数据库实例。默认值为 0。</summary>
+      <returns>要使用的 Redis 数据库实例。默认值为 0。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.EventKey">
+      <summary>获取或设置要使用的 Redis 事件键。</summary>
+      <returns>要使用的 Redis 事件键。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException">
+      <summary>当 Redis 连接已丢失时引发的异常。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" /> 类的新实例。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+      <summary>使用序列化信息初始化 <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" /> 类的新实例。</summary>
+      <param name="info">有关异常的序列化信息。</param>
+      <param name="context">有关源或目标的上下文信息。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor(System.String)">
+      <summary>使用错误消息初始化 <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" /> 类的新实例。</summary>
+      <param name="message">描述该异常的错误消息。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor(System.String,System.Exception)">
+      <summary>使用错误消息和内部异常初始化 <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" /> 类的新实例。</summary>
+      <param name="message">描述该异常的错误消息。</param>
+      <param name="inner">导致当前异常的内部异常。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Redis.RedisMessage">
+      <summary>表示 Redis 消息。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessage.#ctor">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisMessage" /> 类的新实例。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessage.FromBytes(System.Byte[])">
+      <summary>从指定的数据创建 Redis 消息。</summary>
+      <returns>新建的 Redis 消息。</returns>
+      <param name="data">表示消息的数据。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Redis.RedisMessage.Id">
+      <summary>获取或设置 Redis 消息 ID。</summary>
+      <returns>Redis 消息 ID。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Redis.RedisMessage.ScaleoutMessage">
+      <summary>获取或设置扩展的 Redis 消息。</summary>
+      <returns>扩展的 Redis 消息。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessage.ToBytes(System.Int64,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>将消息转换为字节数组。</summary>
+      <param name="id">消息 ID。</param>
+      <param name="messages">要转换的消息。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Redis.RedisMessageBus">
+      <summary>表示 Redis 消息的服务总线。使用 Redis pub-sub 来扩展 Web 场中的 SignalR 应用程序。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.RedisScaleoutConfiguration)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisMessageBus" /> 类的新实例。</summary>
+      <param name="resolver">依赖关系解析程序。</param>
+      <param name="configuration">Redis 消息总线配置。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.Dispose(System.Boolean)">
+      <summary>释放 <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisMessageBus" /> 类使用的非托管资源并选择性地释放托管资源。</summary>
+      <param name="disposing">若为 true，则同时释放托管资源和非托管资源；若为 false，则仅释放非托管资源。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.ReconnectDelay">
+      <summary>获取或设置等待重新连接尝试的时间。</summary>
+      <returns>等待重新连接尝试的时间。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>向服务总线发布指定消息。</summary>
+      <returns>用于表示消息发送操作的任务。</returns>
+      <param name="streamIndex">流索引。</param>
+      <param name="messages">要发送的消息。</param>
+    </member>
+  </members>
+</doc>

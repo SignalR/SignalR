@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.ServiceBus</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseServiceBus(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration)">
+      <summary>서비스 버스를 메시징 백플레인으로 사용하여 메시지 버스 구현을 확장합니다.</summary>
+      <returns>종속성 확인자입니다.</returns>
+      <param name="resolver">종속성 확인자입니다.</param>
+      <param name="configuration">구성을 확장할 서비스 버스입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseServiceBus(Microsoft.AspNet.SignalR.IDependencyResolver,System.String,System.String)">
+      <summary>서비스 버스를 메시징 백플레인으로 사용하여 메시지 버스 구현을 확장합니다.</summary>
+      <returns>종속성 확인자입니다.</returns>
+      <param name="resolver">종속성 확인자입니다.</param>
+      <param name="connectionString">연결 문자열입니다.</param>
+      <param name="topicPrefix">항목 접두사입니다.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration">
+      <summary>Provides settings for the Service Bus scale-out message bus implementation.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.#ctor(System.String,System.String)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration" /> class.</summary>
+      <param name="connectionString">The connection string.</param>
+      <param name="topicPrefix">The topic prefix.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.ConnectionString">
+      <summary>Gets or sets the Service Bus connection string to use.</summary>
+      <returns>The Service Bus connection string to use.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.TimeToLive">
+      <summary>Gets or sets the message’s time to live value. </summary>
+      <returns>The message’s time to live value.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.TopicCount">
+      <summary>Gets or sets the number of topics to send messages over. Defaults to 1. </summary>
+      <returns>The number of topics to send messages over.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.TopicPrefix">
+      <summary>Gets or sets the topic prefix to use. </summary>
+      <returns>The topic prefix to use.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessage">
+      <summary>SignalR 메시지 변환에 대한 메서드를 제공합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessage.FromBrokeredMessage(Microsoft.ServiceBus.Messaging.BrokeredMessage)">
+      <summary>지정된 조정 메시지에서 <see cref="T:Microsoft.AspNet.SignalR.Messaging.ScaleoutMessage" /> 클래스의 새 인스턴스를 만듭니다.</summary>
+      <returns>만든 <see cref="T:Microsoft.AspNet.SignalR.Messaging.ScaleoutMessage" /> 인스턴입니다.</returns>
+      <param name="brokeredMessage">조정된 메시지입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessage.ToStream(System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>SignalR 메시지의 기본 스트림을 만듭니다.</summary>
+      <returns>SignalR 메시지의 기본 스트림입니다.</returns>
+      <param name="messages">SignalR 메시지입니다.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus">
+      <summary>웹 팜에서 Windows Azure Service Bus 항목을 사용하여 SignalR 응용 프로그램을 확장합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="resolver">종속성 확인자입니다.</param>
+      <param name="configuration">서비스 버스 확장 메시지 버스 구성입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus" />에서 사용하는 관리되지 않는 리소스를 해제하고, 관리되는 리소스를 선택적으로 해제합니다.</summary>
+      <param name="disposing">관리된 리소스와 관리되지 않은 리소스를 모두 해제하려면 true이고, 관리되지 않은 리소스만 해제하려면 false입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>Windows Azure 서비스 버스를 통해 메시지 스트림을 보냅니다.</summary>
+      <returns>보낼 메시지 스트림입니다.</returns>
+      <param name="streamIndex">스트림 인덱스입니다.</param>
+      <param name="messages">메시지 컬렉션입니다.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.StreamCount">
+      <summary>서비스 버스의 미디어 스트림 수를 가져옵니다.</summary>
+      <returns>서비스 버스의 미디어 스트림 수입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBus.Infrastructure.ServiceBusTaskExtensions">
+      <summary>서비스 버스 작업 확장을 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.Infrastructure.ServiceBusTaskExtensions.SendAsync(Microsoft.ServiceBus.Messaging.TopicClient,Microsoft.ServiceBus.Messaging.BrokeredMessage)">
+      <summary>지정된 클라이언트에서 비동기적으로 작업을 보냅니다.</summary>
+      <returns>보낸 작업입니다.</returns>
+      <param name="client">클라이언트입니다.</param>
+      <param name="message">메시지입니다.</param>
+    </member>
+  </members>
+</doc>

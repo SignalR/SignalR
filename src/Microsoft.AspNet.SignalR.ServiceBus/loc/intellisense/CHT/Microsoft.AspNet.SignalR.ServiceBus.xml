@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.ServiceBus</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseServiceBus(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration)">
+      <summary>使用服務匯流排做為管理後擋板以將訊息匯流排實作排除在範圍以外。</summary>
+      <returns>相依性解析程式。</returns>
+      <param name="resolver">相依性解析程式。</param>
+      <param name="configuration">服務匯流排範圍外設定選項。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseServiceBus(Microsoft.AspNet.SignalR.IDependencyResolver,System.String,System.String)">
+      <summary>使用服務匯流排做為管理後擋板以將訊息匯流排實作排除在範圍以外。</summary>
+      <returns>相依性解析程式。</returns>
+      <param name="resolver">相依性解析程式。</param>
+      <param name="connectionString">連接字串。</param>
+      <param name="topicPrefix">頂端前置字元。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration">
+      <summary>Provides settings for the Service Bus scale-out message bus implementation.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.#ctor(System.String,System.String)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration" /> class.</summary>
+      <param name="connectionString">The connection string.</param>
+      <param name="topicPrefix">The topic prefix.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.ConnectionString">
+      <summary>Gets or sets the Service Bus connection string to use.</summary>
+      <returns>The Service Bus connection string to use.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.TimeToLive">
+      <summary>Gets or sets the message’s time to live value. </summary>
+      <returns>The message’s time to live value.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.TopicCount">
+      <summary>Gets or sets the number of topics to send messages over. Defaults to 1. </summary>
+      <returns>The number of topics to send messages over.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.TopicPrefix">
+      <summary>Gets or sets the topic prefix to use. </summary>
+      <returns>The topic prefix to use.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessage">
+      <summary>提供 SignalR 訊息轉換的方法。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessage.FromBrokeredMessage(Microsoft.ServiceBus.Messaging.BrokeredMessage)">
+      <summary>從指定的代理訊息建立 <see cref="T:Microsoft.AspNet.SignalR.Messaging.ScaleoutMessage" /> 類別的新執行個體。</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Messaging.ScaleoutMessage" /> 的已建立執行個體。</returns>
+      <param name="brokeredMessage">代理的訊息。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessage.ToStream(System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>建立 SignalR 訊息的基礎資料流。</summary>
+      <returns>SignalR 訊息的基礎資料流。</returns>
+      <param name="messages">SignalR 訊息。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus">
+      <summary>使用 Windows Azure Service Bus 主題將 Web 陣列中的 SignalR 應用程式處理為範圍外。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus" /> 類別的新執行個體。</summary>
+      <param name="resolver">相依性解析程式。</param>
+      <param name="configuration">服務匯流排範圍外訊息匯流排設定。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.Dispose(System.Boolean)">
+      <summary>釋放 <see cref="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus" /> 類別所使用的 Unmanaged 資源，並選擇性地釋放 Managed 資源。</summary>
+      <param name="disposing">true 表示釋放 Managed 和 Unmanaged 資源；false 則表示只釋放 Unmanaged 資源。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>透過 Windows Azure 服務匯流排傳送訊息資料流。</summary>
+      <returns>要傳送的訊息資料流。</returns>
+      <param name="streamIndex">資料流索引。</param>
+      <param name="messages">訊息集合。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.StreamCount">
+      <summary>取得服務匯流排中的媒體資料流數目。</summary>
+      <returns>服務匯流排中的媒體資料流數目。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBus.Infrastructure.ServiceBusTaskExtensions">
+      <summary>表示服務匯流排工作擴充程式。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.Infrastructure.ServiceBusTaskExtensions.SendAsync(Microsoft.ServiceBus.Messaging.TopicClient,Microsoft.ServiceBus.Messaging.BrokeredMessage)">
+      <summary>非同步傳送來自指定用戶端的工作。</summary>
+      <returns>已傳送工作。</returns>
+      <param name="client">用戶端。</param>
+      <param name="message">訊息。</param>
+    </member>
+  </members>
+</doc>

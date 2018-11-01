@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.ServiceBus</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseServiceBus(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration)">
+      <summary>İleti veri yolu uygulamasını genişletmek için ileti devre kartı olarak hizmet veri yolu kullanın.</summary>
+      <returns>Bağımlılık çözümleyici.</returns>
+      <param name="resolver">Bağımlılık çözümleyici.</param>
+      <param name="configuration">Yapılandırmayı genişletmek için Hizmet veri yolu.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseServiceBus(Microsoft.AspNet.SignalR.IDependencyResolver,System.String,System.String)">
+      <summary>İleti veri yolu uygulamasını genişletmek için ileti devre kartı olarak hizmet veri yolu kullanın.</summary>
+      <returns>Bağımlılık çözümleyici.</returns>
+      <param name="resolver">Bağımlılık çözümleyici.</param>
+      <param name="connectionString">Bağlantı dizesi.</param>
+      <param name="topicPrefix">Konu öneki.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration">
+      <summary>Provides settings for the Service Bus scale-out message bus implementation.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.#ctor(System.String,System.String)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration" /> class.</summary>
+      <param name="connectionString">The connection string.</param>
+      <param name="topicPrefix">The topic prefix.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.ConnectionString">
+      <summary>Gets or sets the Service Bus connection string to use.</summary>
+      <returns>The Service Bus connection string to use.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.TimeToLive">
+      <summary>Gets or sets the message’s time to live value. </summary>
+      <returns>The message’s time to live value.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.TopicCount">
+      <summary>Gets or sets the number of topics to send messages over. Defaults to 1. </summary>
+      <returns>The number of topics to send messages over.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.TopicPrefix">
+      <summary>Gets or sets the topic prefix to use. </summary>
+      <returns>The topic prefix to use.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessage">
+      <summary>SignalR ileti dönüştürme yöntemleri sağlar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessage.FromBrokeredMessage(Microsoft.ServiceBus.Messaging.BrokeredMessage)">
+      <summary>Belirtilen aracılık edilen iletiden <see cref="T:Microsoft.AspNet.SignalR.Messaging.ScaleoutMessage" /> sınıfının yeni bir örneğini oluşturur.</summary>
+      <returns>Oluşturulan <see cref="T:Microsoft.AspNet.SignalR.Messaging.ScaleoutMessage" /> örneği.</returns>
+      <param name="brokeredMessage">Aracılık edilen ileti.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessage.ToStream(System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>SignalR iletileri için temel akış oluşturur.</summary>
+      <returns>SignalR iletileri için temel akış.</returns>
+      <param name="messages">SignalR iletisi.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus">
+      <summary>Web gruplarında SignalR uygulamalarını genişletmek için Windows Azure Service Bus konularını kullanır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="resolver">Bağımlılık çözümleyici.</param>
+      <param name="configuration">Hizmet Veri Yolu genişletme iletisi veri yolu yapılandırması.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus" /> sınıfı tarafından kullanılan yönetilmeyen kaynakları serbest bırakır ve yönetilen kaynakları isteğe bağlı olarak serbest bırakır.</summary>
+      <param name="disposing">Hem yönetilen hem de yönetilmeyen kaynakları serbest bırakmak için true; yalnızca yönetilmeyen kaynakları serbest bırakmak için false.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>Windows Azure hizmet veri yolu üzerinden ileti akışı gönderir.</summary>
+      <returns>Gönderilecek ileti akışı.</returns>
+      <param name="streamIndex">Akış dizini.</param>
+      <param name="messages">İleti koleksiyonu.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.StreamCount">
+      <summary>Hizmet veri yolundaki medya akışlarının sayısını alır.</summary>
+      <returns>Hizmet veri yolundaki medya akışlarının sayısı.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBus.Infrastructure.ServiceBusTaskExtensions">
+      <summary>Bir hizmet veri yolu görev uzantısını temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.Infrastructure.ServiceBusTaskExtensions.SendAsync(Microsoft.ServiceBus.Messaging.TopicClient,Microsoft.ServiceBus.Messaging.BrokeredMessage)">
+      <summary>Görevi belirtilen istemciden zaman uyumsuz olarak gönderir.</summary>
+      <returns>Gönderilen görev.</returns>
+      <param name="client">İstemci.</param>
+      <param name="message">İleti.</param>
+    </member>
+  </members>
+</doc>
