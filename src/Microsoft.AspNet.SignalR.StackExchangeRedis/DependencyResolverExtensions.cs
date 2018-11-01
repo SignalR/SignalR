@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.SignalR
         }
 
         /// <summary>
-        /// Use Redis as the messaging backplane for scaling out of ASP.NET SignalR applications in a web farm.
+        /// Use Redis, through the StackExchange.Redis client, as the messaging backplane for scaling out of ASP.NET SignalR applications in a web farm.
         /// </summary>
         /// <param name="resolver">The dependency resolver</param>
         /// <param name="configuration">The Redis scale-out configuration options.</param> 
