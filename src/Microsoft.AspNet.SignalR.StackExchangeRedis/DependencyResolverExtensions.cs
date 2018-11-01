@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.SignalR
     public static class DependencyResolverExtensions
     {
         /// <summary>
-        /// Use Redis as the messaging backplane for scaling out of ASP.NET SignalR applications in a web farm.
+        /// Use Redis, through the StackExchange.Redis client, as the messaging backplane for scaling out of ASP.NET SignalR applications in a web farm.
         /// </summary>
         /// <param name="resolver">The dependency resolver.</param>
         /// <param name="server">The Redis server address.</param>
