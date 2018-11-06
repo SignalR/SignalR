@@ -1512,7 +1512,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var connection = new HubConnection("http://foo");
 
                 var hub = connection.CreateHubProxy("SomeHub");
-                await connection.Start(host);
+                await connection.Start(host).OrTimeout();
 
                 connection.Stop();
                 await Task.Delay(TimeSpan.FromSeconds(3));
@@ -1549,7 +1549,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var connection = new HubConnection("http://foo");
 
                 var hub = connection.CreateHubProxy("SomeHub");
-                await connection.Start(host);
+                await connection.Start(host).OrTimeout();
 
                 // Force Reconnect
                 await Task.Delay(TimeSpan.FromSeconds(3));
