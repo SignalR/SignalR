@@ -19,7 +19,7 @@
       </TfmTranslate>
 
       <!-- Now convert all these to Items that reference lsbuild.proj for parallelization -->
-      <TfmTranslateProjects Include="$(MSBuildThisFileDirectory)lsbuild.proj">
+      <TfmTranslateProjects Include="$(MSBuildThisFileDirectory)lsbuild.proj" Condition="'@(TfmTranslate)' != ''">
         <AdditionalProperties>
           MicroBuildPluginDirectory=$(MicroBuildPluginDirectory);
           TranslationInput=%(TfmTranslate.TranslationInput);
@@ -60,7 +60,7 @@
       </NoTfmTranslate>
 
       <!-- Now convert all these to Items that reference lsbuild.proj for parallelization -->
-      <NoTfmTranslateProjects Include="$(MSBuildThisFileDirectory)lsbuild.proj">
+      <NoTfmTranslateProjects Include="$(MSBuildThisFileDirectory)lsbuild.proj" Condition="'@(NoTfmTranslate)' != ''">
         <AdditionalProperties>
           MicroBuildPluginDirectory=$(MicroBuildPluginDirectory);
           TranslationInput=%(NoTfmTranslate.TranslationInput);
