@@ -1395,7 +1395,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     var proxy = connection.CreateHubProxy("MultGroupHub");
                     var proxy2 = connection.CreateHubProxy("MultGroupHub2");
 
-                    await connection.Start(host);
+                    await connection.Start(host).OrTimeout();
 
                     var user = new User { Name = "tester" };
                     await proxy.Invoke("login", user).OrTimeout();
@@ -1409,14 +1409,14 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     await Task.Delay(TimeSpan.FromSeconds(3));
 
-                    Assert.True(logRejoiningGroups.GroupsRejoined["MultGroupHub"].Contains("foo"));
-                    Assert.True(logRejoiningGroups.GroupsRejoined["MultGroupHub"].Contains("tester"));
-                    Assert.False(logRejoiningGroups.GroupsRejoined["MultGroupHub"].Contains("foo2"));
-                    Assert.False(logRejoiningGroups.GroupsRejoined["MultGroupHub"].Contains("tester2"));
-                    Assert.True(logRejoiningGroups.GroupsRejoined["MultGroupHub2"].Contains("foo2"));
-                    Assert.True(logRejoiningGroups.GroupsRejoined["MultGroupHub2"].Contains("tester2"));
-                    Assert.False(logRejoiningGroups.GroupsRejoined["MultGroupHub2"].Contains("foo"));
-                    Assert.False(logRejoiningGroups.GroupsRejoined["MultGroupHub2"].Contains("tester"));
+                    Assert.Contains("foo", logRejoiningGroups.GroupsRejoined["MultGroupHub"]);
+                    Assert.Contains("tester", logRejoiningGroups.GroupsRejoined["MultGroupHub"]);
+                    Assert.DoesNotContain("foo2", logRejoiningGroups.GroupsRejoined["MultGroupHub"]);
+                    Assert.DoesNotContain("tester2", logRejoiningGroups.GroupsRejoined["MultGroupHub"]);
+                    Assert.Contains("foo2", logRejoiningGroups.GroupsRejoined["MultGroupHub2"]);
+                    Assert.Contains("tester2", logRejoiningGroups.GroupsRejoined["MultGroupHub2"]);
+                    Assert.DoesNotContain("foo", logRejoiningGroups.GroupsRejoined["MultGroupHub2"]);
+                    Assert.DoesNotContain("tester", logRejoiningGroups.GroupsRejoined["MultGroupHub2"]);
                 }
             }
         }
