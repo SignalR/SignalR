@@ -153,7 +153,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     await connection.Start(host.Transport);
 
                     // Without this the connection start and reconnect can race with eachother resulting in a deadlock.
-                    Thread.Sleep(TimeSpan.FromSeconds(3));
+                    await Task.Delay(TimeSpan.FromSeconds(3));
 
                     host.Shutdown();
 
