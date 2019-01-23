@@ -16,7 +16,7 @@
         <tags>Microsoft AspNet SignalR AspNetSignalR websockets real-time realtime comet HTTP streaming</tags>
         <dependencies>
             <dependency id="Microsoft.AspNet.SignalR.JS" version="$PackageVersion$" />
-            <dependency id="Microsoft.AspNet.SignalR.SystemWeb.en-US" version="$PackageVersion$" />
+            <dependency id="Microsoft.AspNet.SignalR.SystemWeb.$Locale$" version="$PackageVersion$" />
         </dependencies>
     </metadata>
     <files></files>
