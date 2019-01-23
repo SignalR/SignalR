@@ -558,17 +558,23 @@ namespace Microsoft.AspNet.SignalR.Client
             return _transport.Start(this, _connectionData, _disconnectCts.Token)
                              .RunSynchronously(() =>
                              {
-                                 // NOTE: We have tests that rely on this state change occuring *BEFORE* the start task is complete
-                                 ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
+                                 lock (_stateLock)
+                                 {
+                                     // NOTE: We have tests that rely on this state change occuring *BEFORE* the start task is complete
+                                     if (!ChangeState(ConnectionState.Connecting, ConnectionState.Connected))
+                                     {
+                                         throw new StartException(Resources.Error_ConnectionCancelled, LastError);
+                                     }
 
-                                 // Now that we're connected complete the start task that the
-                                 // receive queue is waiting on
-                                 _startTcs.TrySetResult(null);
+                                     // Now that we're connected complete the start task that the
+                                     // receive queue is waiting on
+                                     _startTcs.TrySetResult(null);
 
-                                 // Start the monitor to check for server activity
-                                 _lastMessageAt = DateTime.UtcNow;
-                                 _lastActiveAt = DateTime.UtcNow;
-                                 Monitor.Start();
+                                     // Start the monitor to check for server activity
+                                     _lastMessageAt = DateTime.UtcNow;
+                                     _lastActiveAt = DateTime.UtcNow;
+                                     Monitor.Start();
+                                 }
                              })
                              // Don't return until the last receive has been processed to ensure messages/state sent in OnConnected
                              // are processed prior to the Start() method task finishing

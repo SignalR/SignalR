@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Moq;
@@ -294,6 +295,42 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 var aggEx = Assert.Throws<AggregateException>(() => connection.Start(transport.Object).Wait());
 
                 Assert.Equal(aggEx.Unwrap(), ex);
+                Assert.Equal(ConnectionState.Disconnected, connection.State);
+            }
+
+            [Fact]
+            public async Task StartShouldFailIfTransportStartCompletesAfterDisconnect()
+            {
+                var connection = new Client.Connection("http://test");
+                var transport = new Mock<IClientTransport>();
+                var innerHubException = new HubException();
+
+                transport.Setup(m => m.Negotiate(connection, It.IsAny<string>()))
+                         .Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
+                         {
+                             ProtocolVersion = connection.Protocol.ToString(),
+                             ConnectionId = "Something",
+                             DisconnectTimeout = 120,
+                             KeepAliveTimeout = 30,
+                         }));
+
+                transport.Setup(m => m.Start(connection, null, It.IsAny<CancellationToken>()))
+                         .Callback(() =>
+                         {
+                             Assert.Equal(ConnectionState.Connecting, connection.State);
+
+                             // This emulates receiving a global error from the server right before
+                             // IClientTransport.Start() completes successfully.
+                             ((IConnection)connection).OnError(innerHubException);
+                             ((IConnection)connection).Disconnect();
+                         })
+                         .Returns(TaskAsyncHelper.Empty);
+
+                var startEx = await Assert.ThrowsAsync<StartException>(async () => await connection.Start(transport.Object));
+
+                Assert.Equal(Resources.Error_ConnectionCancelled, startEx.Message);
+                Assert.Same(innerHubException, startEx.InnerException);
+
                 Assert.Equal(ConnectionState.Disconnected, connection.State);
             }
         }
