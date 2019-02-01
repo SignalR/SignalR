@@ -356,7 +356,8 @@
                 lastActiveAt: new Date().getTime(),
                 beatInterval: 5000, // Default value, will only be overridden if keep alive is enabled,
                 beatHandle: null,
-                totalTransportConnectTimeout: 0 // This will be the sum of the TransportConnectTimeout sent in response to negotiate and connection.transportConnectTimeout
+                totalTransportConnectTimeout: 0, // This will be the sum of the TransportConnectTimeout sent in response to negotiate and connection.transportConnectTimeout
+                redirectQs: null
             };
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
@@ -760,7 +761,12 @@
                                 connection.log("Received redirect to: " + res.RedirectUrl);
                                 connection.accessToken = res.AccessToken;
 
-                                setConnectionUrl(connection, res.RedirectUrl);
+                                var splitUrlAndQs = res.RedirectUrl.split("?", 2);
+                                setConnectionUrl(connection, splitUrlAndQs[0]);
+
+                                if (splitUrlAndQs.length == 2) {
+                                    connection._.redirectQs = splitUrlAndQs[1];
+                                }
 
                                 if (connection.ajaxDataType === "jsonp" && connection.accessToken) {
                                     onFailed(signalR._.error(resources.jsonpNotSupportedWithAccessToken), connection);

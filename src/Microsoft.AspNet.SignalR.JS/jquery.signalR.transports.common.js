@@ -279,6 +279,9 @@
             // Use addQs to start since it handles the ?/& prefix for us
             preparedUrl = transportLogic.addQs(url, "clientProtocol=" + connection.clientProtocol);
 
+            // Add the redirect-specified query string params if any
+            preparedUrl = transportLogic.addQs(preparedUrl, connection._.redirectQs);
+
             // Add the user-specified query string params if any
             preparedUrl = transportLogic.addQs(preparedUrl, connection.qs);
 

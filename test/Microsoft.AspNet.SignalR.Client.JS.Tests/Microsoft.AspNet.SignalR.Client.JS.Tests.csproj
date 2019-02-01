@@ -8,6 +8,7 @@
       <Compile Remove="obj\**" />
       <EmbeddedResource Remove="obj\**" />
       <None Remove="obj\**" />
+      <Content Include="wwwroot\**" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.Owin.Cors" Version="$(MicrosoftOwinCorsPackageVersion)" />
@@ -44,7 +45,7 @@
         </ItemGroup>
     </Target>
     <Target Name="BuildNetworkMock" AfterTargets="Build" DependsOnTargets="CalculateNetworkMockInputs" Inputs="@(_NetMockInput);@(_BuildNetMockScript)" Outputs="@(_NetMockOutput)">
-        <Exec Command="powershell -NoProfile -NoLogo &quot;%(_BuildNetMockScript.FullPath)&quot; -InputFiles &quot;@(_NetMockInput->'%(FullPath)','!')&quot; -OutputFile &quot;@(_NetMockOutput->'%(FullPath)')&quot;" />
+        <Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -NoLogo &quot;%(_BuildNetMockScript.FullPath)&quot; -InputFiles &quot;@(_NetMockInput->'%(FullPath)','!')&quot; -OutputFile &quot;@(_NetMockOutput->'%(FullPath)')&quot;" />
         <Message Text="Generated network mock script %(_NetMockOutput.FullPath)" Importance="high" />
     </Target>
 
@@ -57,7 +58,7 @@
         </ItemGroup>
     </Target>
     <Target Name="WriteTestList" AfterTargets="Build" DependsOnTargets="CalculateTestInputs" Inputs="@(_TestJsFile);@(_InputTemplate);@(_BuildHtmlScript)" Outputs="@(_OutputHtml)">
-        <Exec Command="powershell -NoProfile -NoLogo &quot;%(_BuildHtmlScript.FullPath)&quot; -InputTemplate &quot;@(_InputTemplate->'%(FullPath)')&quot; -OutputFile &quot;@(_OutputHtml->'%(FullPath)')&quot; -TestFiles &quot;@(_TestJsFile->'%(RecursiveDir)%(Filename)%(Extension)','!')&quot;" />
+        <Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -NoLogo &quot;%(_BuildHtmlScript.FullPath)&quot; -InputTemplate &quot;@(_InputTemplate->'%(FullPath)')&quot; -OutputFile &quot;@(_OutputHtml->'%(FullPath)')&quot; -TestFiles &quot;@(_TestJsFile->'%(RecursiveDir)%(Filename)%(Extension)','!')&quot;" />
         <Message Text="Generated HTML page %(_OutputHtml.FullPath)" Importance="high" />
     </Target>
 
