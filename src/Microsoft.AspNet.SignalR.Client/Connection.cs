@@ -93,6 +93,13 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private readonly X509CertificateCollection _certCollection = new X509CertificateCollection();
 
+        // The query string passed to the ctor. Returned by Connection.QueryString.
+        private readonly string _userQueryString;
+
+        // The query string passed to the ctor plus what may have been added by the last
+        // RedirectUrl during negotiation.
+        private string _redirectPlusUserQueryString;
+
         // Keeps track of when the last keep alive from the server was received
         // internal virtual to allow mocking
         internal virtual HeartbeatMonitor Monitor { get; private set; }
@@ -174,7 +181,8 @@ namespace Microsoft.AspNet.SignalR.Client
             }
 
             Url = url;
-            QueryString = queryString;
+            _userQueryString = queryString;
+            _redirectPlusUserQueryString = queryString;
             _disconnectTimeoutOperation = DisposableAction.Empty;
             _lastMessageAt = DateTime.UtcNow;
             _lastActiveAt = DateTime.UtcNow;
@@ -374,7 +382,9 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <summary>
         /// Gets the querystring specified in the ctor.
         /// </summary>
-        public string QueryString { get; private set; }
+        public string QueryString => _userQueryString;
+
+        string IConnection.QueryString => _redirectPlusUserQueryString;
 
         public IClientTransport Transport
         {
@@ -519,13 +529,33 @@ namespace Microsoft.AspNet.SignalR.Client
                                         }
                                         if (!string.IsNullOrEmpty(negotiationResponse.RedirectUrl))
                                         {
-                                            if (!negotiationResponse.RedirectUrl.EndsWith("/"))
+                                            try
                                             {
-                                                negotiationResponse.RedirectUrl += "/";
+                                                var redirectUrl = new UriBuilder(negotiationResponse.RedirectUrl);
+
+                                                if (!string.IsNullOrEmpty(redirectUrl.Query))
+                                                {
+                                                    var sb = new StringBuilder("?");
+                                                    UrlBuilder.AppendCustomQueryString(sb, redirectUrl.Query);
+                                                    UrlBuilder.AppendCustomQueryString(sb, _userQueryString);
+                                                    _redirectPlusUserQueryString = UrlBuilder.Trim(sb);
+                                                }
+
+                                                // Update the URL based on the redirect response and restart the negotiation
+                                                redirectUrl.Query = null;
+                                                Url = redirectUrl.ToString();
+                                            }
+                                            catch
+                                            {
+                                                // The most likely exception this catches is a UriFormatException, but we catch all exceptions and
+                                                // revert to the old behavior that doesn't attempt to extract the query string from the redirect URL.
+                                                Url = negotiationResponse.RedirectUrl;
                                             }
 
-                                            // Update the URL based on the redirect response and restart the negotiation
-                                            Url = negotiationResponse.RedirectUrl;
+                                            if (!Url.EndsWith("/"))
+                                            {
+                                                Url += "/";
+                                            }
 
                                             if (!string.IsNullOrEmpty(negotiationResponse.AccessToken))
                                             {

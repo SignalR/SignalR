@@ -7,6 +7,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
             return message;
         }
 
+        public string GetQueryStringValue(string key)
+        {
+            return Context.QueryString.Get(key);
+        }
+
         public string GetAccessToken()
         {
             var token = Context.Request.QueryString["access_token"];

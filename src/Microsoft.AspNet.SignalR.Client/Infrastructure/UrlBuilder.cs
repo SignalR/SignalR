@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             AppendTransport(urlStringBuilder, transport);
             AppendConnectionData(urlStringBuilder, connectionData);
             AppendConnectionToken(urlStringBuilder, connection);
-            AppendCustomQueryString(urlStringBuilder, connection);
+            AppendCustomQueryString(urlStringBuilder, connection.QueryString);
         }
 
         private static void AppendReceiveParameters(StringBuilder urlStringBuilder, IConnection connection)
@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 #endif
         }
 
-        private static string Trim(StringBuilder urlStringBuilder)
+        internal static string Trim(StringBuilder urlStringBuilder)
         {
             Debug.Assert(urlStringBuilder[urlStringBuilder.Length - 1] == '&', 
                 "expected & at the end of the url");
@@ -236,27 +236,27 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             }
         }
 
-        private static void AppendCustomQueryString(StringBuilder urlStringBuilder, IConnection connection)
+        internal static void AppendCustomQueryString(StringBuilder urlStringBuilder, string queryString)
         {
             Debug.Assert(
                 urlStringBuilder[urlStringBuilder.Length - 1] == '?' ||
                 urlStringBuilder[urlStringBuilder.Length - 1] == '&',
                 "url should end with a correct separator");
 
-            if (string.IsNullOrEmpty(connection.QueryString))
+            if (string.IsNullOrEmpty(queryString))
             {
                 return;
             }
 
-            var firstChar = connection.QueryString[0];
+            var firstChar = queryString[0];
             // correct separator is already appended
             if (firstChar == '?' || firstChar == '&')
             {
-                urlStringBuilder.Append(connection.QueryString.Substring(1));
+                urlStringBuilder.Append(queryString.Substring(1));
             }
             else
             {
-                urlStringBuilder.Append(connection.QueryString);
+                urlStringBuilder.Append(queryString);
             }
 
             urlStringBuilder.Append("&");

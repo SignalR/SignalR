@@ -29,6 +29,109 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
+        [Fact]
+        public async Task CanConnectToEndpointWhichProducesARedirectResponseWithAQueryString()
+        {
+            using (var host = CreateHost(HostType.Memory, TransportType.Auto))
+            {
+                host.Initialize();
+
+                // "/redirect-query-string2" -> "/signalr?name1=newValue&name3=value3"
+                using (var connection = CreateHubConnection(host, path: "/redirect-query-string2"))
+                {
+                    var hub = connection.CreateHubProxy("RedirectTestHub");
+
+                    await connection.Start(host.TransportFactory());
+
+                    Assert.Equal("newValue", await hub.Invoke<string>("GetQueryStringValue", "name1"));
+                    Assert.Equal("value3", await hub.Invoke<string>("GetQueryStringValue", "name3"));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CanMergeRedirectQueryStringWithUserQueryString()
+        {
+            using (var host = CreateHost(HostType.Memory, TransportType.Auto))
+            {
+                host.Initialize();
+
+                // This will get passed through queryString param in the (Hub)Connection ctor.
+                host.ExtraData["foo"] = "bar";
+
+                // "/redirect-query-string2" -> "/signalr?name1=newValue&name3=value3"
+                using (var connection = CreateHubConnection(host, path: "/redirect-query-string2"))
+                {
+                    var hub = connection.CreateHubProxy("RedirectTestHub");
+
+                    await connection.Start(host.TransportFactory());
+
+                    // Verify values set via (Hub)Connection ctor.
+                    Assert.Equal("bar", await hub.Invoke<string>("GetQueryStringValue", "foo"));
+
+                    // Verify values set by redirect.
+                    Assert.Equal("newValue", await hub.Invoke<string>("GetQueryStringValue", "name1"));
+                    Assert.Equal("value3", await hub.Invoke<string>("GetQueryStringValue", "name3"));
+
+                    // Verify that (Hub)Connection.QueryString only contains what was specified by the user, not the redirect.
+                    // IConnection.QueryString contains both, since this is what's used by the client to actually build URLs.
+                    Assert.Contains("foo=bar", connection.QueryString);
+                    Assert.Contains("foo=bar", ((Client.IConnection)connection).QueryString);
+
+                    Assert.DoesNotContain("name1=newValue", connection.QueryString);
+                    Assert.Contains("name1=newValue", ((Client.IConnection)connection).QueryString);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task OnlyPreservesLastRedirectsQueryString()
+        {
+            using (var host = CreateHost(HostType.Memory, TransportType.Auto))
+            {
+                host.Initialize();
+
+                // "/redirect-query-string"
+                // -> "/redirect-query-string2?name1=value1&name2=value2"
+                // -> "/signalr?name1=newValue&name3=value3&origName1={context.Request.Query["name1"]}"
+                using (var connection = CreateHubConnection(host, path: "/redirect-query-string"))
+                {
+                    var hub = connection.CreateHubProxy("RedirectTestHub");
+
+                    await connection.Start(host.TransportFactory());
+
+                    // Verify the client preserves query string key-value pairs specified in the last RedirectUrl.
+                    Assert.Equal("newValue", await hub.Invoke<string>("GetQueryStringValue", "name1"));
+                    Assert.Equal("value3", await hub.Invoke<string>("GetQueryStringValue", "name3"));
+
+                    // Verify the client used "name1=value1" from the first RedirectUrl for the next request in the redirect chain.
+                    Assert.Equal("value1", await hub.Invoke<string>("GetQueryStringValue", "origName1"));
+
+                    // Verify the client does not preserve a query string key-value pair only specified in an intermediate RedirectUrl.
+                    Assert.Equal(null, await hub.Invoke<string>("GetQueryStringValue", "name2"));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CanConnectToEndpointWhichProducesARedirectResponseWithAnInvalidQueryString()
+        {
+            using (var host = CreateHost(HostType.Memory, TransportType.Auto))
+            {
+                host.Initialize();
+
+                // "/redirect-query-string-invalid" -> "/signalr?redirect=invalid&/?=/&"
+                using (var connection = CreateHubConnection(host, path: "/redirect-query-string-invalid"))
+                {
+                    var hub = connection.CreateHubProxy("RedirectTestHub");
+
+                    await connection.Start(host.TransportFactory());
+
+                    Assert.Equal("invalid", await hub.Invoke<string>("GetQueryStringValue", "redirect"));
+                }
+            }
+        }
+
         [Theory]
         [InlineData(TransportType.Auto)]
         [InlineData(TransportType.LongPolling)]
