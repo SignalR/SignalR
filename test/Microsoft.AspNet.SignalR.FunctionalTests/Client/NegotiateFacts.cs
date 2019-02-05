@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public async Task OnlyPreservesLastRedirectsQueryString()
+        public async Task OnlyPreservesLastRedirectQueryString()
         {
             using (var host = CreateHost(HostType.Memory, TransportType.Auto))
             {
@@ -109,6 +109,28 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     // Verify the client does not preserve a query string key-value pair only specified in an intermediate RedirectUrl.
                     Assert.Equal(null, await hub.Invoke<string>("GetQueryStringValue", "name2"));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ClearsRedirectQueryStringIfLastRedirectDoesntHaveOne()
+        {
+            using (var host = CreateHost(HostType.Memory, TransportType.Auto))
+            {
+                host.Initialize();
+
+                // "/redirect-query-string-clear"
+                // -> "/redirect-query-string-clear2?clearedName=clearedValue"
+                // -> "/signalr"
+                using (var connection = CreateHubConnection(host, path: "/redirect-query-string-clear"))
+                {
+                    var hub = connection.CreateHubProxy("RedirectTestHub");
+
+                    await connection.Start(host.TransportFactory());
+
+                    // Verify the client does not preserve a query string key-value pair only specified in an intermediate RedirectUrl.
+                    Assert.Equal(null, await hub.Invoke<string>("GetQueryStringValue", "clearedName"));
                 }
             }
         }

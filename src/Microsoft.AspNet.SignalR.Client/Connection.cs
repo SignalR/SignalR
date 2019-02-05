@@ -529,27 +529,23 @@ namespace Microsoft.AspNet.SignalR.Client
                                         }
                                         if (!string.IsNullOrEmpty(negotiationResponse.RedirectUrl))
                                         {
-                                            try
+                                            var splitUrlAndQuery = negotiationResponse.RedirectUrl.Split(new[] { '?' }, 2);
+
+                                            // Update the URL based on the redirect response and restart the negotiation
+                                            Url = splitUrlAndQuery[0];
+
+                                            if (splitUrlAndQuery.Length == 2 && !string.IsNullOrEmpty(splitUrlAndQuery[1]))
                                             {
-                                                var redirectUrl = new UriBuilder(negotiationResponse.RedirectUrl);
+                                                var sb = new StringBuilder("?");
+                                                UrlBuilder.AppendCustomQueryString(sb, splitUrlAndQuery[1]);
+                                                UrlBuilder.AppendCustomQueryString(sb, _userQueryString);
 
-                                                if (!string.IsNullOrEmpty(redirectUrl.Query))
-                                                {
-                                                    var sb = new StringBuilder("?");
-                                                    UrlBuilder.AppendCustomQueryString(sb, redirectUrl.Query);
-                                                    UrlBuilder.AppendCustomQueryString(sb, _userQueryString);
-                                                    _redirectPlusUserQueryString = UrlBuilder.Trim(sb);
-                                                }
-
-                                                // Update the URL based on the redirect response and restart the negotiation
-                                                redirectUrl.Query = null;
-                                                Url = redirectUrl.ToString();
+                                                // Update IConnection.QueryString with query string from only the most recent RedirectUrl.
+                                                _redirectPlusUserQueryString = UrlBuilder.Trim(sb);
                                             }
-                                            catch
+                                            else
                                             {
-                                                // The most likely exception this catches is a UriFormatException, but we catch all exceptions and
-                                                // revert to the old behavior that doesn't attempt to extract the query string from the redirect URL.
-                                                Url = negotiationResponse.RedirectUrl;
+                                                _redirectPlusUserQueryString = _userQueryString;
                                             }
 
                                             if (!Url.EndsWith("/"))

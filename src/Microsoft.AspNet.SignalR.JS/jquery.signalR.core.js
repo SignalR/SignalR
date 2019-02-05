@@ -764,9 +764,8 @@
                                 var splitUrlAndQs = res.RedirectUrl.split("?", 2);
                                 setConnectionUrl(connection, splitUrlAndQs[0]);
 
-                                if (splitUrlAndQs.length == 2) {
-                                    connection._.redirectQs = splitUrlAndQs[1];
-                                }
+                                // Update redirectQs with query string from only the most recent RedirectUrl.
+                                connection._.redirectQs = splitUrlAndQs.length === 2 ? splitUrlAndQs[1] : null;
 
                                 if (connection.ajaxDataType === "jsonp" && connection.accessToken) {
                                     onFailed(signalR._.error(resources.jsonpNotSupportedWithAccessToken), connection);
