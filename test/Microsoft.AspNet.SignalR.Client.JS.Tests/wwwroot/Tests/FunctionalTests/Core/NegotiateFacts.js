@@ -133,7 +133,7 @@ testUtilities.module("Core - Negotiate Functional Tests");
             };
         });
 
-        QUnit.asyncTimeoutTest(transport = ": connection fails to start with useful error when connecting to ASP.NET Core", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        QUnit.asyncTimeoutTest(transport + ": connection fails to start with useful error when connecting to ASP.NET Core", testUtilities.defaultTestTimeout, function (end, assert, testName) {
             var connection = testUtilities.createTestConnection(testName, end, assert, { wrapStart: false, url: "/aspnetcore-signalr", ignoreErrors: true });
 
             connection.start()

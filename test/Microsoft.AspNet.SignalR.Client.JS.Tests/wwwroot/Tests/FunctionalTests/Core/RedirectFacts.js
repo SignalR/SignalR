@@ -25,6 +25,144 @@ QUnit.asyncTimeoutTest("Can connect to endpoint which produces a redirect respon
     });
 });
 
+QUnit.asyncTimeoutTest("Can connect to endpoint which produces a redirect response with a query string", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    // "/redirect-query-string2" -> "/signalr?name1=newValue&name3=value3"
+    var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect-query-string2", hub: true }),
+        proxies = connection.createHubProxies(),
+        hub = proxies.redirectTestHub;
+
+    connection.start().done(function () {
+        assert.comment("Connection succeeded");
+
+        hub.server.getQueryStringValue("name1").then(function (response) {
+            assert.equal(response, "newValue", "The client preserved 'name1=newValue' from redirect query string.");
+            return hub.server.getQueryStringValue("name3");
+        }).then(function (response) {
+            assert.equal(response, "value3", "The client preserved 'name3=value3' from redirect query string.");
+            end();
+        }).fail(function () {
+            assert.fail("Invocation failed!");
+            end();
+        });
+    }).fail(function () {
+        assert.fail("Connection failed!");
+        end();
+    });
+});
+
+QUnit.asyncTimeoutTest("Can merge redirect query string with user query string", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    // "/redirect-query-string2" -> "/signalr?name1=newValue&name3=value3"
+    var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect-query-string2", hub: true }),
+        proxies = connection.createHubProxies(),
+        hub = proxies.redirectTestHub,
+        origQs = {
+            foo: "bar"
+        };
+
+    connection.qs = origQs;
+
+    connection.start().done(function () {
+        assert.comment("Connection succeeded");
+
+        hub.server.getQueryStringValue("foo").then(function (response) {
+            assert.equal(response, "bar", "The client preserved 'foo=bar' from connection.qs.");
+            return hub.server.getQueryStringValue("name1");
+        }).then(function (response) {
+            assert.equal(response, "newValue", "The client preserved 'name1=newValue' from redirect query string.");
+            return hub.server.getQueryStringValue("name3");
+        }).then(function (response) {
+            assert.equal(response, "value3", "The client preserved 'name3=value3' from redirect query string.");
+            assert.deepEqual(connection.qs, origQs, "The client did not change the 'qs' property to include pairs from redirect.")
+            end();
+        }).fail(function () {
+            assert.fail("Invocation failed!");
+            end();
+        });
+    }).fail(function () {
+        assert.fail("Connection failed!");
+        end();
+    });
+});
+
+QUnit.asyncTimeoutTest("Only preserves last redirect query string", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    // "/redirect-query-string"
+    // -> "/redirect-query-string2?name1=value1&name2=value2"
+    // -> "/signalr?name1=newValue&name3=value3&origName1={context.Request.Query["name1"]}"
+    var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect-query-string", hub: true }),
+        proxies = connection.createHubProxies(),
+        hub = proxies.redirectTestHub;
+
+    connection.start().done(function () {
+        assert.comment("Connection succeeded");
+
+        hub.server.getQueryStringValue("name1").then(function (response) {
+            assert.equal(response, "newValue", "The client preserved 'name1=newValue' from redirect query string.");
+            return hub.server.getQueryStringValue("name3");
+        }).then(function (response) {
+            assert.equal(response, "value3", "The client preserved 'name3=value3' from redirect query string.");
+            return hub.server.getQueryStringValue("origName1");
+        }).then(function (response) {
+            assert.equal(response, "value1", "The client preserved 'name1=value1' from the first redirect query string for the next request in the redirect chain.");
+            return hub.server.getQueryStringValue("name2");
+        }).then(function (response) {
+            assert.equal(response, null, "The client did not preserve a query string key-value pair only specified in an intermediate redirect query string.");
+            end();
+        }).fail(function () {
+            assert.fail("Invocation failed!");
+            end();
+        });
+    }).fail(function () {
+        assert.fail("Connection failed!");
+        end();
+    });
+});
+
+QUnit.asyncTimeoutTest("Clears redirect query string if last redirect doesn't have one", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    // "/redirect-query-string-clear"
+    // -> "/redirect-query-string-clear2?clearedName=clearedValue"
+    // -> "/signalr"
+    var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect-query-string-clear", hub: true }),
+        proxies = connection.createHubProxies(),
+        hub = proxies.redirectTestHub;
+
+    connection.start().done(function () {
+        assert.comment("Connection succeeded");
+
+        hub.server.getQueryStringValue("clearedName").then(function (response) {
+            assert.equal(response, null, "The client did not preserve a query string key-value pair only specified in an intermediate redirect query string.");
+            end();
+        }).fail(function () {
+            assert.fail("Invocation failed!");
+            end();
+        });
+    }).fail(function () {
+        assert.fail("Connection failed!");
+        end();
+    });
+});
+
+QUnit.asyncTimeoutTest("Can connect to endpoint which produces a redirect response with an invalid query string", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    // "/redirect-query-string-invalid" -> "/signalr?redirect=invalid&/?=/&"
+    var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect-query-string-invalid", hub: true }),
+        proxies = connection.createHubProxies(),
+        hub = proxies.redirectTestHub;
+
+    connection.start().done(function () {
+        assert.comment("Connection succeeded");
+
+        hub.server.getQueryStringValue("redirect").then(function (response) {
+            assert.equal(response, "invalid", "The client preserved 'redirect=invalid' from invalid redirect query string.");
+            end();
+        }).fail(function () {
+            assert.fail("Invocation failed!");
+            end();
+        });
+    }).fail(function () {
+        assert.fail("Connection failed!");
+        end();
+    });
+});
+
 QUnit.asyncTimeoutTest("Simulated old client fails when redirect result provided", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect-loop", ignoreErrors: true, hub: true, wrapStart: false }),
         proxies = connection.createHubProxies(),
@@ -71,6 +209,11 @@ QUnit.asyncTimeoutTest("Does not follow redirect url if ProtocolVersion is not 2
 });
 
 testUtilities.runWithAllTransports(function (transport) {
+    if (transport === "foreverFrame") {
+        // Forever Frame does not support connections that require a Bearer token to connect.
+        return;
+    }
+
     QUnit.asyncTimeoutTest(transport + " transport forwards access token provided by redirect response", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect", hub: true }),
             proxies = connection.createHubProxies(),

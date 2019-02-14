@@ -187,6 +187,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect3", "/redirect4"));
             AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect4", "/signalr/"));
 
+            // Redirect with query string
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-query-string", "/redirect-query-string2?name1=value1&name2=value2"));
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-query-string2", "/signalr?name1=newValue&name3=value3"));
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-query-string-clear", "/redirect-query-string-clear2?clearedName=clearedValue"));
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-query-string-clear2", "/signalr"));
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-query-string-invalid", "/signalr?redirect=invalid&/?=/&"));
+
             // Looping redirect chain
             AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-loop", "/redirect-loop2"));
             AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-loop2", "/redirect-loop"));
@@ -456,6 +463,21 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             {
                 if (context.Request.Path.StartsWithSegments(new PathString(sourcePath)))
                 {
+                    if (context.Request.Path.StartsWithSegments(new PathString("/redirect-query-string-clear2")) &&
+                        context.Request.Query["clearedName"] != "clearedValue")
+                    {
+                        throw new Exception("Client didn't include query string from the RedirectUrl returned by /redirect-query-string-clear.");
+                    }
+
+                    var redirectUrl = $"{context.Request.Scheme}://{context.Request.Host.Value}{targetPath}";
+
+                    if (context.Request.Path.StartsWithSegments(new PathString("/redirect-query-string2")) &&
+                        !string.IsNullOrEmpty(context.Request.Query["name1"]))
+                    {
+                        // We're running a test where redirect targetPath should already include a query string with a "name1" value.
+                        redirectUrl += "&origName1=" + context.Request.Query["name1"];
+                    }
+
                     // Send a redirect response
                     context.Response.StatusCode = 200;
                     context.Response.ContentType = "application/json";
@@ -468,7 +490,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                         writer.WriteValue(protocolVersion ?? "2.0");
 
                         writer.WritePropertyName("RedirectUrl");
-                        writer.WriteValue($"{context.Request.Scheme}://{context.Request.Host.Value}{targetPath}");
+                        writer.WriteValue(redirectUrl);
                         writer.WritePropertyName("AccessToken");
                         writer.WriteValue("TestToken");
                         writer.WriteEndObject();

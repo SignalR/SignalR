@@ -93,6 +93,13 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private readonly X509CertificateCollection _certCollection = new X509CertificateCollection();
 
+        // The query string passed to the ctor. Returned by Connection.QueryString.
+        private readonly string _userQueryString;
+
+        // The query string passed to the ctor plus what may have been added by the last
+        // RedirectUrl during negotiation.
+        private string _redirectPlusUserQueryString;
+
         // Keeps track of when the last keep alive from the server was received
         // internal virtual to allow mocking
         internal virtual HeartbeatMonitor Monitor { get; private set; }
@@ -174,7 +181,8 @@ namespace Microsoft.AspNet.SignalR.Client
             }
 
             Url = url;
-            QueryString = queryString;
+            _userQueryString = queryString;
+            _redirectPlusUserQueryString = queryString;
             _disconnectTimeoutOperation = DisposableAction.Empty;
             _lastMessageAt = DateTime.UtcNow;
             _lastActiveAt = DateTime.UtcNow;
@@ -374,7 +382,9 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <summary>
         /// Gets the querystring specified in the ctor.
         /// </summary>
-        public string QueryString { get; private set; }
+        public string QueryString => _userQueryString;
+
+        string IConnection.QueryString => _redirectPlusUserQueryString;
 
         public IClientTransport Transport
         {
@@ -519,13 +529,29 @@ namespace Microsoft.AspNet.SignalR.Client
                                         }
                                         if (!string.IsNullOrEmpty(negotiationResponse.RedirectUrl))
                                         {
-                                            if (!negotiationResponse.RedirectUrl.EndsWith("/"))
-                                            {
-                                                negotiationResponse.RedirectUrl += "/";
-                                            }
+                                            var splitUrlAndQuery = negotiationResponse.RedirectUrl.Split(new[] { '?' }, 2);
 
                                             // Update the URL based on the redirect response and restart the negotiation
-                                            Url = negotiationResponse.RedirectUrl;
+                                            Url = splitUrlAndQuery[0];
+
+                                            if (splitUrlAndQuery.Length == 2 && !string.IsNullOrEmpty(splitUrlAndQuery[1]))
+                                            {
+                                                var sb = new StringBuilder("?");
+                                                UrlBuilder.AppendCustomQueryString(sb, splitUrlAndQuery[1]);
+                                                UrlBuilder.AppendCustomQueryString(sb, _userQueryString);
+
+                                                // Update IConnection.QueryString with query string from only the most recent RedirectUrl.
+                                                _redirectPlusUserQueryString = UrlBuilder.Trim(sb);
+                                            }
+                                            else
+                                            {
+                                                _redirectPlusUserQueryString = _userQueryString;
+                                            }
+
+                                            if (!Url.EndsWith("/"))
+                                            {
+                                                Url += "/";
+                                            }
 
                                             if (!string.IsNullOrEmpty(negotiationResponse.AccessToken))
                                             {
