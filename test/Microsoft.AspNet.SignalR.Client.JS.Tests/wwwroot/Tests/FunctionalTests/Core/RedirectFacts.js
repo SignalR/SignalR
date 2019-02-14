@@ -25,6 +25,22 @@ QUnit.asyncTimeoutTest("Can connect to endpoint which produces a redirect respon
     });
 });
 
+QUnit.asyncTimeoutTest("Original URL used when client stops after a redirect response", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect", hub: true });
+
+    connection.start().done(function () {
+        assert.comment("Connection succeeded");
+        assert.equal(connection.url, window.location.protocol + "//" + window.location.host + "/signalr/", "The client redirected to the /signalr endpoint.");
+        connection.stop();
+        assert.equal(connection.url, "redirect", "The client's URL is reset to the initial value after stopping.");
+        assert.isNotSet(connection.baseUrl, "The client's URL-related state is reset after stopping.");
+        end();
+    }).fail(function () {
+        assert.fail("Connection failed!");
+        end();
+    });
+});
+
 QUnit.asyncTimeoutTest("Can connect to endpoint which produces a redirect response with a query string", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     // "/redirect-query-string2" -> "/signalr?name1=newValue&name3=value3"
     var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect-query-string2", hub: true }),
@@ -50,7 +66,7 @@ QUnit.asyncTimeoutTest("Can connect to endpoint which produces a redirect respon
     });
 });
 
-QUnit.asyncTimeoutTest("Can merge redirect query string with user query string", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+QUnit.asyncTimeoutTest("Does not merge user query string with redirect query string", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     // "/redirect-query-string2" -> "/signalr?name1=newValue&name3=value3"
     var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect-query-string2", hub: true }),
         proxies = connection.createHubProxies(),
@@ -65,7 +81,7 @@ QUnit.asyncTimeoutTest("Can merge redirect query string with user query string",
         assert.comment("Connection succeeded");
 
         hub.server.getQueryStringValue("foo").then(function (response) {
-            assert.equal(response, "bar", "The client preserved 'foo=bar' from connection.qs.");
+            assert.equal(response, null, "'foo=bar' is absent from connection.qs. In practice, the redirect should reflect the query string.");
             return hub.server.getQueryStringValue("name1");
         }).then(function (response) {
             assert.equal(response, "newValue", "The client preserved 'name1=newValue' from redirect query string.");
@@ -73,6 +89,62 @@ QUnit.asyncTimeoutTest("Can merge redirect query string with user query string",
         }).then(function (response) {
             assert.equal(response, "value3", "The client preserved 'name3=value3' from redirect query string.");
             assert.deepEqual(connection.qs, origQs, "The client did not change the 'qs' property to include pairs from redirect.")
+            end();
+        }).fail(function () {
+            assert.fail("Invocation failed!");
+            end();
+        });
+    }).fail(function () {
+        assert.fail("Connection failed!");
+        end();
+    });
+});
+
+QUnit.asyncTimeoutTest("Preserves user query string if last redirect does not include a query string", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    // "/redirect-query-string-clear?foo=bar"
+    // -> "/redirect-query-string-clear2?clearedName=clearedValue"
+    // -> "/signalr?foo=bar"
+    var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect-query-string-clear", hub: true }),
+        proxies = connection.createHubProxies(),
+        hub = proxies.redirectTestHub,
+        origQs = {
+            foo: "bar"
+        };
+
+    connection.qs = origQs;
+
+    connection.start().done(function () {
+        assert.comment("Connection succeeded");
+
+        hub.server.getQueryStringValue("foo").then(function (response) {
+            assert.equal(response, "bar", "The client preserved 'foo=bar' from connection.qs.");
+            return hub.server.getQueryStringValue("clearedName");
+        }).then(function (response) {
+            assert.equal(response, null, "The client did not preserve a query string key-value pair only specified in an intermediate RedirectUrl.");
+            end();
+        }).fail(function () {
+            assert.fail("Invocation failed!");
+            end();
+        });
+    }).fail(function () {
+        assert.fail("Connection failed!");
+        end();
+    });
+});
+
+QUnit.asyncTimeoutTest("Clears redirect query string if last redirect does not include a query string", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    // "/redirect-query-string-clear"
+    // -> "/redirect-query-string-clear2?clearedName=clearedValue"
+    // -> "/signalr"
+    var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect-query-string-clear", hub: true }),
+        proxies = connection.createHubProxies(),
+        hub = proxies.redirectTestHub;
+
+    connection.start().done(function () {
+        assert.comment("Connection succeeded");
+
+        hub.server.getQueryStringValue("clearedName").then(function (response) {
+            assert.equal(response, null, "The client did not preserve a query string key-value pair only specified in an intermediate redirect query string.");
             end();
         }).fail(function () {
             assert.fail("Invocation failed!");
@@ -102,33 +174,9 @@ QUnit.asyncTimeoutTest("Only preserves last redirect query string", testUtilitie
             assert.equal(response, "value3", "The client preserved 'name3=value3' from redirect query string.");
             return hub.server.getQueryStringValue("origName1");
         }).then(function (response) {
-            assert.equal(response, "value1", "The client preserved 'name1=value1' from the first redirect query string for the next request in the redirect chain.");
+            assert.equal(response, "value1", "The client preserved 'origName1=value1' from the first redirect query string for the next request in the redirect chain.");
             return hub.server.getQueryStringValue("name2");
         }).then(function (response) {
-            assert.equal(response, null, "The client did not preserve a query string key-value pair only specified in an intermediate redirect query string.");
-            end();
-        }).fail(function () {
-            assert.fail("Invocation failed!");
-            end();
-        });
-    }).fail(function () {
-        assert.fail("Connection failed!");
-        end();
-    });
-});
-
-QUnit.asyncTimeoutTest("Clears redirect query string if last redirect doesn't have one", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    // "/redirect-query-string-clear"
-    // -> "/redirect-query-string-clear2?clearedName=clearedValue"
-    // -> "/signalr"
-    var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect-query-string-clear", hub: true }),
-        proxies = connection.createHubProxies(),
-        hub = proxies.redirectTestHub;
-
-    connection.start().done(function () {
-        assert.comment("Connection succeeded");
-
-        hub.server.getQueryStringValue("clearedName").then(function (response) {
             assert.equal(response, null, "The client did not preserve a query string key-value pair only specified in an intermediate redirect query string.");
             end();
         }).fail(function () {
@@ -157,6 +205,27 @@ QUnit.asyncTimeoutTest("Can connect to endpoint which produces a redirect respon
             assert.fail("Invocation failed!");
             end();
         });
+    }).fail(function () {
+        assert.fail("Connection failed!");
+        end();
+    });
+});
+
+QUnit.asyncTimeoutTest("Original query string used when client stops after redirect response with a query string", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    // "/redirect-query-string2" -> "/signalr?name1=newValue&name3=value3"
+    var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect-query-string2", hub: true });
+
+    connection.start().done(function () {
+        assert.comment("Connection succeeded");
+
+        assert.ok(connection._.redirectQs.includes("name1=newValue"), "The client preserved 'name1=newValue' from redirect query string.");
+        assert.ok(connection._.redirectQs.includes("name3=value3"), connection._.redirectQs, "The client preserved 'name3=value3' from redirect query string.");
+
+        connection.stop();
+
+        assert.equal(connection._.redirectQs, null, "The client cleared the redirect query string.");
+
+        end();
     }).fail(function () {
         assert.fail("Connection failed!");
         end();
