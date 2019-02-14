@@ -93,12 +93,19 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private readonly X509CertificateCollection _certCollection = new X509CertificateCollection();
 
+        // The URL passed to the ctor. Used to reset _actualUrl during Disconnect().
+        private readonly string _userUrl;
+
+        // The URL passed to the ctor or the last RedirectUrl during negotiation.
+        // Returned by both Connection.Url and IConnection.Url.
+        private string _actualUrl;
+
         // The query string passed to the ctor. Returned by Connection.QueryString.
         private readonly string _userQueryString;
 
-        // The query string passed to the ctor plus what may have been added by the last
-        // RedirectUrl during negotiation.
-        private string _redirectPlusUserQueryString;
+        // The query string passed to the ctor or the query string specified by the last
+        // RedirectUrl during negotiation. Returned by IConnection.QueryString.
+        private string _actualQueryString;
 
         // Keeps track of when the last keep alive from the server was received
         // internal virtual to allow mocking
@@ -180,9 +187,10 @@ namespace Microsoft.AspNet.SignalR.Client
                 url += "/";
             }
 
-            Url = url;
+            _userUrl = url;
+            _actualUrl = url;
             _userQueryString = queryString;
-            _redirectPlusUserQueryString = queryString;
+            _actualQueryString = queryString;
             _disconnectTimeoutOperation = DisposableAction.Empty;
             _lastMessageAt = DateTime.UtcNow;
             _lastActiveAt = DateTime.UtcNow;
@@ -352,7 +360,9 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <summary>
         /// Gets the url for the connection.
         /// </summary>
-        public string Url { get; private set; }
+        public string Url => _userUrl;
+
+        string IConnection.Url => _actualUrl;
 
         /// <summary>
         /// Gets or sets the last message id for the connection.
@@ -384,7 +394,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         public string QueryString => _userQueryString;
 
-        string IConnection.QueryString => _redirectPlusUserQueryString;
+        string IConnection.QueryString => _actualQueryString;
 
         public IClientTransport Transport
         {
@@ -532,25 +542,21 @@ namespace Microsoft.AspNet.SignalR.Client
                                             var splitUrlAndQuery = negotiationResponse.RedirectUrl.Split(new[] { '?' }, 2);
 
                                             // Update the URL based on the redirect response and restart the negotiation
-                                            Url = splitUrlAndQuery[0];
+                                            _actualUrl = splitUrlAndQuery[0];
 
                                             if (splitUrlAndQuery.Length == 2 && !string.IsNullOrEmpty(splitUrlAndQuery[1]))
                                             {
-                                                var sb = new StringBuilder("?");
-                                                UrlBuilder.AppendCustomQueryString(sb, splitUrlAndQuery[1]);
-                                                UrlBuilder.AppendCustomQueryString(sb, _userQueryString);
-
                                                 // Update IConnection.QueryString with query string from only the most recent RedirectUrl.
-                                                _redirectPlusUserQueryString = UrlBuilder.Trim(sb);
+                                                _actualQueryString = splitUrlAndQuery[1];
                                             }
                                             else
                                             {
-                                                _redirectPlusUserQueryString = _userQueryString;
+                                                _actualQueryString = _userQueryString;
                                             }
 
-                                            if (!Url.EndsWith("/"))
+                                            if (!_actualUrl.EndsWith("/"))
                                             {
-                                                Url += "/";
+                                                _actualUrl += "/";
                                             }
 
                                             if (!string.IsNullOrEmpty(negotiationResponse.AccessToken))
@@ -768,6 +774,8 @@ namespace Microsoft.AspNet.SignalR.Client
                     GroupsToken = null;
                     MessageId = null;
                     _connectionData = null;
+                    _actualUrl = _userUrl;
+                    _actualQueryString = _userQueryString;
 
                     // Clear the buffer
                     // PORT: In 2.3.0 this was only present in the UWP and PCL versions.
