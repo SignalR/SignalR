@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     Assert.Equal("value3", await hub.Invoke<string>("GetQueryStringValue", "name3"));
 
                     // Verify that (Hub)Connection.QueryString only contains what was specified by the user, not the redirect.
-                    // IConnection.QueryString contains what only what was set via redirect. This is what's used by the client to actually build URLs.
+                    // IConnection.QueryString contains only what was set via redirect. This is what's used by the client to actually build URLs.
                     Assert.Contains("foo=bar", connection.QueryString);
                     Assert.DoesNotContain("foo=bar", ((Client.IConnection)connection).QueryString);
 

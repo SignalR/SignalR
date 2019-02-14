@@ -174,7 +174,7 @@ QUnit.asyncTimeoutTest("Only preserves last redirect query string", testUtilitie
             assert.equal(response, "value3", "The client preserved 'name3=value3' from redirect query string.");
             return hub.server.getQueryStringValue("origName1");
         }).then(function (response) {
-            assert.equal(response, "value1", "The client preserved 'name1=value1' from the first redirect query string for the next request in the redirect chain.");
+            assert.equal(response, "value1", "The client preserved 'origName1=value1' from the first redirect query string for the next request in the redirect chain.");
             return hub.server.getQueryStringValue("name2");
         }).then(function (response) {
             assert.equal(response, null, "The client did not preserve a query string key-value pair only specified in an intermediate redirect query string.");
