@@ -562,12 +562,12 @@
 
             connection.withCredentials = config.withCredentials;
 
-            setConnectionUrl(connection, connection.url);
-
             // Save the original url so that we can reset it when we stop and restart the connection
             connection._originalUrl = connection.url;
 
             connection.ajaxDataType = config.jsonp ? "jsonp" : "text";
+
+            setConnectionUrl(connection, connection.url);
 
             $(connection).bind(events.onStart, function (e, data) {
                 if ($.type(callback) === "function") {
@@ -1039,7 +1039,13 @@
 
             // Reset the URL and clear the access token
             delete connection.accessToken;
+            delete connection.protocol;
+            delete connection.host;
+            delete connection.baseUrl;
+            delete connection.wsProtocol;
+            delete connection.contentType;
             connection.url = connection._originalUrl;
+            connection._.redirectQs = null;
 
             // Trigger the disconnect event
             changeState(connection, connection.state, signalR.connectionState.disconnected);
