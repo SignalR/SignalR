@@ -198,7 +198,7 @@
             if (connection.transport) {
                 url = connection.url + "/ping";
 
-                url = transportLogic.addQs(url, connection.qs);
+                url = transportLogic.addUserQs(connection, url);
 
                 xhr = transportLogic.ajax(connection, {
                     url: url,
@@ -279,13 +279,7 @@
             // Use addQs to start since it handles the ?/& prefix for us
             preparedUrl = transportLogic.addQs(url, "clientProtocol=" + connection.clientProtocol);
 
-            if (typeof (connection._.redirectQs) === "string") {
-                // Add the redirect-specified query string params if any
-                preparedUrl = transportLogic.addQs(preparedUrl, connection._.redirectQs);
-            } else {
-                // Otherwise, add the user-specified query string params if any
-                preparedUrl = transportLogic.addQs(preparedUrl, connection.qs);
-            }
+            preparedUrl = transportLogic.addUserQs(connection, preparedUrl);
 
             if (connection.token) {
                 preparedUrl += "&connectionToken=" + window.encodeURIComponent(connection.token);
@@ -321,6 +315,16 @@
             }
 
             throw new Error("Query string property must be either a string or object.");
+        },
+
+        addUserQs: function (connection, url) {
+            if (typeof (connection._.redirectQs) === "string") {
+                // Add the redirect-specified query string params if any
+                return transportLogic.addQs(url, connection._.redirectQs);
+            } else {
+                // Otherwise, add the user-specified query string params if any
+               return transportLogic.addQs(url, connection.qs);
+            }
         },
 
         // BUG #2953: The url needs to be same otherwise it will cause a memory leak
@@ -636,17 +640,34 @@
             return false;
         },
 
-        isConnectedOrReconnecting: function (connection) {
-            return connection.state === signalR.connectionState.connected ||
-                   connection.state === signalR.connectionState.reconnecting;
+        shouldAttemptReconnect: function (connection) {
+            if (connection.state !== signalR.connectionState.connected &&
+                connection.state !== signalR.connectionState.reconnecting) {
+                return false;
+            }
+
+            if (connection._.reconnectDisabled) {
+                connection.log(signalR.resources.automaticReconnectDisabled);
+                connection.stop();
+                return false;
+            }
+
+            return true;
         },
 
         ensureReconnectingState: function (connection) {
+            if (connection._.reconnectDisabled) {
+                connection.log(signalR.resources.automaticReconnectDisabled);
+                connection.stop();
+                return false;
+            }
+
             if (changeState(connection,
                         signalR.connectionState.connected,
                         signalR.connectionState.reconnecting) === true) {
                 $(connection).triggerHandler(events.onReconnecting);
             }
+
             return connection.state === signalR.connectionState.reconnecting;
         },
 
@@ -674,7 +695,7 @@
 
             // We should only set a reconnectTimeout if we are currently connected
             // and a reconnectTimeout isn't already set.
-            if (transportLogic.isConnectedOrReconnecting(connection) && !connection._.reconnectTimeout) {
+            if (transportLogic.shouldAttemptReconnect(connection) && !connection._.reconnectTimeout) {
                 // Need to verify before the setTimeout occurs because an application sleep could occur during the setTimeout duration.
                 if (!transportLogic.verifyLastActive(connection)) {
                     return;

@@ -136,7 +136,7 @@
             var that = this;
 
             // Need to verify connection state and verify before the setTimeout occurs because an application sleep could occur during the setTimeout duration.
-            if (transportLogic.isConnectedOrReconnecting(connection) && transportLogic.verifyLastActive(connection)) {
+            if (transportLogic.shouldAttemptReconnect(connection) && transportLogic.verifyLastActive(connection)) {
                 window.setTimeout(function () {
                     // Verify that we're ok to reconnect.
                     if (!transportLogic.verifyLastActive(connection)) {

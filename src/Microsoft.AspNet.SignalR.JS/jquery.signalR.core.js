@@ -42,7 +42,8 @@
         webSocketsInvalidState: "The Web Socket transport is in an invalid state, transitioning into reconnecting.",
         reconnectTimeout: "Couldn't reconnect within the configured timeout of {0} ms, disconnecting.",
         reconnectWindowTimeout: "The client has been inactive since {0} and it has exceeded the inactivity timeout of {1} ms. Stopping the connection.",
-        jsonpNotSupportedWithAccessToken: "The JSONP protocol does not support connections that require a Bearer token to connect, such as the Azure SignalR Service."
+        jsonpNotSupportedWithAccessToken: "The JSONP protocol does not support connections that require a Bearer token to connect, such as the Azure SignalR Service.",
+        automaticReconnectDisabled: "SignalR's automatic reconnect logic disabled because it is not supported with the Azure SignalR service."
     };
 
     if (typeof ($) !== "function") {
@@ -352,13 +353,15 @@
                 connectingMessageBuffer: new ConnectingMessageBuffer(this, function (message) {
                     $connection.triggerHandler(events.onReceived, [message]);
                 }),
-                lastMessageAt: new Date().getTime(),
-                lastActiveAt: new Date().getTime(),
                 beatInterval: 5000, // Default value, will only be overridden if keep alive is enabled,
                 beatHandle: null,
                 totalTransportConnectTimeout: 0, // This will be the sum of the TransportConnectTimeout sent in response to negotiate and connection.transportConnectTimeout
-                redirectQs: null
+                // Save the original url so that we can reset it when we stop and restart the connection
+                originalUrl: url,
+                redirectQs: null,
+                reconnectDisabled: false
             };
+
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
             }
@@ -497,6 +500,9 @@
                     }
                 };
 
+            connection._.lastMessageAt = new Date().getTime();
+            connection._.lastActiveAt = new Date().getTime();
+
             connection.lastError = null;
 
             // Persist the deferral so that if start is called multiple times the same deferral is used.
@@ -561,9 +567,6 @@
             }
 
             connection.withCredentials = config.withCredentials;
-
-            // Save the original url so that we can reset it when we stop and restart the connection
-            connection._originalUrl = connection.url;
 
             connection.ajaxDataType = config.jsonp ? "jsonp" : "text";
 
@@ -752,6 +755,10 @@
                                     onFailed(signalR._.error(resources.errorRedirectionExceedsLimit), connection);
                                     return;
                                 }
+
+                                // This RedirectUrl indicates we're connecting to the Azure Signalr Service which doesn't
+                                // support reconnecting without renegotiating.
+                                connection._.reconnectDisabled = true;
 
                                 if (config.transport === "auto") {
                                     // Redirected connections do not support foreverFrame
@@ -1027,6 +1034,7 @@
             delete connection.messageId;
             delete connection.groupsToken;
             delete connection.id;
+            delete connection._.beatHandle;
             delete connection._.pingIntervalId;
             delete connection._.lastMessageAt;
             delete connection._.lastActiveAt;
@@ -1044,8 +1052,14 @@
             delete connection.baseUrl;
             delete connection.wsProtocol;
             delete connection.contentType;
-            connection.url = connection._originalUrl;
+            connection.url = connection._.originalUrl;
+
+            // Reset state set during negotiation
+            connection._.keepAliveData = {};
+            connection._.beatInterval = 5000;
+            connection._.totalTransportConnectTimeout = 0;
             connection._.redirectQs = null;
+            connection._.reconnectDisabled = false;
 
             // Trigger the disconnect event
             changeState(connection, connection.state, signalR.connectionState.disconnected);
