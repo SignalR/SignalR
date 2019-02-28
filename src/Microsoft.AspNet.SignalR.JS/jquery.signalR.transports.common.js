@@ -553,11 +553,12 @@
                 // This is a message send directly to the client
                 data = transportLogic.maximizePersistentResponse(minData);
 
-                if(data.Error) {
+                if (data.Error) {
                     // This is a global error, stop the connection.
                     connection.log("Received an error message from the server: " + minData.E);
                     $(connection).triggerHandler(signalR.events.onError, [signalR._.error(minData.E, /* source */ "ServerError")]);
                     connection.stop(/* async */ false, /* notifyServer */ false);
+                    return;
                 }
 
                 transportLogic.updateGroups(connection, data.GroupsToken);
