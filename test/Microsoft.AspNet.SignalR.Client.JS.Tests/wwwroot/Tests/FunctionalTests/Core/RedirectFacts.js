@@ -307,4 +307,36 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
+
+    QUnit.asyncTimeoutTest(transport + " transport does not attempt to automatically reconnect if given a RedirectUrl during negotiate.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect", hub: true, ignoreErrors: true }),
+            hub = connection.createHubProxies().redirectTestHub;
+
+        assert.equal($.signalR.connectionState.disconnected, connection.state, "SignalR state is disconnected prior to start.");
+
+        connection.start({ transport: transport }).done(function () {
+            assert.equal($.signalR.connectionState.connected, connection.state, "SignalR state is connected once start callback is called.");
+
+            // Wire up the state changed (while connected) to detect if we shift into the reconnecting or disconnected state.
+            connection.stateChanged(function () {
+                if (connection.state === $.signalR.connectionState.disconnected) {
+                    assert.comment("Signalr state is disconnected.")
+                    end();
+                } else {
+                    assert.fail("SignalR state is not disconnected! connection.state: " + connection.state);
+                    end();
+                }
+            });
+
+            $.network.disconnect();
+        });
+
+        assert.equal($.signalR.connectionState.connecting, connection.state, "SignalR state is connecting prior to start deferred resolve.");
+
+        // Cleanup
+        return function () {
+            $.network.connect();
+            connection.stop();
+        };
+    })
 });

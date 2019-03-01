@@ -14,6 +14,10 @@
             this[methodName].apply(this, args);
         });
     },
+    isConnecting = false,
+    isDisconnecting = false,
+    connectScheduled = false,
+    disconnectScheduled = false,
     network = {
         enable: function () {
             /// <summary>Enables the network mock functionality.</summary>
@@ -26,11 +30,33 @@
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
             /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>
-            invoke("disconnect", soft);
+            if (!isConnecting) {
+                isDisconnecting = true;
+                invoke("disconnect", soft);
+                isDisconnecting = false;
+
+                if (connectScheduled) {
+                    connectScheduled = false;
+                    network.connect();
+                }
+            } else {
+                disconnectScheduled = true;
+            }
         },
         connect: function () {
             /// <summary>Connects the network so javascript methods can continue utilizing the network.</summary>
-            invoke("connect");
+            if (!isDisconnecting) {
+                isConnecting = true;
+                invoke("connect");
+                isConnecting = false;
+
+                if (disconnectScheduled) {
+                    disconnectScheduled = false;
+                    network.disconnect();
+                }
+            } else {
+                connectScheduled = true;
+            }
         }
     };
 
