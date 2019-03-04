@@ -166,12 +166,20 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 CallbackId = callbackId
             };
 
-            if (_state.Count != 0)
+            string value = null;
+
+            lock (_state)
             {
-                hubData.State = _state;
+                if (_state.Count != 0)
+                {
+                    hubData.State = _state;
+
+                    // Only keep the _state lock during JsonSerializeObject if hubData.State is set to _state.
+                    value = _connection.JsonSerializeObject(hubData);
+                }
             }
 
-            var value = _connection.JsonSerializeObject(hubData);
+            value = value ?? _connection.JsonSerializeObject(hubData);
 
             _connection.Send(value).ContinueWith(task =>
             {
