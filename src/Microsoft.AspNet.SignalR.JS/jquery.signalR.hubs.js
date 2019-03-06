@@ -98,7 +98,9 @@
             /// <param name="callback" type="Function">The callback to be invoked.</param>
             /// <param name="callbackIdentity" type="Object">An optional object to use as the "identity" for the callback when checking if the handler has already been registered. Defaults to the value of 'callback' if not provided.</param>
             var that = this,
-                callbackMap = that._.callbackMap;
+                callbackMap = that._.callbackMap,
+                // https://github.com/SignalR/SignalR/issues/4310
+                isFromOldGeneratedHubProxy = !callbackIdentity && callback.toString().includes("// Call the client hub method");
 
             // We need the third "identity" argument because the registerHubProxies call made by signalr/js wraps the user-provided callback in a custom wrapper which breaks the identity comparison.
             // callbackIdentity allows the caller of `on` to provide a separate object to use as the "identity". `registerHubProxies` uses the original user callback as this identity object.
@@ -122,7 +124,7 @@
             // Check if there's already a registration
             var registration;
             for (var i = 0; i < callbackSpace.length; i++) {
-                if (callbackSpace[i].guid === callbackIdentity._signalRGuid) {
+                if (callbackSpace[i].guid === callbackIdentity._signalRGuid || (isFromOldGeneratedHubProxy && callbackSpace[i].isFromOldGeneratedHubProxy)) {
                     registration = callbackSpace[i];
                 }
             }
@@ -131,7 +133,8 @@
             if (!registration) {
                 registration = {
                     guid: callbackIdentity._signalRGuid,
-                    eventHandlers: []
+                    eventHandlers: [],
+                    isFromOldGeneratedHubProxy: isFromOldGeneratedHubProxy
                 };
                 callbackMap[eventName].push(registration);
             }
@@ -153,7 +156,9 @@
             /// <param name="callbackIdentity" type="Object">An optional object to use as the "identity" when looking up the callback. Corresponds to the same parameter provided to 'on'. Defaults to the value of 'callback' if not provided.</param>
             var that = this,
                 callbackMap = that._.callbackMap,
-                callbackSpace;
+                callbackSpace,
+                // https://github.com/SignalR/SignalR/issues/4310
+                isFromOldGeneratedHubProxy = !callbackIdentity && callback.toString().includes("// Call the client hub method");
 
             callbackIdentity = callbackIdentity || callback;
 
@@ -170,7 +175,7 @@
                     var callbackRegistration;
                     var callbackIndex;
                     for (var i = 0; i < callbackSpace.length; i++) {
-                        if (callbackSpace[i].guid === callbackIdentity._signalRGuid) {
+                        if (callbackSpace[i].guid === callbackIdentity._signalRGuid || (isFromOldGeneratedHubProxy && callbackSpace[i].isFromOldGeneratedHubProxy)) {
                             callbackIndex = i;
                             callbackRegistration = callbackSpace[i];
                         }
