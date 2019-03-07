@@ -44,7 +44,6 @@
         <PropertyGroup>
             <_ConstantProperties>Configuration=$(Configuration)</_ConstantProperties>
             <_ConstantProperties>$(ConstantProperties);PackageVersion=$(PackageVersion)</_ConstantProperties>
-            <_ConstantProperties>$(ConstantProperties);LicenseUrl=http://example.com</_ConstantProperties>
         </PropertyGroup>
 
         <!-- We have to restore first -->

@@ -47,14 +47,14 @@
     <!-- Assembly/NuSpec attributes -->
     <Company>Microsoft</Company>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <PackageLicenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_ENU.htm</PackageLicenseUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/SignalR/SignalR/2.3.0/LICENSE.txt</PackageLicenseUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(OfficialBuild)' != 'true'">
     <!-- Assembly/NuSpec attributes -->
     <Company>.NET Foundation</Company>
     <Copyright>© Copyright (c) .NET Foundation. All rights reserved.</Copyright>
-    <PackageLicenseUrl>https://raw.github.com/SignalR/SignalR/master/LICENSE.txt</PackageLicenseUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/SignalR/SignalR/2.3.0/LICENSE.txt</PackageLicenseUrl>
   </PropertyGroup>
 
   <!-- Locating Visual Studio -->
