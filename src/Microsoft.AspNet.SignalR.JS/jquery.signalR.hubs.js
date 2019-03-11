@@ -67,6 +67,13 @@
         }
     }
 
+    function isCallbackFromGeneratedHubProxy(callback) {
+        // https://github.com/SignalR/SignalR/issues/4310
+        // The stringified callback from the old generated hub proxy is 137 characters in Edge, Firefox and Chrome.
+        // We slice to avoid wasting too many cycles searching through the text of a long large function.
+        return $.isFunction(callback) && callback.toString().slice(0, 256).indexOf("// Call the client hub method") >= 0;
+    }
+
     // hubProxy
     function hubProxy(hubConnection, hubName) {
         /// <summary>
@@ -99,8 +106,7 @@
             /// <param name="callbackIdentity" type="Object">An optional object to use as the "identity" for the callback when checking if the handler has already been registered. Defaults to the value of 'callback' if not provided.</param>
             var that = this,
                 callbackMap = that._.callbackMap,
-                // https://github.com/SignalR/SignalR/issues/4310
-                isFromOldGeneratedHubProxy = !callbackIdentity && callback.toString().includes("// Call the client hub method");
+                isFromOldGeneratedHubProxy = !callbackIdentity && isCallbackFromGeneratedHubProxy(callback);
 
             // We need the third "identity" argument because the registerHubProxies call made by signalr/js wraps the user-provided callback in a custom wrapper which breaks the identity comparison.
             // callbackIdentity allows the caller of `on` to provide a separate object to use as the "identity". `registerHubProxies` uses the original user callback as this identity object.
@@ -157,8 +163,7 @@
             var that = this,
                 callbackMap = that._.callbackMap,
                 callbackSpace,
-                // https://github.com/SignalR/SignalR/issues/4310
-                isFromOldGeneratedHubProxy = !callbackIdentity && callback.toString().includes("// Call the client hub method");
+                isFromOldGeneratedHubProxy = !callbackIdentity && isCallbackFromGeneratedHubProxy(callback);
 
             callbackIdentity = callbackIdentity || callback;
 
