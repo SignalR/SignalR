@@ -452,3 +452,42 @@ testUtilities.runWithAllTransports(function (transport) {
         };
     });
 });
+
+QUnit.asyncTimeoutTest("Hub Event Handler added by old registerHubProxies can be removed.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName),
+        echoHub = connection.createHubProxies().echoHub,
+        handler = function (value) {
+            assert.ok(false, "Failed to remove handler");
+            end();
+        };
+
+    // makeProxyCallback was copied from the SignalR 1.0.0 version of src/Microsoft.AspNet.SignalR.Core/Scripts/hubs.js.
+    // As of 2.4.1, the makeProxyCallback function hasn't changed. It must include the comment "// Call the client hub method" for this test to pass.
+    // https://github.com/SignalR/SignalR/pull/4329
+    function makeProxyCallback(hub, callback) {
+        return function () {
+            // Call the client hub method
+            callback.apply(hub, $.makeArray(arguments));
+        };
+    };
+
+    // Add the handler and then remove it using a different callback but the same "identity" object
+    // It should be removed in this case.
+    echoHub.on('echo', makeProxyCallback(echoHub, handler));
+    echoHub.off('echo', makeProxyCallback(echoHub, handler));
+
+    connection.start().done(function () {
+        assert.ok(true, "Connected");
+        echoHub.server.echoCallback("hello");
+
+        setTimeout(function () {
+            assert.ok(true, "Handler was not called, success!");
+            end();
+        }, 200);
+    });
+
+    // Cleanup
+    return function () {
+        connection.stop();
+    };
+});
