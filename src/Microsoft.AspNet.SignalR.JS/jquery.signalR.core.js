@@ -422,7 +422,7 @@
         // It doesn't matter whether the server reflects back 2.1 or continues using 2.0 as the protocol version.
         supportedProtocols: ["1.5", "2.0", "2.1"],
 
-        negotiatRedirectSupportedProtocols: ["2.0", "2.1"],
+        negotiateRedirectSupportedProtocols: ["2.0", "2.1"],
 
         reconnectDelay: 2000,
 
