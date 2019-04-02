@@ -270,7 +270,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public async Task DoesNotFollowRedirectIfProtocolVersionIsNot20()
+        public async Task DoesNotFollowRedirectIfProtocolVersionIsLessThan20()
         {
             using (var host = CreateHost(HostType.Memory, TransportType.Auto))
             {
@@ -280,6 +280,42 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     // Should fail to connect.
                     await Assert.ThrowsAsync<TimeoutException>(() => connection.Start(host.TransportFactory()));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task DoesNotFollowRedirectIfProtocolVersionIsGreaterThan21()
+        {
+            using (var host = CreateHost(HostType.Memory, TransportType.Auto))
+            {
+                host.Initialize();
+
+                using (var connection = CreateHubConnection(host, path: "/redirect-future-proto", useDefaultUrl: false))
+                {
+                    // Should fail to connect.
+                    await Assert.ThrowsAsync<InvalidOperationException >(() => connection.Start(host.TransportFactory()));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task DoesFollowRedirectIfProtocolVersionIs21()
+        {
+            using (var host = CreateHost(HostType.Memory, TransportType.Auto))
+            {
+                host.Initialize();
+
+                using (var connection = CreateHubConnection(host, path: "/redirect-new-proto", useDefaultUrl: false))
+                {
+                    var hub = connection.CreateHubProxy("RedirectTestHub");
+
+                    await connection.Start(host.TransportFactory());
+
+                    // Verify we're connected by calling the echo method
+                    var result = await hub.Invoke<string>("EchoReturn", "Hello, World!");
+
+                    Assert.Equal("Hello, World!", result);
                 }
             }
         }

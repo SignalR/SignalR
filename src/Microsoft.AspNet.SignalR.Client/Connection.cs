@@ -32,7 +32,8 @@ namespace Microsoft.AspNet.SignalR.Client
         internal static readonly TimeSpan DefaultAbortTimeout = TimeSpan.FromSeconds(30);
 
         private static readonly Version MinimumSupportedVersion = new Version(1, 4);
-        private static readonly Version MaximumSupportedVersion = new Version(2, 0);
+        private static readonly Version MaximumSupportedVersion = new Version(2, 1);
+        private static readonly Version MinimumSupportedNegotiateRedirectVersion = new Version(2, 0);
         private static readonly int MaxRedirects = 100;
 
         private static Version _assemblyVersion;
@@ -205,7 +206,7 @@ namespace Microsoft.AspNet.SignalR.Client
             DeadlockErrorTimeout = TimeSpan.FromSeconds(10);
 
             // Current client protocol
-            Protocol = new Version(2, 0);
+            Protocol = new Version(2, 1);
         }
 
         /// <summary>
@@ -529,9 +530,9 @@ namespace Microsoft.AspNet.SignalR.Client
                 return transport.Negotiate(this, _connectionData)
                                 .Then(negotiationResponse =>
                                 {
-                                    VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
+                                    var protocolVersion = VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
 
-                                    if (negotiationResponse.ProtocolVersion.Equals("2.0"))
+                                    if (protocolVersion >= MinimumSupportedNegotiateRedirectVersion)
                                     {
                                         if (!string.IsNullOrEmpty(negotiationResponse.Error))
                                         {
@@ -636,7 +637,7 @@ namespace Microsoft.AspNet.SignalR.Client
             return false;
         }
 
-        private void VerifyProtocolVersion(string versionString)
+        private Version VerifyProtocolVersion(string versionString)
         {
             Version version;
 
@@ -649,6 +650,8 @@ namespace Microsoft.AspNet.SignalR.Client
                                                                   Protocol,
                                                                   versionString ?? "null"));
             }
+
+            return version;
         }
 
         /// <summary>

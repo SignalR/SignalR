@@ -413,12 +413,16 @@
 
         state: signalR.connectionState.disconnected,
 
-        clientProtocol: "2.0",
+        clientProtocol: "2.1",
 
         // We want to support older servers since the 2.0 change is to support redirection results, which isn't
         // really breaking in the protocol. So if a user updates their client to 2.0 protocol version there's
-        // no reason they can't still connect to a 1.5 server.
-        supportedProtocols: ["1.5", "2.0"],
+        // no reason they can't still connect to a 1.5 server. The 2.1 protocol is sent by the client so the SignalR
+        // service knows the client will use they query string returned via the RedirectUrl for subsequent requests.
+        // It doesn't matter whether the server reflects back 2.1 or continues using 2.0 as the protocol version.
+        supportedProtocols: ["1.5", "2.0", "2.1"],
+
+        negotiatRedirectSupportedProtocols: ["2.0", "2.1"],
 
         reconnectDelay: 2000,
 
@@ -739,8 +743,10 @@
                             return;
                         }
 
-                        // Check for a redirect response (which must have a ProtocolVersion of 2.0)
-                        if (res.ProtocolVersion === "2.0") {
+                        // Check for a redirect response (which must have a ProtocolVersion of 2.0 or greater)
+                        // ProtocolVersion 2.1 is the highest supported by the client, so we can just check for 2.0 or 2.1 for now
+                        // instead of trying to do proper version string comparison in JavaScript.
+                        if (connection.negotiatRedirectSupportedProtocols.indexOf(res.ProtocolVersion) !== -1) {
                             if (res.Error) {
                                 protocolError = signalR._.error(signalR._.format(resources.errorFromServer, res.Error));
                                 $(connection).triggerHandler(events.onError, [protocolError]);

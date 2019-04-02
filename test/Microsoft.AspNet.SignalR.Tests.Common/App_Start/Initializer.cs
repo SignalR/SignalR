@@ -200,6 +200,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
 
             // Wrong protocol version
             AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-old-proto", "/signalr", protocolVersion: "1.5"));
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-new-proto", "/signalr", protocolVersion: "2.1"));
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-future-proto", "/signalr", protocolVersion: "2.2"));
         }
 
         private static void RegisterSignalREndpoints(IAppBuilder app, IDependencyResolver resolver, HubConfiguration hubConfig)
