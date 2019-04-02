@@ -746,7 +746,7 @@
                         // Check for a redirect response (which must have a ProtocolVersion of 2.0 or greater)
                         // ProtocolVersion 2.1 is the highest supported by the client, so we can just check for 2.0 or 2.1 for now
                         // instead of trying to do proper version string comparison in JavaScript.
-                        if (connection.negotiatRedirectSupportedProtocols.indexOf(res.ProtocolVersion) !== -1) {
+                        if (connection.negotiateRedirectSupportedProtocols.indexOf(res.ProtocolVersion) !== -1) {
                             if (res.Error) {
                                 protocolError = signalR._.error(signalR._.format(resources.errorFromServer, res.Error));
                                 $(connection).triggerHandler(events.onError, [protocolError]);
