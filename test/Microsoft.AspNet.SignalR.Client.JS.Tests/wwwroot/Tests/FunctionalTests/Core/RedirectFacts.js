@@ -263,7 +263,7 @@ QUnit.asyncTimeoutTest("Limits redirects", testUtilities.defaultTestTimeout, fun
     });
 });
 
-QUnit.asyncTimeoutTest("Does not follow redirect url if ProtocolVersion is not 2.0", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+QUnit.asyncTimeoutTest("Does not follow redirect url if ProtocolVersion is less than 2.0", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect-old-proto", ignoreErrors: true, hub: true, wrapStart: false }),
         proxies = connection.createHubProxies(),
         hub = proxies.redirectTestHub;
@@ -273,6 +273,41 @@ QUnit.asyncTimeoutTest("Does not follow redirect url if ProtocolVersion is not 2
         end();
     }).fail(function (e) {
         assert.equal(e.message, "No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.", "Connection ignored RedirectUrl on old ProtocolVersion response.");
+        end();
+    });
+});
+
+QUnit.asyncTimeoutTest("Does not follow redirect url if ProtocolVersion is greater than 2.1", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect-future-proto", ignoreErrors: true, hub: true, wrapStart: false }),
+        proxies = connection.createHubProxies(),
+        hub = proxies.redirectTestHub;
+
+    connection.start().done(function () {
+        assert.fail("Connection should fail!");
+        end();
+    }).fail(function (e) {
+        assert.equal(e.message, "You are using a version of the client that isn't compatible with the server. Client version 2.1, server version 2.2.", "Connection ignored RedirectUrl from new ProtocolVersion response.");
+        end();
+    });
+})
+
+QUnit.asyncTimeoutTest("Does follow redirect url if ProtocolVersion is 2.1", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect-new-proto", hub: true }),
+        proxies = connection.createHubProxies(),
+        hub = proxies.redirectTestHub;
+
+    connection.start().done(function () {
+        assert.comment("Connection succeeded");
+
+        hub.server.echoReturn("Test Message").then(function (response) {
+            assert.equal(response, "Test Message", "Successfully called a server method");
+            end();
+        }).fail(function () {
+            assert.fail("Invocation failed!");
+            end();
+        });
+    }).fail(function () {
+        assert.fail("Connection failed!");
         end();
     });
 });
