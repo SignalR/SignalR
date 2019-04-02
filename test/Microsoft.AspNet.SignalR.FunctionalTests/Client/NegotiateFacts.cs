@@ -294,7 +294,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (var connection = CreateHubConnection(host, path: "/redirect-future-proto", useDefaultUrl: false))
                 {
                     // Should fail to connect.
-                    await Assert.ThrowsAsync<InvalidOperationException >(() => connection.Start(host.TransportFactory()));
+                    await Assert.ThrowsAsync<InvalidOperationException>(() => connection.Start(host.TransportFactory()));
                 }
             }
         }
