@@ -447,6 +447,9 @@
             async = typeof async === "undefined" ? true : async;
 
             var url = getAjaxUrl(connection, "/abort");
+            
+            if (navigator.sendBeacon) //use the new sendBeacon API cause new Chrome disabled XHR in "onbeforeunload"
+                navigator.sendBeacon(url);
 
             transportLogic.ajax(connection, {
                 url: url,
