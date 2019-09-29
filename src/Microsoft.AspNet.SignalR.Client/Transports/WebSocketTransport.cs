@@ -164,7 +164,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         // fire and forget
-        private async void DoReconnect()
+        private async Task DoReconnect()
         {
             var reconnectUrl = UrlBuilder.BuildReconnect(_connection, Name, _connectionData);
 
