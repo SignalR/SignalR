@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             var operation = new DbOperation(connectionString, "SELECT SERVERPROPERTY ( 'EngineEdition' )", _trace);
             var edition = (int)operation.ExecuteScalar();
 
-            return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.Express ||
+            return (edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.Express) ||
                 edition == SqlEngineEdition.SqlAzureManagedInstance;
         }
 
