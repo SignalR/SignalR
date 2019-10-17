@@ -1,6 +1,6 @@
 # ASP.NET SignalR JavaScript Client
 
-This is the client for ASP.NET SignalR. Use this package if you are connecting to an application written in ASP.NET (using System.Web, or OWIN self-host). This package is **not compatible** with ASP.NET **Core** SignalR. If you are connecting to an ASP.NET Core application, use the `@aspnet/signalr` package.
+This is the client for ASP.NET SignalR. Use this package if you are connecting to an application written in ASP.NET (using System.Web, or OWIN self-host). This package is **not compatible** with ASP.NET **Core** SignalR. If you are connecting to an ASP.NET Core application, use the `@microsoft/signalr` package.
 
 ## Documentation
 
