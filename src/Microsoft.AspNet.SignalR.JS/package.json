@@ -5,7 +5,7 @@
     "main": "jquery.signalR.js",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/signalr/bower-signalr.git"
+        "url": "git+https://github.com/signalr/signalr.git"
     },
     "keywords": [
         "signalr",
