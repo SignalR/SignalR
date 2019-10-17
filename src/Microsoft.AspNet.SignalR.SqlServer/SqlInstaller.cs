@@ -53,7 +53,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             var operation = new DbOperation(connectionString, "SELECT SERVERPROPERTY ( 'EngineEdition' )", _trace);
             var edition = (int)operation.ExecuteScalar();
 
-            return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.Express;
+            return (edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.Express) ||
+                edition == SqlEngineEdition.SqlAzureManagedInstance;
         }
 
         private static class SqlEngineEdition
@@ -64,6 +65,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             public const int Enterprise = 3;
             public const int Express = 4;
             public const int SqlAzure = 5;
+            public const int SqlAzureManagedInstance = 8;
         }
     }
 }
