@@ -450,31 +450,24 @@
             
             var requestHeaders = connection.accessToken ? { "Authorization": "Bearer " + connection.accessToken } : {};
             
-            //option #1 - try navigator.sendBeacon (reliable but unfortunately does not support Authorization header)
-            if (navigator.sendBeacon)
-            {
-                navigator.sendBeacon(url);
-            }
-            
-            //option #2 - send "fetch" with keepalive
-            if (window.fetch) //use the fetch API
-            {
+            //option #1 - send "fetch" with keepalive
+            if (window.fetch) { //use the fetch API
                 fetch(url, {
                     method: "POST",
                     keepalive: true,
                     headers: requestHeaders
                 });
             }
-
-            //last resort - use plan old XHR (does not work in recent Chrome versions)
-            transportLogic.ajax(connection, {
-                url: url,
-                async: async,
-                timeout: 1000,
-                type: "POST",
-                headers: requestHeaders,
-                dataType: "text" // We don't want to use JSONP here even when JSONP is enabled
-            });
+            else { //fetch no avail - fallback to tradiditonal $.ajax
+                transportLogic.ajax(connection, {
+                    url: url,
+                    async: async,
+                    timeout: 1000,
+                    type: "POST",
+                    headers: requestHeaders,
+                    dataType: "text" // We don't want to use JSONP here even when JSONP is enabled
+                });
+            }
 
             connection.log("Fired ajax abort async = " + async + ".");
         },
