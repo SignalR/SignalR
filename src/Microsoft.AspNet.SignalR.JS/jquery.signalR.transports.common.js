@@ -459,7 +459,8 @@
                     headers: requestHeaders
                 });
             }
-            else { //fetch no avail - fallback to tradiditonal $.ajax
+            else { 
+                // fetch is not available - fallback to $.ajax
                 transportLogic.ajax(connection, {
                     url: url,
                     async: async,
