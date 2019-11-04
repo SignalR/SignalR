@@ -451,7 +451,8 @@
             var requestHeaders = connection.accessToken ? { "Authorization": "Bearer " + connection.accessToken } : {};
             
             //option #1 - send "fetch" with keepalive
-            if (window.fetch) { //use the fetch API
+            if (window.fetch) { 
+                // use the fetch API with keepalive
                 fetch(url, {
                     method: "POST",
                     keepalive: true,
