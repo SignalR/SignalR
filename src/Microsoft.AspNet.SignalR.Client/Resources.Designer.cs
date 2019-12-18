@@ -187,6 +187,17 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to No client transport is compatible with the server. This either means that the AutoTransport was configured was configured to use only WebSockets which is not compatible with the server or that the AutoTransport was configured with no sub-transports at all..
+        /// </summary>
+        internal static string Error_NoCompatibleTransportFound
+        {
+            get
+            {
+                return ResourceManager.GetString("Error_NoCompatibleTransportFound", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Possible deadlock detected. A callback registered with &quot;HubProxy.On&quot; or &quot;Connection.Received&quot; has been executing for at least {0} seconds..
         /// </summary>
         internal static string Error_PossibleDeadlockDetected
