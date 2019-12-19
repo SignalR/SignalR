@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
             initHandler.OnFailure += () => failureInvokedTcs.TrySetResult(null);
 
-            initHandler.Fail();
+            initHandler.TryFailStart();
 
             await failureInvokedTcs.Task.OrTimeout();
 
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 .Returns<IHttpClient, IConnection, string, string>(
                     (httpClient, connection, connectionData, transport) =>
                     {
-                        initHandler.Fail(exception);
+                        initHandler.TryFailStart(exception);
                         return Task.FromResult("{ \"Response\" : \"started\" }");
                     });
 
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                     (httpClient, connection, connectionData, transport) => Task.FromResult("{ \"Response\" : \"started\" }"));
 
             initHandler.InitReceived();
-            initHandler.Fail();
+            initHandler.TryFailStart();
 
             await initHandler.Task;
             Assert.False(onFailureInvoked);

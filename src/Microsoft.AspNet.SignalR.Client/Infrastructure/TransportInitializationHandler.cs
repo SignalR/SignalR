@@ -59,14 +59,14 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             try
             {
                 _tokenCleanup = disconnectToken.SafeRegister(
-                    _ => Fail(new OperationCanceledException(Resources.Error_ConnectionCancelled, disconnectToken)),
+                    _ => TryFailStart(new OperationCanceledException(Resources.Error_ConnectionCancelled, disconnectToken)),
                     state: null);
             }
             catch (ObjectDisposedException)
             {
                 // We only dispose this token after cancelling it, so consider this cancellation.
                 // The ODE is only thrown on .NET 4.5.2 and below (.NET 4.6 no longer throws ODE from CTS.Register)
-                Fail(new OperationCanceledException(Resources.Error_ConnectionCancelled, disconnectToken));
+                TryFailStart(new OperationCanceledException(Resources.Error_ConnectionCancelled, disconnectToken));
             }
 
             TaskAsyncHelper.Delay(connection.TotalTransportConnectTimeout)
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                     if (Interlocked.CompareExchange(ref _state, InitializationState.Failed, InitializationState.Initial) ==
                         InitializationState.Initial)
                     {
-                        Fail(new TimeoutException(Resources.Error_TransportTimedOutTryingToConnect));
+                        TryFailStart(new TimeoutException(Resources.Error_TransportTimedOutTryingToConnect));
                     }
                 });
         }
@@ -91,14 +91,17 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             }
         }
 
-        public void Fail()
+        public bool TryFailStart()
         {
-            Fail(new InvalidOperationException(Resources.Error_TransportFailedToConnect));
+            return TryFailStart(new InvalidOperationException(Resources.Error_TransportFailedToConnect));
         }
 
-        public void Fail(Exception ex)
+        public bool TryFailStart(Exception ex)
         {
             _initializationInvoker.Invoke(CompleteFail, ex);
+            // Still return true if Start() failed due to an earlier call to TryFailStart() to prevent unwanted reconnects.
+            // If CompleteFail is called, the state transition will happen inline. The Failed state is terminal.
+            return _state == InitializationState.Failed;
         }
 
         public void InitReceived()
@@ -116,10 +119,10 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                                     }
                                     else
                                     {
-                                        Fail(new StartException(Resources.Error_StartFailed));
+                                        TryFailStart(new StartException(Resources.Error_StartFailed));
                                     }
                                 })
-                                .Catch(ex => Fail(new StartException(Resources.Error_StartFailed, ex)), _connection);
+                                .Catch(ex => TryFailStart(new StartException(Resources.Error_StartFailed, ex)), _connection);
             }
         }
 

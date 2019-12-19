@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 .Setup(c => c.Get(It.IsAny<string>(), It.IsAny<Action<IRequest>>(), It.IsAny<bool>()))
                 .Returns<string, Action<IRequest>, bool>(async (url, prepareRequest, isLongRunning) =>
                 {
-                    mockFailingTransport.Object.TransportFailed(exception);
+                    mockFailingTransport.Object.TryFailStart(exception);
 
                     await waitForException.Task;
 

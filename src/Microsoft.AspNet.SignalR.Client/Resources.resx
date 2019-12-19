@@ -198,4 +198,7 @@
   <data name="Error_NoCompatibleTransportFound" xml:space="preserve">
     <value>No client transport is compatible with the server. This either means that the AutoTransport was configured to use only WebSockets which is not compatible with the server or that the AutoTransport was configured with no sub-transports at all.</value>
   </data>
+  <data name="Error_TransportDisconnectedBeforeConnectionFullyInitialized" xml:space="preserve">
+    <value>The transport disconnected before the connection could be fully initialized.</value>
+  </data>
 </root>
