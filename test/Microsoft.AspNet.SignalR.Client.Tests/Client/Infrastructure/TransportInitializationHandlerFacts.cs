@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
-using Microsoft.AspNet.SignalR.Infrastructure;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
@@ -30,7 +29,8 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
             initHandler.OnFailure += () => failureInvokedTcs.TrySetResult(null);
 
-            initHandler.TryFailStart();
+            Assert.True(initHandler.TryFailStart());
+            Assert.True(initHandler.TryFailStart());
 
             await failureInvokedTcs.Task.OrTimeout();
 
@@ -188,7 +188,8 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                     (httpClient, connection, connectionData, transport) => Task.FromResult("{ \"Response\" : \"started\" }"));
 
             initHandler.InitReceived();
-            initHandler.TryFailStart();
+            Assert.False(initHandler.TryFailStart());
+            Assert.False(initHandler.TryFailStart());
 
             await initHandler.Task;
             Assert.False(onFailureInvoked);
