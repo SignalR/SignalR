@@ -148,32 +148,113 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         }
 
         [Fact]
-        public void WebSocketRemovedFromTransportList()
+        public async Task WebSocketsTriedByAutoTransportIfTryWebSocketsIsSetInLastNegotiateResponse()
         {
-            var tcs = new TaskCompletionSource<NegotiationResponse>();
-            var mre = new ManualResetEventSlim();
+            var fallbackTransport = new Mock<IClientTransport>();
+            var webSocketTransport = new Mock<IClientTransport>();
+            webSocketTransport.Setup(m => m.Name).Returns(new WebSocketTransport().Name);
 
-            var transports = new List<IClientTransport>();
+            var transports = new List<IClientTransport>()
+            {
+                webSocketTransport.Object,
+                fallbackTransport.Object,
+            };
 
-            var webSocketTransport = new Mock<WebSocketTransport>();
-            webSocketTransport.Protected()
-                .Setup("OnStart", ItExpr.IsAny<IConnection>(), ItExpr.IsAny<string>(), CancellationToken.None)
-                .Callback(mre.Set);
+            var autoTransport = new Mock<AutoTransport>(null, transports);
+            autoTransport
+                .Setup(c => c.GetNegotiateResponse(null, string.Empty))
+                .Returns(Task.FromResult(new NegotiationResponse { TryWebSockets = false }));
 
-            transports.Add(webSocketTransport.Object);
-            transports.Add(new ServerSentEventsTransport());
-            transports.Add(new LongPollingTransport());
+            await autoTransport.Object.Negotiate(null, string.Empty).OrTimeout();
 
-            var negotiationResponse = new NegotiationResponse();
-            negotiationResponse.TryWebSockets = false;
+            autoTransport
+                .Setup(c => c.GetNegotiateResponse(null, string.Empty))
+                .Returns(Task.FromResult(new NegotiationResponse { TryWebSockets = true }));
 
-            tcs.TrySetResult(negotiationResponse);
+            await autoTransport.Object.Negotiate(null, string.Empty).OrTimeout();
 
-            var autoTransport = new Mock<AutoTransport>(It.IsAny<IHttpClient>(), transports);
-            autoTransport.Setup(c => c.GetNegotiateResponse(It.IsAny<Connection>(), It.IsAny<string>())).Returns(tcs.Task);
-            autoTransport.Object.Negotiate(new Connection("http://foo", string.Empty), string.Empty).Wait();
+            await autoTransport.Object.Start(null, string.Empty, CancellationToken.None).OrTimeout();
 
-            Assert.False(mre.IsSet);
+            webSocketTransport.Verify(m => m.Start(null, string.Empty, CancellationToken.None), Times.Once());
+            fallbackTransport.Verify(m => m.Start(null, string.Empty, CancellationToken.None), Times.Never());
+        }
+
+        [Fact]
+        public async Task WebSocketsNotTriedByAutoTransportIfTryWebSocketsIsNotSetInLastNegotiateResponse()
+        {
+            var fallbackTransport = new Mock<IClientTransport>();
+            var webSocketTransport = new Mock<IClientTransport>();
+            webSocketTransport.Setup(m => m.Name).Returns(new WebSocketTransport().Name);
+
+            var transports = new List<IClientTransport>()
+            {
+                webSocketTransport.Object,
+                fallbackTransport.Object,
+            };
+
+            var autoTransport = new Mock<AutoTransport>(null, transports);
+            autoTransport
+                .Setup(c => c.GetNegotiateResponse(null, string.Empty))
+                .Returns(Task.FromResult(new NegotiationResponse { TryWebSockets = true }));
+
+            await autoTransport.Object.Negotiate(null, string.Empty).OrTimeout();
+
+            autoTransport
+                .Setup(c => c.GetNegotiateResponse(null, string.Empty))
+                .Returns(Task.FromResult(new NegotiationResponse { TryWebSockets = false }));
+
+            await autoTransport.Object.Negotiate(null, string.Empty).OrTimeout();
+
+            await autoTransport.Object.Start(null, string.Empty, CancellationToken.None).OrTimeout();
+
+            webSocketTransport.Verify(m => m.Start(null, string.Empty, CancellationToken.None), Times.Never());
+            fallbackTransport.Verify(m => m.Start(null, string.Empty, CancellationToken.None), Times.Once());
+        }
+
+        [Fact]
+        public async Task AutoTransportStartThrowsIfNoCompatibleTransportFound()
+        {
+            var webSocketTransport = new Mock<IClientTransport>();
+            webSocketTransport.Setup(m => m.Name).Returns(new WebSocketTransport().Name);
+
+            var transports = new List<IClientTransport>()
+            {
+                webSocketTransport.Object,
+            };
+
+            var autoTransport = new Mock<AutoTransport>(null, transports);
+            autoTransport
+                .Setup(c => c.GetNegotiateResponse(null, string.Empty))
+                .Returns(Task.FromResult(new NegotiationResponse { TryWebSockets = false }));
+
+            await autoTransport.Object.Negotiate(null, string.Empty).OrTimeout();
+
+            var ex = await Assert.ThrowsAsync<Exception>(async () =>
+                await autoTransport.Object.Start(null, string.Empty, CancellationToken.None)).OrTimeout();
+
+            Assert.Equal(Resources.Error_NoCompatibleTransportFound, ex.Message);
+            webSocketTransport.Verify(m => m.Start(null, string.Empty, CancellationToken.None), Times.Never());
+        }
+
+        [Fact]
+        public async Task WebSocketsTriedByAutoTransportIfNegotiateIsNotCalled()
+        {
+            var fallbackTransport = new Mock<IClientTransport>();
+            var webSocketTransport = new Mock<IClientTransport>();
+            webSocketTransport.Setup(m => m.Name).Returns(new WebSocketTransport().Name);
+
+            var transports = new List<IClientTransport>()
+            {
+                webSocketTransport.Object,
+                fallbackTransport.Object,
+            };
+
+            var autoTransport = new AutoTransport(null, transports);
+
+            await autoTransport.Start(null, string.Empty, CancellationToken.None).OrTimeout();
+
+            webSocketTransport.Verify(m => m.Start(null, string.Empty, CancellationToken.None), Times.Once());
+            fallbackTransport.Verify(m => m.Start(null, string.Empty, CancellationToken.None), Times.Never());
         }
 
         [Fact]

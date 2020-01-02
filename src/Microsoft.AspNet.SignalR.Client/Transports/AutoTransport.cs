@@ -13,15 +13,14 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 {
     public class AutoTransport : IClientTransport
     {
-        // Transport that's in use
-        private IClientTransport _transport;
-
         private readonly IHttpClient _httpClient;
-
-        private int _startIndex = 0;
 
         // List of transports in fallback order
         private readonly List<IClientTransport> _transports;
+
+        // Transport that's in use
+        private IClientTransport _transport;
+        private bool _tryWebSockets = true;
 
         public AutoTransport(IHttpClient httpClient)
         {
@@ -74,14 +73,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         public Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
         {
             var task = GetNegotiateResponse(connection, connectionData);
-#if NET45
+#if NET45 || NETSTANDARD2_0
             return task.Then(response =>
             {
-                if (!response.TryWebSockets)
-                {
-                    _transports.RemoveAll(transport => transport.Name == "webSockets");
-                }
-
+                _tryWebSockets = response.TryWebSockets;
                 return response;
             });
 #else
@@ -99,15 +94,41 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var tcs = new DispatchingTaskCompletionSource<object>();
 
             // Resolve the transport
-            ResolveTransport(connection, connectionData, disconnectToken, tcs, _startIndex);
+            ResolveTransport(connection, connectionData, disconnectToken, tcs, lastError: null, index: 0);
 
             return tcs.Task;
         }
 
-        private void ResolveTransport(IConnection connection, string data, CancellationToken disconnectToken, DispatchingTaskCompletionSource<object> tcs, int index)
+        private void ResolveTransport(
+            IConnection connection,
+            string data,
+            CancellationToken disconnectToken,
+            DispatchingTaskCompletionSource<object> tcs,
+            Exception lastError,
+            int index)
         {
+            IClientTransport transport = null;
+            var next = index;
+
             // Pick the current transport
-            IClientTransport transport = _transports[index];
+            while (next < _transports.Count && transport == null)
+            {
+                var candidateTransport = _transports[next++];
+
+                // If the current transport is WebSockets and it's not supported by the server, try the next transport.
+                if (_tryWebSockets || !"webSockets".Equals(candidateTransport.Name, StringComparison.Ordinal))
+                {
+                    transport = candidateTransport;
+                }
+            }
+
+            if (transport is null)
+            {
+                // If there's nothing else to try, then just fail with the error from the last transport.
+                // For the lastError to be null, the AutoTransport must have been initialized with an empty transport list or only WebSockets.
+                tcs.TrySetException(lastError ?? new Exception(Resources.Error_NoCompatibleTransportFound));
+                return;
+            }
 
             transport.Start(connection, data, disconnectToken).ContinueWith(task =>
             {
@@ -127,16 +148,14 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                     // If that transport fails to initialize, then fallback.
                     // If it is that /start request that failed, do not fallback.
-                    var next = index + 1;
-                    if (next < _transports.Count && !(ex is StartException))
+                    if (ex is StartException)
                     {
-                        // Try the next transport
-                        ResolveTransport(connection, data, disconnectToken, tcs, next);
+                        tcs.TrySetException(ex);
                     }
                     else
                     {
-                        // If there's nothing else to try then just fail
-                        tcs.TrySetException(ex);
+                        // Try the next transport
+                        ResolveTransport(connection, data, disconnectToken, tcs, ex, next);
                     }
                 }
                 else
