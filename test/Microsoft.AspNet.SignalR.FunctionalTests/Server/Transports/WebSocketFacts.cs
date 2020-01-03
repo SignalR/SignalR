@@ -47,6 +47,64 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Transports
             }
         }
 
+        // https://github.com/SignalR/SignalR/issues/4412
+        [Fact]
+        public async Task WebSocketsCanReconnectMultipleTimes()
+        {
+            using (var host = CreateHost(HostType.HttpListener, TransportType.Websockets))
+            {
+                var owinHost = (OwinTestHost)host;
+
+                host.Initialize();
+
+                using (var connection = CreateHubConnection(host))
+                {
+                    var reconnectedWh = new TaskCompletionSource<object>();
+                    var reconnectingCount = 0;
+                    var reconnectedCount = 0;
+
+                    connection.Reconnecting += () =>
+                    {
+                        reconnectingCount++;
+                    };
+
+                    connection.Reconnected += () =>
+                    {
+                        reconnectedCount++;
+                        reconnectedWh.TrySetResult(null);
+                    };
+
+                    var hub = connection.CreateHubProxy("demo");
+
+                    await connection.Start(host.Transport);
+
+                    owinHost.Restart();
+
+                    await reconnectedWh.Task.OrTimeout(TimeSpan.FromSeconds(30));
+
+                    Assert.Equal(1, reconnectingCount);
+                    Assert.Equal(1, reconnectedCount);
+
+                    reconnectedWh = new TaskCompletionSource<object>();
+
+                    owinHost.Restart();
+
+                    await reconnectedWh.Task.OrTimeout(TimeSpan.FromSeconds(30));
+
+                    Assert.Equal(2, reconnectingCount);
+                    Assert.Equal(2, reconnectedCount);
+
+                    // Give some time for the simultaneous DoReconnect loops described in
+                    // https://github.com/SignalR/SignalR/issues/4412#issuecomment-538122907
+                    // to rear their ugly heads.
+                    await Task.Delay(1000);
+
+                    Assert.Equal(2, reconnectingCount);
+                    Assert.Equal(2, reconnectedCount);
+                }
+            }
+        }
+
         public class ReturnsUnserializableObjectHub : Hub
         {
             public IEnumerable<int> GetStuff()

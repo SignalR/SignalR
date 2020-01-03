@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
-        //[Fact(Skip = "Disable IIS Express tests because they fail to initialize")]
+        [Fact]
         public async Task WebSocketTransportDoesntHangIfConnectReturnsCancelledTask()
         {
             await RunWebSocketTransportWithConnectTask(() =>
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             }).OrTimeout(10000);
         }
 
-        //[Fact(Skip = "Disable IIS Express tests because they fail to initialize")]
+        [Fact]
         public async Task WebSocketTransportDoesntHangIfConnectReturnsFaultedTask()
         {
             await RunWebSocketTransportWithConnectTask(
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         public async Task RunWebSocketTransportWithConnectTask(Func<Task> taskReturn)
         {
-            using (var host = CreateHost(HostType.IISExpress))
+            using (var host = CreateHost(HostType.HttpListener))
             {
                 host.Initialize();
 
