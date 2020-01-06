@@ -296,6 +296,18 @@ namespace Microsoft.AspNet.SignalR.Client
             }
         }
 
+
+        /// <summary>
+        ///   Looks up a localized string similar to The transport disconnected before the connection could be fully initialized..
+        /// </summary>
+        internal static string Error_TransportDisconnectedBeforeConnectionFullyInitialized
+        {
+            get
+            {
+                return ResourceManager.GetString("Error_TransportDisconnectedBeforeConnectionFullyInitialized", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Transport failed trying to connect..
         /// </summary>

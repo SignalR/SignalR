@@ -120,15 +120,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     var exception = task.IsCanceled
                         ? new OperationCanceledException(Resources.Error_TaskCancelledException)
-                        : task.Exception.Unwrap(); 
+                        : task.Exception.Unwrap();
 
                     if (!reconnecting)
                     {
-                        TransportFailed(exception);
+                        // It shouldn't be possible for Start to have already succeeded at this point.
+                        TryFailStart(exception);
                     }
                     else if (!_stop)
                     {
-                        // Only raise the error event if we failed to reconnect
+                        // Only raise the error event if the error wasn't raised from Start and we're reconnecting.
                         connection.OnError(exception);
 
                         Reconnect(connection, data, disconnectToken);
@@ -170,7 +171,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                     eventSource.Closed = exception =>
                     {
-                        if (exception != null)
+                        // Make sure to try to fail start even if the disconnectToken tripped and set _stop to true.
+                        var startFailed = TryFailStart(exception);
+
+                        if (exception != null && !startFailed)
                         {
                             // Check if the request is aborted
                             if (!ExceptionHelper.IsRequestAborted(exception))
@@ -187,12 +191,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         {
                             AbortHandler.CompleteAbort();
                         }
-                        else if (AbortHandler.TryCompleteAbort())
+                        else if (!AbortHandler.TryCompleteAbort() && !startFailed)
                         {
-                            // Abort() was called, so don't reconnect
-                        }
-                        else
-                        {
+                            // If Abort() was called or Start() failed, don't reconnect.
                             Reconnect(connection, data, disconnectToken);
                         }
                     };

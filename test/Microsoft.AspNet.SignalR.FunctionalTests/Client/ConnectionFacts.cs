@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Transports;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
@@ -164,9 +165,9 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public async Task NoReconnectsAfterFallback()
+        public async Task NoReconnectsAfterFallbackDueToTimeout()
         {
-            // There was a regression where the SSE transport would try to reconnect after it times out.
+            // There was a regression where the SSE transport would try to reconnect after it timed out.
             // This test ensures that no longer happens.
             // #2180
             using (var host = new MemoryHost())
@@ -199,6 +200,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     config.Resolver.Register(typeof(MyReconnect), () => new MyReconnect(() => reconnects++));
+                    config.Resolver.Resolve<IConfigurationManager>().TransportConnectTimeout = TimeSpan.FromSeconds(1);
 
                     app.MapSignalR<MyReconnect>("/echo", config);
                 });
@@ -207,7 +209,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (connection)
                 {
-                    await connection.Start(host);
+                    await connection.Start(host).OrTimeout();
 
                     // Give SSE an opportunity to reconnect
                     await Task.Delay(TimeSpan.FromSeconds(5));
@@ -215,6 +217,67 @@ namespace Microsoft.AspNet.SignalR.Tests
                     Assert.Equal(connection.State, ConnectionState.Connected);
                     Assert.Equal(connection.Transport.Name, "longPolling");
                     Assert.Equal(0, reconnects);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task NoReconnectsAfterFallbackDueToDisconnect()
+        {
+            using (var host = new MemoryHost())
+            {
+                var serverReconnects = 0;
+
+                host.Configure(app =>
+                {
+                    Func<AppFunc, AppFunc> middleware = (next) =>
+                    {
+                        return env =>
+                        {
+                            var request = new OwinRequest(env);
+                            var response = new OwinResponse(env);
+
+                            if (!request.Path.Value.Contains("negotiate") && !request.QueryString.Value.Contains("longPolling"))
+                            {
+                                return Task.CompletedTask;
+                            }
+
+                            return next(env);
+                        };
+                    };
+
+                    app.Use(middleware);
+
+                    var config = new ConnectionConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    config.Resolver.Register(typeof(MyReconnect), () => new MyReconnect(() => serverReconnects++));
+                    config.Resolver.Resolve<IConfigurationManager>().TransportConnectTimeout = TimeSpan.FromSeconds(60);
+
+                    app.MapSignalR<MyReconnect>("/echo", config);
+                });
+
+                var connection = new Connection("http://foo/echo");
+
+                using (connection)
+                {
+                    var clientReconnects = 0;
+                    connection.Reconnecting += () =>
+                    {
+                        clientReconnects++;
+                    };
+
+                    await connection.Start(host).OrTimeout();
+
+                    // Give SSE an opportunity to reconnect
+                    await Task.Delay(TimeSpan.FromSeconds(5));
+
+                    Assert.Equal(connection.State, ConnectionState.Connected);
+                    Assert.Equal(connection.Transport.Name, "longPolling");
+                    Assert.Equal(0, serverReconnects);
+                    Assert.Equal(0, clientReconnects);
                 }
             }
         }

@@ -208,7 +208,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 TryReconnect(connection, _reconnectInvoker);
             }
 
-            if (shouldReconnect)
+            // Don't reconnect if Start() never succeeded.
+            if (shouldReconnect && !TryFailStart(new IOException(Resources.Error_TransportDisconnectedBeforeConnectionFullyInitialized)))
             {
                 // Transition into reconnecting state
                 connection.EnsureReconnecting();
@@ -239,16 +240,23 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         // internal virtual for testing
         internal virtual void OnError(IConnection connection, Exception exception)
         {
-            TransportFailed(exception);
+            // Prevent the reconnecting -> connected transition from happening if it hasn't already.
             _reconnectInvoker.Invoke();
+
+            if (TryFailStart(exception))
+            {
+                return;
+            }
 
             if (!TransportHelper.VerifyLastActive(connection))
             {
                 StopPolling();
             }
-
-            // Transition into reconnecting state
-            connection.EnsureReconnecting();
+            else
+            {
+                // Do the connected -> reconnecting transition if it hasn't already occurred.
+                connection.EnsureReconnecting();
+            }
 
             // Sometimes a connection might have been closed by the server before we get to write anything
             // so just try again and raise OnError.
@@ -280,6 +288,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// </summary>
         public override void LostConnection(IConnection connection)
         {
+            if (TryFailStart(new IOException(Resources.Error_TransportDisconnectedBeforeConnectionFullyInitialized)))
+            {
+                return;
+            }
+
             if (connection.EnsureReconnecting())
             {
                 lock (_stopLock)

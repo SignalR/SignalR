@@ -4,6 +4,7 @@
 #if NET45 || NETSTANDARD2_0
 
 using System;
+using System.IO;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -67,11 +68,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 if (task.IsFaulted)
                 {
-                    TransportFailed(task.Exception);
+                    TryFailStart(task.Exception);
                 }
                 else if (task.IsCanceled)
                 {
-                    TransportFailed(null);
+                    TryFailStart(null);
                 }
             },
             TaskContinuationOptions.NotOnRanToCompletion);
@@ -150,17 +151,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             _connection.Trace(TraceLevels.Events, "WS: OnClose()");
 
-            if (_disconnectToken.IsCancellationRequested)
-            {
-                return;
-            }
+            // Make sure to try to fail start even if an abort has started.
+            var startFailed = TryFailStart(new IOException(Resources.Error_TransportDisconnectedBeforeConnectionFullyInitialized));
 
-            if (AbortHandler.TryCompleteAbort())
+            if (!AbortHandler.TryCompleteAbort() && !_disconnectToken.IsCancellationRequested && !startFailed)
             {
-                return;
+                DoReconnect();
             }
-
-            DoReconnect();
         }
 
         // fire and forget
