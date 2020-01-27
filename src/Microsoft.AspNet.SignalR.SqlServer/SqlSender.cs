@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
             using (var stream = new MemoryStream(SqlPayload.ToBytes(messages)))
             {
-                var parameter = (SqlParameter)_dbProviderFactory.CreateParameter();
+                var parameter = _dbProviderFactory.CreateParameter();
                 parameter.ParameterName = "Payload";
                 parameter.DbType = DbType.Binary;
                 parameter.Value = stream;
