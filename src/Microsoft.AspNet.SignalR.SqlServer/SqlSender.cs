@@ -43,10 +43,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 return TaskAsyncHelper.Empty;
             }
 
-            var parameter = _dbProviderFactory.CreateParameter();
+            var parameter = (SqlParameter)_dbProviderFactory.CreateParameter();
             parameter.ParameterName = "Payload";
             parameter.DbType = DbType.Binary;
             parameter.Value = SqlPayload.ToBytes(messages);
+            parameter.Size = -1; // Force parameter to be varbinary(max)
 
             var operation = new DbOperation(_connectionString, _insertDml, _trace, parameter);
 
