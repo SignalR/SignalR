@@ -4,10 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
-using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
 
@@ -43,14 +42,17 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 return TaskAsyncHelper.Empty;
             }
 
-            var parameter = _dbProviderFactory.CreateParameter();
-            parameter.ParameterName = "Payload";
-            parameter.DbType = DbType.Binary;
-            parameter.Value = SqlPayload.ToBytes(messages);
+            using (var stream = new MemoryStream(SqlPayload.ToBytes(messages)))
+            {
+                var parameter = _dbProviderFactory.CreateParameter();
+                parameter.ParameterName = "Payload";
+                parameter.DbType = DbType.Binary;
+                parameter.Value = stream;
 
-            var operation = new DbOperation(_connectionString, _insertDml, _trace, parameter);
+                var operation = new DbOperation(_connectionString, _insertDml, _trace, parameter);
 
-            return operation.ExecuteNonQueryAsync();
+                return operation.ExecuteNonQueryAsync();
+            }
         }
     }
 }
