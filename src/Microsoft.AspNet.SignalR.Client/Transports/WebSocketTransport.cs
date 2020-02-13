@@ -80,9 +80,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         private async Task ConnectAndHandleConnection()
         {
-            var token = CreateLinkedCancellationToken();
-            await PerformConnect(token);
-            await _webSocketHandler.ProcessWebSocketRequestAsync(_webSocket, token);
+            await PerformConnect(_disconnectToken);
+            var linkedToken = CreateLinkedCancellationToken();
+            await _webSocketHandler.ProcessWebSocketRequestAsync(_webSocket, linkedToken);
         }
 
         // For testing
@@ -172,14 +172,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         // fire and forget
         private async void DoReconnect()
         {
-            var token = CreateLinkedCancellationToken();
             var reconnectUrl = UrlBuilder.BuildReconnect(_connection, Name, _connectionData);
 
             while (TransportHelper.VerifyLastActive(_connection) && _connection.EnsureReconnecting())
             {
                 try
                 {
-                    await PerformConnect(reconnectUrl, token);
+                    await PerformConnect(reconnectUrl, _disconnectToken);
                     break;
                 }
                 catch (OperationCanceledException)
@@ -199,7 +198,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 await Task.Delay(ReconnectDelay);
             }
 
-            await _webSocketHandler.ProcessWebSocketRequestAsync(_webSocket, token);
+            var linkedToken = CreateLinkedCancellationToken();
+
+            try
+            {
+                await _webSocketHandler.ProcessWebSocketRequestAsync(_webSocket, linkedToken);
+            }
+            catch
+            {
+                // Ignore any errors from ProcessWebSocketRequestAsync just as OnStart does after the init message is received.
+                // Any errors other than one thrown from the final CloseAsync is reported via OnError(Exception).
+            }
         }
 
         // virtual for testing
