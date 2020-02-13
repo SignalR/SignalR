@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             _connectionData = connectionData;
 
             // We don't need to await this task
-            PerformConnect().ContinueWith(task =>
+            ConnectAndHandleConnection().ContinueWith(task =>
             {
                 if (task.IsFaulted)
                 {
@@ -78,29 +78,38 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             TaskContinuationOptions.NotOnRanToCompletion);
         }
 
-        // For testing
-        public virtual Task PerformConnect()
+        private async Task ConnectAndHandleConnection()
         {
-            return PerformConnect(UrlBuilder.BuildConnect(_connection, Name, _connectionData));
+            await PerformConnect(_disconnectToken);
+            var linkedToken = CreateLinkedCancellationToken();
+            await _webSocketHandler.ProcessWebSocketRequestAsync(_webSocket, linkedToken);
         }
 
-        private async Task PerformConnect(string url)
+        // For testing
+        public virtual Task PerformConnect(CancellationToken token)
+        {
+            return PerformConnect(UrlBuilder.BuildConnect(_connection, Name, _connectionData), token);
+        }
+
+        private CancellationToken CreateLinkedCancellationToken()
+        {
+            // TODO: Revisit thread safety of this assignment
+            _webSocketTokenSource = new CancellationTokenSource();
+            CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_webSocketTokenSource.Token, _disconnectToken);
+            return linkedCts.Token;
+        }
+
+        private async Task PerformConnect(string url, CancellationToken token)
         {
             var uri = UrlBuilder.ConvertToWebSocketUri(url);
 
             _connection.Trace(TraceLevels.Events, "WS Connecting to: {0}", uri);
- 
-            // TODO: Revisit thread safety of this assignment
-            _webSocketTokenSource = new CancellationTokenSource();
+
             _webSocket = new ClientWebSocket();
 
             _connection.PrepareRequest(new WebSocketWrapperRequest(_webSocket, _connection));
 
-            CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_webSocketTokenSource.Token, _disconnectToken);
-            CancellationToken token = linkedCts.Token;
-
             await _webSocket.ConnectAsync(uri, token);
-            await _webSocketHandler.ProcessWebSocketRequestAsync(_webSocket, token);
         }
 
         protected override void OnStartFailed()
@@ -169,7 +178,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 try
                 {
-                    await PerformConnect(reconnectUrl);
+                    await PerformConnect(reconnectUrl, _disconnectToken);
                     break;
                 }
                 catch (OperationCanceledException)
@@ -187,6 +196,18 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
 
                 await Task.Delay(ReconnectDelay);
+            }
+
+            var linkedToken = CreateLinkedCancellationToken();
+
+            try
+            {
+                await _webSocketHandler.ProcessWebSocketRequestAsync(_webSocket, linkedToken);
+            }
+            catch
+            {
+                // Ignore any errors from ProcessWebSocketRequestAsync just as OnStart does after the init message is received.
+                // Any errors other than one thrown from the final CloseAsync is reported via OnError(Exception).
             }
         }
 

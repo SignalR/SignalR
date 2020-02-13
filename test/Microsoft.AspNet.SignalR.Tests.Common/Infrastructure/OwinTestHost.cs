@@ -80,6 +80,15 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             });
         }
 
+        public void Restart()
+        {
+            _server.Dispose();
+            _server = WebApp.Start(Url, app =>
+            {
+                Initializer.ConfigureRoutes(app, Resolver);
+            });
+        }
+
         public override void Dispose()
         {
             if (_server != null)
