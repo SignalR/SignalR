@@ -85,14 +85,14 @@ namespace Microsoft.AspNet.SignalR.StackExchangeRedis
             }
         }
 
-        public async Task SubscribeAsync(string key, Action<int, RedisMessage> onMessage)
+        public async Task SubscribeAsync(string key, Action<RedisMessage> onMessage)
         {
             _trace.TraceInformation("Subscribing to key: " + key);
             var channel = await _redisSubscriber.SubscribeAsync(key);
             channel.OnMessage(channelMessage =>
             {
                 var message = RedisMessage.FromBytes(channelMessage.Message, _trace);
-                onMessage(0, message);
+                onMessage(message);
 
                 // Save the last message id in just in case redis shuts down
                 _latestMessageId = message.Id;

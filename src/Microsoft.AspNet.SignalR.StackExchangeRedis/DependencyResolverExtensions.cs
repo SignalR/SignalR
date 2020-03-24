@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>The dependency resolver.</returns>
         public static IDependencyResolver UseStackExchangeRedis(this IDependencyResolver resolver, RedisScaleoutConfiguration configuration)
         {
-            var bus = new Lazy<RedisMessageBus>(() => new RedisMessageBus(resolver, configuration, new RedisConnection()));
+            var bus = new Lazy<RedisMessageBus>(() => new RedisMessageBus(resolver, configuration));
             resolver.Register(typeof(IMessageBus), () => bus.Value);
 
             return resolver;

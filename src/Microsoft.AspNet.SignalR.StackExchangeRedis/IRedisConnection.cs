@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.StackExchangeRedis
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
         void Close(string key, bool allowCommandsToComplete = true);
 
-        Task SubscribeAsync(string key, Action<int, RedisMessage> onMessage);
+        Task SubscribeAsync(string key, Action<RedisMessage> onMessage);
 
         Task ScriptEvaluateAsync(int database, string script, string key, byte[] messageArguments);
 

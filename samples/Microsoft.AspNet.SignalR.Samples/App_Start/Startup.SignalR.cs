@@ -24,6 +24,22 @@ namespace Microsoft.AspNet.SignalR.Samples
             // Uncomment the following line to enable scale-out using service bus
             //dependencyResolver.UseServiceBus("connection string", "Microsoft.AspNet.SignalR.Samples");
 
+            var endpoints = new[]
+            {
+                new RedisScaleoutEndpoint
+                {
+                    ConnectionString = "localhost:6379",
+                    EventKey = "SignalRSamples",
+                },
+                new RedisScaleoutEndpoint
+                {
+                    ConnectionString = "localhost:6380",
+                    EventKey = "SignalRSamples",
+                },
+            };
+
+            dependencyResolver.UseStackExchangeRedis(new RedisScaleoutConfiguration(endpoints));
+
             hubPipeline.AddModule(new SamplePipelineModule());
         }
 

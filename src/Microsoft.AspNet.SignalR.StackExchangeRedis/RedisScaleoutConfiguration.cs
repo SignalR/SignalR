@@ -30,31 +30,25 @@ namespace Microsoft.AspNet.SignalR
                 throw new ArgumentNullException("eventKey");
             }
 
-            ConnectionString = connectionString;
+            var endpoint = new RedisScaleoutEndpoint();
+
+            endpoint.ConnectionString = connectionString;
             if (connectionString.Length > 0)
             {
                 var options = ConfigurationOptions.Parse(connectionString);
-                Database = options.DefaultDatabase.GetValueOrDefault(0);
+                endpoint.Database = options.DefaultDatabase.GetValueOrDefault(0);
             }
-            EventKey = eventKey;
+            endpoint.EventKey = eventKey;
+
+            Endpoints = new[] { endpoint };
         }
 
-        /// <summary>
-        /// The connection string that needs to be passed to ConnectionMultiplexer
-        /// Should be of the form server:port
-        /// </summary>
-        internal string ConnectionString { get; private set; }
+        public RedisScaleoutConfiguration(RedisScaleoutEndpoint[] endpoints)
+        {
+            Endpoints = endpoints;
+        }
 
-        /// <summary>
-        /// The Redis database instance to use.
-        /// Defaults to 0.
-        /// </summary>
-        public int Database { get; set; }
-
-        /// <summary>
-        /// The Redis event key to use.
-        /// </summary>
-        public string EventKey { get; private set; }
+        internal RedisScaleoutEndpoint[] Endpoints { get; }
 
         private static string CreateConnectionString(string server, int port, string password)
         {

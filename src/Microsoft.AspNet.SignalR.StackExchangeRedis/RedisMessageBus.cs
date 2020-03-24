@@ -18,23 +18,21 @@ namespace Microsoft.AspNet.SignalR.StackExchangeRedis
     {
         private const int DefaultBufferSize = 1000;
 
-        private readonly int _db;
-        private readonly string _key;
+        private readonly RedisScaleoutEndpoint[] _endpoints;
         private readonly TraceSource _trace;
         private readonly ITraceManager _traceManager;
 
-        private IRedisConnection _connection;
-        private string _connectionString;
+        private readonly IRedisConnection[] _connections;
         private readonly object _callbackLock = new object();
-        private ulong? lastId = null;
+        private readonly ulong?[] _lastIds = null;
 
-        public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration, IRedisConnection connection)
-            : this(resolver, configuration, connection, true)
+        public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration)
+            : this(resolver, configuration, true)
         {
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "ignore")]
-        internal RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration, IRedisConnection connection, bool connectAutomatically)
+        internal RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration, bool connectAutomatically)
             : base(resolver, configuration)
         {
             if (configuration == null)
@@ -42,27 +40,40 @@ namespace Microsoft.AspNet.SignalR.StackExchangeRedis
                 throw new ArgumentNullException("configuration");
             }
 
-            _connection = connection;
-            _connection.ConnectionFailed += OnConnectionFailed;
-            _connection.ConnectionRestored += OnConnectionRestored;
-            _connection.ErrorMessage += OnConnectionError;
-
-            _connectionString = configuration.ConnectionString;
-            _db = configuration.Database;
-            _key = configuration.EventKey;
-
             _traceManager = resolver.Resolve<ITraceManager>();
 
             _trace = _traceManager["SignalR." + nameof(RedisMessageBus)];
 
             ReconnectDelay = TimeSpan.FromSeconds(2);
 
-            if (connectAutomatically)
+            _endpoints = configuration.Endpoints;
+            _connections = new IRedisConnection[_endpoints.Length];
+            _lastIds = new ulong?[_endpoints.Length];
+
+            for (int streamIndex = 0; streamIndex < _endpoints.Length; streamIndex++)
             {
-                ThreadPool.QueueUserWorkItem(_ =>
+                var streamIndexCopy = streamIndex;
+
+                _connections[streamIndex] = new RedisConnection();
+                _connections[streamIndex].ConnectionFailed += ex => OnConnectionFailed(streamIndexCopy, ex);
+                _connections[streamIndex].ConnectionRestored += ex => OnConnectionRestored(streamIndexCopy, ex);
+                _connections[streamIndex].ErrorMessage += ex => OnConnectionError(streamIndexCopy, ex);
+
+                if (connectAutomatically)
                 {
-                    var ignore = ConnectWithRetry();
-                });
+                    ThreadPool.QueueUserWorkItem(_ =>
+                    {
+                        var ignore = ConnectWithRetry(streamIndexCopy);
+                    });
+                }
+            }
+        }
+
+        protected override int StreamCount
+        {
+            get
+            {
+                return _endpoints.Length;
             }
         }
 
@@ -75,13 +86,13 @@ namespace Microsoft.AspNet.SignalR.StackExchangeRedis
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            return _connection.ScriptEvaluateAsync(
-                _db,
+            return _connections[streamIndex].ScriptEvaluateAsync(
+                _endpoints[streamIndex].Database,
                 @"local newId = redis.call('INCR', KEYS[1])
                   local payload = newId .. ' ' .. ARGV[1]
                   redis.call('PUBLISH', KEYS[1], payload)
                   return {newId, ARGV[1], payload}",
-                _key,
+                _endpoints[streamIndex].EventKey,
                 RedisMessage.ToBytes(messages));
         }
 
@@ -100,68 +111,71 @@ namespace Microsoft.AspNet.SignalR.StackExchangeRedis
         {
             _trace.TraceInformation("Shutdown()");
 
-            if (_connection != null)
+            if (_connections != null)
             {
-                _connection.Close(_key, allowCommandsToComplete: false);
+                for (int i = 0; i < _endpoints.Length; i++)
+                {
+                    _connections[i].Close(_endpoints[i].EventKey, allowCommandsToComplete: false);
+                }
             }
         }
 
-        private void OnConnectionFailed(Exception ex)
+        private void OnConnectionFailed(int streamIndex, Exception ex)
         {
             string errorMessage = (ex != null) ? ex.Message : Resources.Error_RedisConnectionClosed;
 
-            _trace.TraceInformation("OnConnectionFailed - " + errorMessage);
+            _trace.TraceInformation($"OnConnectionFailed({streamIndex}, '{errorMessage}')");
         }
 
-        private void OnConnectionError(Exception ex)
+        private void OnConnectionError(int streamIndex, Exception ex)
         {
-            OnError(0, ex);
-            _trace.TraceError("OnConnectionError - " + ex.Message);
+            OnError(streamIndex, ex);
+            _trace.TraceError($"OnConnectionError({streamIndex}, '{ex.Message}')");
         }
 
-        private async void OnConnectionRestored(Exception ex)
+        private async void OnConnectionRestored(int streamIndex, Exception ex)
         {
-            await _connection.RestoreLatestValueForKey(_db, _key);
+            await _connections[streamIndex].RestoreLatestValueForKey(_endpoints[streamIndex].Database, _endpoints[streamIndex].EventKey);
 
-            _trace.TraceInformation("Connection restored");
+            _trace.TraceInformation($"Connection restored({streamIndex})");
 
-            OpenStream(0);
+            OpenStream(streamIndex);
         }
 
-        internal async Task ConnectWithRetry()
+        internal async Task ConnectWithRetry(int streamIndex)
         {
             while (true)
             {
                 try
                 {
-                    await ConnectToRedisAsync();
+                    await ConnectToRedisAsync(streamIndex);
 
-                    _trace.TraceInformation("Opening stream.");
-                    OpenStream(0);
+                    _trace.TraceInformation($"Opening stream {streamIndex}.");
+                    OpenStream(streamIndex);
 
                     break;
                 }
                 catch (Exception ex)
                 {
-                    _trace.TraceError("Error connecting to Redis - " + ex.GetBaseException());
+                    _trace.TraceError($"Error connecting to Redis endpoint '{_endpoints[streamIndex].ConnectionString}' - '{ex.GetBaseException()}'");
                 }
 
                 await Task.Delay(ReconnectDelay);
             }
         }
 
-        private async Task ConnectToRedisAsync()
+        private async Task ConnectToRedisAsync(int streamIndex)
         {
-            _trace.TraceInformation("Connecting...");
+            _trace.TraceInformation($"Connecting stream {streamIndex} to '{_endpoints[streamIndex].ConnectionString}' ...");
 
             // We need to hold the dispose lock during this in order to ensure that ConnectAsync completes fully without Dispose getting in the way
-            await _connection.ConnectAsync(_connectionString, _traceManager["SignalR." + nameof(RedisConnection)]);
+            await _connections[streamIndex].ConnectAsync(_endpoints[streamIndex].ConnectionString, _traceManager["SignalR." + nameof(RedisConnection)]);
 
-            _trace.TraceInformation("Connection opened");
+            _trace.TraceInformation($"Stream'{streamIndex}' opened");
 
-            await _connection.SubscribeAsync(_key, OnMessage);
+            await _connections[streamIndex].SubscribeAsync(_endpoints[streamIndex].EventKey, message => OnMessage(streamIndex, message));
 
-            _trace.TraceVerbose("Subscribed to event " + _key);
+            _trace.TraceVerbose($"Stream {streamIndex} subscribed to event '{_endpoints[streamIndex].EventKey}'");
         }
 
         private void OnMessage(int streamIndex, RedisMessage message)
@@ -170,11 +184,11 @@ namespace Microsoft.AspNet.SignalR.StackExchangeRedis
             // to preserve order on the subscription)
             lock (_callbackLock)
             {
-                if (lastId.HasValue && message.Id < lastId.Value)
+                if (_lastIds[streamIndex].HasValue && message.Id < _lastIds[streamIndex].Value)
                 {
-                    _trace.TraceEvent(TraceEventType.Error, 0, $"ID regression occurred. The next message ID {message.Id} was less than the previous message {lastId.Value}");
+                    _trace.TraceEvent(TraceEventType.Error, 0, $"ID regression occurred. The next message ID {message.Id} was less than the previous message {_lastIds[streamIndex].Value}");
                 }
-                lastId = message.Id;
+                _lastIds[streamIndex] = message.Id;
                 OnReceived(streamIndex, message.Id, message.ScaleoutMessage);
             }
         }
