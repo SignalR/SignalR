@@ -342,6 +342,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             if (disposing)
             {
+                End();
                 _connectionEndTokenSource.Dispose();
                 _connectionEndRegistration.Dispose();
                 _hostRegistration.Dispose();
