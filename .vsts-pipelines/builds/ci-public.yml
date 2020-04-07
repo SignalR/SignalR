@@ -6,6 +6,6 @@ trigger:
 phases:
 - template: ../templates/signalr-build.yml
   parameters:
-    queueName: Hosted VS2017
+    pool: public
     variables:
       SkipCodeSign: true
