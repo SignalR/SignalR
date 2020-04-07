@@ -6,10 +6,10 @@ trigger:
 - release/*
 - vsts/*
 
-phases:
+jobs:
 - template: ../templates/signalr-build.yml
   parameters:
-    queueName: DotNetCore-Windows
+    pool: internal
     variables:
       SignType: real
       Localize: true
