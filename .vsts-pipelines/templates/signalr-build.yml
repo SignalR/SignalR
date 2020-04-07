@@ -1,18 +1,13 @@
 parameters:
-  pool: ''
+  queueName: ''
   beforeBuild: []
   afterBuild: []
   variables:
 
 phases:
 - phase: Windows
-  pool:
-    ${{ if eq(parameters.pool, 'public') }}:
-      name: NetCorePublic-Pool
-      queue: BuildPool.Server.Amd64.VS2019.Open
-    ${{ if eq(parameters.pool, 'internal') }}:
-      name: NetCoreInternal-Pool
-      queue: BuildPool.Server.Amd64.VS2019
+  queue:
+    name: ${{ parameters.queueName }}
   variables:
     BuildConfiguration: Release
     ${{ insert }}: ${{ parameters.variables }}

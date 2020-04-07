@@ -9,7 +9,7 @@ trigger:
 phases:
 - template: ../templates/signalr-build.yml
   parameters:
-    pool: internal
+    queueName: DotNetCore-Windows
     variables:
       SignType: real
       Localize: true
