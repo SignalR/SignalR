@@ -1,7 +1,7 @@
 {
   "sign": [
     {
-      "certificate": "Microsoft",
+      "certificate": "Microsoft402",
       "strongName": "MsSharedLib72",
       "values": [
         "bin/Microsoft.AspNet.SignalR.Client/net40/Microsoft.AspNet.SignalR.Client.dll",
