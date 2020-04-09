@@ -20,6 +20,9 @@ jobs:
   - checkout: self
     clean: true
 
+  - task: NodeTool@0
+    displayName: Install NPM
+
   - ${{ parameters.beforeBuild }}
 
   - script: .\build.cmd -ci /p:Configuration=$(BuildConfiguration)
