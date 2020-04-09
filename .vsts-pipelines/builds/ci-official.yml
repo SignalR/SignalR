@@ -15,6 +15,7 @@ jobs:
       Localize: true
       TeamName: AspNetCore
       OfficialBuild: true
+      VisualStudioMSBuildx86Path: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe'
     beforeBuild:
     # Detect OSS Components in use in the product. Only needs to run on one OS in the matrix.
     - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
