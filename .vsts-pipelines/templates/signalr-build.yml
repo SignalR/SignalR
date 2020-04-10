@@ -21,7 +21,9 @@ jobs:
     clean: true
 
   - task: NodeTool@0
-    displayName: Install NPM
+    displayName: Install Node.js
+    inputs:
+      versionSpec: 12.x
 
   - ${{ parameters.beforeBuild }}
 
