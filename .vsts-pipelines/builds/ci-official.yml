@@ -42,15 +42,16 @@ jobs:
       displayName: Perform Cleanup Tasks
       condition: succeededOrFailed()
 
-    - task: PublishSymbols@2
-      displayName: 'Publish symbols path'
-      condition: succeeded()
-      inputs:
-        SearchPattern: 'artifacts\$(BuildConfiguration)\symbols\windows\**\*.pdb'
-        SymbolServerType: FileShare
-        SymbolsProduct: AspNetSignalR
-        SymbolsPath: '$(DropShareRoot)\$(Build.BuildNumber)'
-        SymbolsArtifactName: 'symbols-$(BuildConfiguration)'
+    # Temporarily disable the PublishSymbols task since the agent doesn't currently have access to the $(DropShareRoot)
+    # - task: PublishSymbols@2
+    #   displayName: 'Publish symbols path'
+    #   condition: succeeded()
+    #   inputs:
+    #     SearchPattern: 'artifacts\$(BuildConfiguration)\symbols\windows\**\*.pdb'
+    #     SymbolServerType: FileShare
+    #     SymbolsProduct: AspNetSignalR
+    #     SymbolsPath: '$(DropShareRoot)\$(Build.BuildNumber)'
+    #     SymbolsArtifactName: 'symbols-$(BuildConfiguration)'
 
-        # We use SourceLink at build time, and Pdb2Pdb translates that to srcsrv at conversion time
-        IndexSources: false
+    #     # We use SourceLink at build time, and Pdb2Pdb translates that to srcsrv at conversion time
+    #     IndexSources: false
