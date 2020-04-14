@@ -60,8 +60,8 @@ function getArg(list: string[], name: string): string {
     }
 }
 
-function quickfetch(url: string): Promise<http.ClientResponse> {
-    return new Promise<http.ClientResponse>((resolve, reject) => {
+function quickfetch(url: string): Promise<http.IncomingMessage> {
+    return new Promise<http.IncomingMessage>((resolve, reject) => {
         var req = http.request(url, (response) => {
             resolve(response);
         });
@@ -160,7 +160,7 @@ for (let i = 2; i < process.argv.length; i += 1) {
     server = child_process.spawn(exePath, ["--url", serverUrl]);
 
     // Loop trying to request the status endpoint
-    let resp: http.ClientResponse;
+    let resp: http.IncomingMessage;
     let attempts = 0;
     do {
         attempts += 1;

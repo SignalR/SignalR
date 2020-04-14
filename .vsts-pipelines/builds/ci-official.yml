@@ -6,15 +6,16 @@ trigger:
 - release/*
 - vsts/*
 
-phases:
+jobs:
 - template: ../templates/signalr-build.yml
   parameters:
-    queueName: DotNetCore-Windows
+    pool: internal
     variables:
       SignType: real
       Localize: true
       TeamName: AspNetCore
       OfficialBuild: true
+      VisualStudioMSBuildx86Path: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe'
     beforeBuild:
     # Detect OSS Components in use in the product. Only needs to run on one OS in the matrix.
     - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
@@ -24,12 +25,15 @@ phases:
         governanceProduct: 'c641993b-8380-e811-80c3-0004ffb4789e'
         snapshotForceEnabled: true
 
-    - task: ms-vseng.MicroBuildTasks.a0262b21-fb8f-46f8-bb9a-60ed560d4a87.MicroBuildLocalizationPlugin@1
+    - task: ms-vseng.MicroBuildTasks.a0262b21-fb8f-46f8-bb9a-60ed560d4a87.MicroBuildLocalizationPlugin@2
       displayName: 'Install Localization Plugin'
+      inputs:
+        feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
 
-    - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
+    - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@2
       displayName: Install CodeSigning plugin
       inputs:
+        feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
         signType: $(SignType)
       condition: and(succeeded(), in(variables['SignType'], 'test', 'real'))
 
@@ -38,15 +42,16 @@ phases:
       displayName: Perform Cleanup Tasks
       condition: succeededOrFailed()
 
-    - task: PublishSymbols@2
-      displayName: 'Publish symbols path'
-      condition: succeeded()
-      inputs:
-        SearchPattern: 'artifacts\$(BuildConfiguration)\symbols\windows\**\*.pdb'
-        SymbolServerType: FileShare
-        SymbolsProduct: AspNetSignalR
-        SymbolsPath: '$(DropShareRoot)\$(Build.BuildNumber)'
-        SymbolsArtifactName: 'symbols-$(BuildConfiguration)'
+    # Temporarily disable the PublishSymbols task since the agent doesn't currently have access to the $(DropShareRoot)
+    # - task: PublishSymbols@2
+    #   displayName: 'Publish symbols path'
+    #   condition: succeeded()
+    #   inputs:
+    #     SearchPattern: 'artifacts\$(BuildConfiguration)\symbols\windows\**\*.pdb'
+    #     SymbolServerType: FileShare
+    #     SymbolsProduct: AspNetSignalR
+    #     SymbolsPath: '$(DropShareRoot)\$(Build.BuildNumber)'
+    #     SymbolsArtifactName: 'symbols-$(BuildConfiguration)'
 
-        # We use SourceLink at build time, and Pdb2Pdb translates that to srcsrv at conversion time
-        IndexSources: false
+    #     # We use SourceLink at build time, and Pdb2Pdb translates that to srcsrv at conversion time
+    #     IndexSources: false
