@@ -212,7 +212,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     // Any errors other than one thrown from the final CloseAsync is reported via OnError(Exception).
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _connection.Trace(TraceLevels.Events, "WS DoReconnect() failed: {0}", ex);
             }
