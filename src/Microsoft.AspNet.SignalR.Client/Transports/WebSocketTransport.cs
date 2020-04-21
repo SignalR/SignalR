@@ -172,42 +172,49 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         // fire and forget
         private async void DoReconnect()
         {
-            var reconnectUrl = UrlBuilder.BuildReconnect(_connection, Name, _connectionData);
-
-            while (TransportHelper.VerifyLastActive(_connection) && _connection.EnsureReconnecting())
-            {
-                try
-                {
-                    await PerformConnect(reconnectUrl, _disconnectToken);
-                    break;
-                }
-                catch (OperationCanceledException)
-                {
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    if (ExceptionHelper.IsRequestAborted(ex))
-                    {
-                        break;
-                    }
-
-                    _connection.OnError(ex);
-                }
-
-                await Task.Delay(ReconnectDelay);
-            }
-
-            var linkedToken = CreateLinkedCancellationToken();
-
             try
             {
-                await _webSocketHandler.ProcessWebSocketRequestAsync(_webSocket, linkedToken);
+                var reconnectUrl = UrlBuilder.BuildReconnect(_connection, Name, _connectionData);
+
+                while (TransportHelper.VerifyLastActive(_connection) && _connection.EnsureReconnecting())
+                {
+                    try
+                    {
+                        await PerformConnect(reconnectUrl, _disconnectToken);
+                        break;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        if (ExceptionHelper.IsRequestAborted(ex))
+                        {
+                            return;
+                        }
+
+                        _connection.OnError(ex);
+                    }
+
+                    await Task.Delay(ReconnectDelay);
+                }
+
+                var linkedToken = CreateLinkedCancellationToken();
+
+                try
+                {
+                    await _webSocketHandler.ProcessWebSocketRequestAsync(_webSocket, linkedToken);
+                }
+                catch
+                {
+                    // Ignore any errors from ProcessWebSocketRequestAsync just as OnStart does after the init message is received.
+                    // Any errors other than one thrown from the final CloseAsync is reported via OnError(Exception).
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore any errors from ProcessWebSocketRequestAsync just as OnStart does after the init message is received.
-                // Any errors other than one thrown from the final CloseAsync is reported via OnError(Exception).
+                _connection.Trace(TraceLevels.Events, "WS DoReconnect() failed: {0}", ex);
             }
         }
 
