@@ -24,7 +24,18 @@
       <Link>Infrastructure\StreamExtensions.cs</Link>
     </Compile>
   </ItemGroup>
+
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\hubs.js" />
+    <EmbeddedResource Include="$(ArtifactsDir)hubs.js" Condition="'$(OS)' == 'Windows_NT'">
+      <Link>Scripts\hubs.js</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Scripts\hubs.js" Condition="'$(OS)' != 'Windows_NT'" />
   </ItemGroup>
+
+  <Target Name="UpdateHubsJsVersion" BeforeTargets="BeforeBuild">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\updateHubsJsVersion.ps1 $(ArtifactsDir) -version $(PackageVersion)" 
+          WorkingDirectory="$(ProjectDir)"
+          Condition="'$(OS)' == 'Windows_NT'" />
+  </Target>
+
 </Project>

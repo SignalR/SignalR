@@ -29,6 +29,7 @@ PublishProfiles/
 *.log.txt
 /tests/Microsoft.AspNet.SignalR.FunctionalTests/artifacts/
 /samples/Microsoft.AspNet.SignalR.Client.WindowsStoreJavaScript.Samples/bld/
+/samples/Microsoft.AspNet.SignalR.Samples/Scripts/hubs.js
 jquery.signalR.js
 jquery.signalR.min.js
 xamarin/SignalRPackage/component/lib/mobile/
