@@ -16,8 +16,6 @@ namespace Microsoft.AspNet.SignalR.Redis
     /// </summary>
     public class RedisMessageBus : ScaleoutMessageBus
     {
-        private const int DefaultBufferSize = 1000;
-
         private readonly int _db;
         private readonly string _key;
         private readonly TraceSource _trace;
@@ -59,10 +57,12 @@ namespace Microsoft.AspNet.SignalR.Redis
 
             if (connectAutomatically)
             {
-                ThreadPool.QueueUserWorkItem(_ =>
+                ThreadPool.QueueUserWorkItem(state =>
                 {
-                    var ignore = ConnectWithRetry();
-                });
+                    var redisMessageBus = state as RedisMessageBus;
+                    
+                    _ = ConnectWithRetry();
+                }, this);
             }
         }
 
@@ -103,6 +103,10 @@ namespace Microsoft.AspNet.SignalR.Redis
             if (_connection != null)
             {
                 _connection.Close(_key, allowCommandsToComplete: false);
+
+                _connection.ConnectionFailed -= OnConnectionFailed;
+                _connection.ConnectionRestored -= OnConnectionRestored;
+                _connection.ErrorMessage -= OnConnectionError;
             }
         }
 

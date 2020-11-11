@@ -45,6 +45,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                     {
                         _connection.Dispose();
                         _connection = null;
+
                         throw new InvalidOperationException("Failed to connect to Redis");
                     }
 
@@ -80,8 +81,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                     _connection.Close(allowCommandsToComplete);
                 }
 
-                _connection.Dispose();
-                _disposed = true;
+                Dispose();
             }
         }
 
@@ -110,6 +110,11 @@ namespace Microsoft.AspNet.SignalR.Redis
                 if (_connection != null)
                 {
                     _trace.TraceVerbose("Disposing connection");
+
+                    _connection.ErrorMessage -= OnError;
+                    _connection.ConnectionFailed -= OnConnectionFailed;
+                    _connection.ConnectionRestored -= OnConnectionRestored;
+
                     _connection.Dispose();
                 }
 
