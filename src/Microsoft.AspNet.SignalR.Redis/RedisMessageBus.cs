@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                 {
                     var redisMessageBus = state as RedisMessageBus;
                     
-                    _ = ConnectWithRetry();
+                    _ = redisMessageBus.ConnectWithRetry();
                 }, this);
             }
         }
