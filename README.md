@@ -10,7 +10,7 @@ Pushing data from the server to the client (not just browser clients) has always
 it dead easy and handles all the heavy lifting for you.
 
 ## Documentation
-See the [documentation](https://docs.microsoft.com/en-us/aspnet/signalr/overview/getting-started/introduction-to-signalr)
+See the [documentation](https://docs.microsoft.com/aspnet/signalr/overview/getting-started/introduction-to-signalr)
 
 ## Get it on NuGet!
 
