@@ -15,7 +15,7 @@ $SymbolFiles = @(
 
 $NuGetExe = Join-Path (Join-Path (Join-Path "$PSScriptRoot" "..") ".nuget") "nuget.exe"
 # Install Pdb2Pdb if not already installed
-& $NuGetExe install -OutputDirectory "$ToolsDirectory" -ExcludeVersion -Source https://dotnet.myget.org/F/symreader-converter/api/v3/index.json -Prerelease Microsoft.DiaSymReader.Pdb2Pdb
+& $NuGetExe install -OutputDirectory "$ToolsDirectory" -ExcludeVersion -Source https://pkgs.dev.azure.com/dnceng/public/_packaging/myget-legacy/nuget/v3/index.json -Prerelease Microsoft.DiaSymReader.Pdb2Pdb
 $Pdb2PdbExe = Join-Path (Join-Path (Join-Path $ToolsDirectory "Microsoft.DiaSymReader.Pdb2Pdb") "tools") "Pdb2Pdb.exe"
 
 if(!(Test-Path $Pdb2PdbExe)) {
