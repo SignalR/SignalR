@@ -40,6 +40,9 @@
     <Product>Microsoft ASP.NET SignalR</Product>
     <PackageProjectUrl>https://www.asp.net/signalr</PackageProjectUrl>
     <PackageReleaseNotes>https://github.com/SignalR/SignalR/releases</PackageReleaseNotes>
+    <PackageIcon>packageIcon.png</PackageIcon>
+    <PackageIconFullPath>$(MSBuildThisFileDirectory)packageIcon.png</PackageIconFullPath>
+    <LicenseFullPath>$(MSBuildThisFileDirectory)LICENSE.txt</LicenseFullPath>
     <Authors>Microsoft</Authors>
   </PropertyGroup>
 
@@ -67,6 +70,10 @@
     <!-- Use ProgramFiles32 instead of MSBuildExtensionsPath so we can be built with dotnet.exe -->
     <WAPToolsPath Condition="'$(WAPToolsPath)' == ''">$(VsInstallRoot)\MSBuild\Microsoft\VisualStudio\v$(VisualStudioVersion)</WAPToolsPath>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(PackageIconFullPath)" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <Import Project="build\arcade.props" />
 </Project>

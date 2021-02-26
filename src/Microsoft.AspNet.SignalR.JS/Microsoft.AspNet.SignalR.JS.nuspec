@@ -9,6 +9,8 @@
     <owners>$Owners$</owners>
     <requireLicenseAcceptance>$RequireLicenseAcceptance$</requireLicenseAcceptance>
     <licenseUrl>$LicenseUrl$</licenseUrl>
+    <license type="file">LICENSE.txt</license>
+    <icon>packageIcon.png</icon>
     <projectUrl>$ProjectSiteUrl$</projectUrl>
     <copyright>$CopyrightNotice$</copyright>
     <releaseNotes>$ReleaseNotes$</releaseNotes>
@@ -20,5 +22,7 @@
   <files>
     <file src="netstandard1.0\jquery.signalR-$PackageVersion$.js" target="content\Scripts" />
     <file src="netstandard1.0\jquery.signalR-$PackageVersion$.min.js" target="content\Scripts" />
+    <file src="$PackageIcon$" target="" />
+    <file src="$License$" target="" />
   </files>
 </package>
