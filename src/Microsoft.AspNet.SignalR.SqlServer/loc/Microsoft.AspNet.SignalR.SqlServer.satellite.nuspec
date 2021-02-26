@@ -8,6 +8,8 @@
         <authors>$Authors$</authors>
         <owners>$Owners$</owners>
         <licenseUrl>$LicenseUrl$</licenseUrl>
+        <license type="file">LICENSE.txt</license>
+        <icon>packageIcon.png</icon>
         <copyright>$CopyrightNotice$</copyright>
         <projectUrl>$ProjectSiteUrl$</projectUrl>
         <requireLicenseAcceptance>$RequireLicenseAcceptance$</requireLicenseAcceptance>
@@ -21,5 +23,7 @@
     <files>
         <file src="net45\$Locale$\Microsoft.AspNet.SignalR.SqlServer.resources.dll" target="lib\net45\$Locale$" />
         <file src="$Locale$\Microsoft.AspNet.SignalR.SqlServer.xml" target="lib\net45\$Locale$" />
+        <file src="$PackageIcon$" target="" />
+        <file src="$License$" target="" />
     </files>
 </package>
