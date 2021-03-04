@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 return;
             }
 
-            DoReconnect();
+            _ = DoReconnect();
         }
 
         // fire and forget
