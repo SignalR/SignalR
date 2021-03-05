@@ -453,7 +453,7 @@
             //option #1 - send "fetch" with keepalive
             if (window.fetch) { 
                 // use the fetch API with keepalive
-                fetch(url, {
+                window.fetch(url, {
                     method: "POST",
                     keepalive: true,
                     headers: requestHeaders
