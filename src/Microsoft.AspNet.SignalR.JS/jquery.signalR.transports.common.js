@@ -447,11 +447,11 @@
             async = typeof async === "undefined" ? true : async;
 
             var url = getAjaxUrl(connection, "/abort");
-            
+
             var requestHeaders = connection.accessToken ? { "Authorization": "Bearer " + connection.accessToken } : {};
-            
+
             //option #1 - send "fetch" with keepalive
-            if (window.fetch) { 
+            if (window.fetch) {
                 // use the fetch API with keepalive
                 window.fetch(url, {
                     method: "POST",
