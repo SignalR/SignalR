@@ -1,19 +1,29 @@
 parameters:
-  queueName: ''
+  pool: ''
   beforeBuild: []
   afterBuild: []
   variables:
 
-phases:
-- phase: Windows
-  queue:
-    name: ${{ parameters.queueName }}
+jobs:
+- job: Windows
+  pool:
+    ${{ if eq(parameters.pool, 'public') }}:
+      name: NetCorePublic-Pool
+      queue: BuildPool.Server.Amd64.VS2019.Open
+    ${{ if eq(parameters.pool, 'internal') }}:
+      name: NetCoreInternal-Pool
+      queue: BuildPool.Server.Amd64.VS2019
   variables:
     BuildConfiguration: Release
     ${{ insert }}: ${{ parameters.variables }}
   steps:
   - checkout: self
     clean: true
+
+  - task: NodeTool@0
+    displayName: Install Node.js
+    inputs:
+      versionSpec: 12.x
 
   - ${{ parameters.beforeBuild }}
 

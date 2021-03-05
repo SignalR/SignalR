@@ -447,15 +447,29 @@
             async = typeof async === "undefined" ? true : async;
 
             var url = getAjaxUrl(connection, "/abort");
-
-            transportLogic.ajax(connection, {
-                url: url,
-                async: async,
-                timeout: 1000,
-                type: "POST",
-                headers: connection.accessToken ? { "Authorization": "Bearer " + connection.accessToken } : {},
-                dataType: "text" // We don't want to use JSONP here even when JSONP is enabled
-            });
+            
+            var requestHeaders = connection.accessToken ? { "Authorization": "Bearer " + connection.accessToken } : {};
+            
+            //option #1 - send "fetch" with keepalive
+            if (window.fetch) { 
+                // use the fetch API with keepalive
+                fetch(url, {
+                    method: "POST",
+                    keepalive: true,
+                    headers: requestHeaders
+                });
+            }
+            else { 
+                // fetch is not available - fallback to $.ajax
+                transportLogic.ajax(connection, {
+                    url: url,
+                    async: async,
+                    timeout: 1000,
+                    type: "POST",
+                    headers: requestHeaders,
+                    dataType: "text" // We don't want to use JSONP here even when JSONP is enabled
+                });
+            }
 
             connection.log("Fired ajax abort async = " + async + ".");
         },

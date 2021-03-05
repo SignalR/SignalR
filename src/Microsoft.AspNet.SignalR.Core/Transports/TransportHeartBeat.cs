@@ -166,7 +166,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public IList<ITrackingConnection> GetConnections()
         {
-            return _connections.Values.Select(metadata => metadata.Connection).ToList();
+            return _connections.Select(p => p.Value.Connection).ToList();
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We're tracing exceptions and don't want to crash the process.")]

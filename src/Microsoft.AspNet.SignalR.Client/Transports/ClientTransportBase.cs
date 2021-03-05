@@ -105,16 +105,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         protected abstract void OnStartFailed();
 
         // internal for testing
-        protected internal void TransportFailed(Exception ex)
+        protected internal bool TryFailStart(Exception ex)
         {
             // will be no-op if handler already finished (either succeeded or failed)
+            // will return true if start failed for any reason.
             if (ex == null)
             {
-                _initializationHandler.Fail();
+                return _initializationHandler.TryFailStart();
             }
             else
             {
-                _initializationHandler.Fail(ex);
+                return _initializationHandler.TryFailStart(ex);
             }
         }
 

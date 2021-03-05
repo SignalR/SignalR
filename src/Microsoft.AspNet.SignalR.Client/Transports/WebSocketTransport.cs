@@ -4,6 +4,7 @@
 #if NET45 || NETSTANDARD2_0
 
 using System;
+using System.IO;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,43 +64,52 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             _connectionData = connectionData;
 
             // We don't need to await this task
-            PerformConnect().ContinueWith(task =>
+            ConnectAndHandleConnection().ContinueWith(task =>
             {
                 if (task.IsFaulted)
                 {
-                    TransportFailed(task.Exception);
+                    TryFailStart(task.Exception);
                 }
                 else if (task.IsCanceled)
                 {
-                    TransportFailed(null);
+                    TryFailStart(null);
                 }
             },
             TaskContinuationOptions.NotOnRanToCompletion);
         }
 
-        // For testing
-        public virtual Task PerformConnect()
+        private async Task ConnectAndHandleConnection()
         {
-            return PerformConnect(UrlBuilder.BuildConnect(_connection, Name, _connectionData));
+            await PerformConnect(_disconnectToken);
+            var linkedToken = CreateLinkedCancellationToken();
+            await _webSocketHandler.ProcessWebSocketRequestAsync(_webSocket, linkedToken);
         }
 
-        private async Task PerformConnect(string url)
+        // For testing
+        public virtual Task PerformConnect(CancellationToken token)
+        {
+            return PerformConnect(UrlBuilder.BuildConnect(_connection, Name, _connectionData), token);
+        }
+
+        private CancellationToken CreateLinkedCancellationToken()
+        {
+            // TODO: Revisit thread safety of this assignment
+            _webSocketTokenSource = new CancellationTokenSource();
+            CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_webSocketTokenSource.Token, _disconnectToken);
+            return linkedCts.Token;
+        }
+
+        private async Task PerformConnect(string url, CancellationToken token)
         {
             var uri = UrlBuilder.ConvertToWebSocketUri(url);
 
             _connection.Trace(TraceLevels.Events, "WS Connecting to: {0}", uri);
- 
-            // TODO: Revisit thread safety of this assignment
-            _webSocketTokenSource = new CancellationTokenSource();
+
             _webSocket = new ClientWebSocket();
 
             _connection.PrepareRequest(new WebSocketWrapperRequest(_webSocket, _connection));
 
-            CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_webSocketTokenSource.Token, _disconnectToken);
-            CancellationToken token = linkedCts.Token;
-
             await _webSocket.ConnectAsync(uri, token);
-            await _webSocketHandler.ProcessWebSocketRequestAsync(_webSocket, token);
         }
 
         protected override void OnStartFailed()
@@ -150,46 +160,61 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             _connection.Trace(TraceLevels.Events, "WS: OnClose()");
 
-            if (_disconnectToken.IsCancellationRequested)
-            {
-                return;
-            }
+            // Make sure to try to fail start even if an abort has started.
+            var startFailed = TryFailStart(new IOException(Resources.Error_TransportDisconnectedBeforeConnectionFullyInitialized));
 
-            if (AbortHandler.TryCompleteAbort())
+            if (!AbortHandler.TryCompleteAbort() && !_disconnectToken.IsCancellationRequested && !startFailed)
             {
-                return;
+                _ = DoReconnect();
             }
-
-            _ = DoReconnect();
         }
 
         // fire and forget
         private async Task DoReconnect()
         {
-            var reconnectUrl = UrlBuilder.BuildReconnect(_connection, Name, _connectionData);
-
-            while (TransportHelper.VerifyLastActive(_connection) && _connection.EnsureReconnecting())
+            try
             {
-                try
+                var reconnectUrl = UrlBuilder.BuildReconnect(_connection, Name, _connectionData);
+
+                while (TransportHelper.VerifyLastActive(_connection) && _connection.EnsureReconnecting())
                 {
-                    await PerformConnect(reconnectUrl);
-                    break;
-                }
-                catch (OperationCanceledException)
-                {
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    if (ExceptionHelper.IsRequestAborted(ex))
+                    try
                     {
+                        await PerformConnect(reconnectUrl, _disconnectToken);
                         break;
                     }
+                    catch (OperationCanceledException)
+                    {
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        if (ExceptionHelper.IsRequestAborted(ex))
+                        {
+                            return;
+                        }
 
-                    _connection.OnError(ex);
+                        _connection.OnError(ex);
+                    }
+
+                    await Task.Delay(ReconnectDelay);
                 }
 
-                await Task.Delay(ReconnectDelay);
+                var linkedToken = CreateLinkedCancellationToken();
+
+                try
+                {
+                    await _webSocketHandler.ProcessWebSocketRequestAsync(_webSocket, linkedToken);
+                }
+                catch
+                {
+                    // Ignore any errors from ProcessWebSocketRequestAsync just as OnStart does after the init message is received.
+                    // Any errors other than one thrown from the final CloseAsync is reported via OnError(Exception).
+                }
+            }
+            catch (Exception ex)
+            {
+                _connection.Trace(TraceLevels.Events, "WS DoReconnect() failed: {0}", ex);
             }
         }
 
