@@ -165,12 +165,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             if (!AbortHandler.TryCompleteAbort() && !_disconnectToken.IsCancellationRequested && !startFailed)
             {
-                DoReconnect();
+                _ = DoReconnect();
             }
         }
 
         // fire and forget
-        private async void DoReconnect()
+        private async Task DoReconnect()
         {
             try
             {
