@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    See https://github.com/dotnet/roslyn-tools/tree/master/src/SignTool for docs on using the sign tool.
+    See https://github.com/dotnet/roslyn-tools/tree/main/src/SignTool for docs on using the sign tool.
   -->
 
   <PropertyGroup>

@@ -28,9 +28,9 @@ We follow the [ASP.NET webstack coding guidelines](http://aspnetwebstack.codeple
 ### Project Workflow
 
 Our workflow is loosely based on [Github Flow](http://scottchacon.com/2011/08/31/github-flow.html). We actively develop in the **dev** branch. This means that all pull requests by contributors need to be developed and submitted to the dev branch.
-The master branch always matches the current release on [nuget.org](http://nuget.org/packages/Microsoft.AspNet.SignalR/) and we also [tag](https://github.com/SignalR/SignalR/tags) each release.
+The main branch always matches the current release on [nuget.org](http://nuget.org/packages/Microsoft.AspNet.SignalR/) and we also [tag](https://github.com/SignalR/SignalR/tags) each release.
 When the end of a milestone is coming up, we create a branch called **release** to stabilize the build for the upcoming release.
-The release is then merged into master and deleted and the cycle continues until the end of the next milestone.
+The release is then merged into main and deleted and the cycle continues until the end of the next milestone.
 
 ### Issue management
 
