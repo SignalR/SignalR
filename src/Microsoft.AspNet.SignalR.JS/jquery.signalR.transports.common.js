@@ -639,6 +639,7 @@
 
         markLastMessage: function (connection) {
             connection._.lastMessageAt = new Date().getTime();
+            connection._.lastActiveAt = connection._.lastMessageAt;
         },
 
         markActive: function (connection) {
