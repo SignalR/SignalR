@@ -1,0 +1,9 @@
+{
+  "tool": "Credential Scanner",
+  "suppressions": [
+    {
+      "file": "\\test\\Microsoft.AspNet.SignalR.Client.UWP.Tests\\Microsoft.AspNet.SignalR.Client.UWP.Tests_TemporaryKey.pfx",
+      "_justification": "Legitimate UT certificate file with private key"
+    }
+  ]
+}
