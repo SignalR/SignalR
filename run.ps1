@@ -52,8 +52,8 @@ in the file are overridden by command line parameters.
 Example config file:
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/master/tools/korebuild.schema.json",
-  "channel": "master",
+  "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/main/tools/korebuild.schema.json",
+  "channel": "main",
   "toolsSource": "https://aspnetcore.blob.core.windows.net/buildtools"
 }
 ```
@@ -192,7 +192,7 @@ if (!$DotNetHome) {
         else { Join-Path $PSScriptRoot '.dotnet'}
 }
 
-if (!$Channel) { $Channel = 'master' }
+if (!$Channel) { $Channel = 'main' }
 if (!$ToolsSource) { $ToolsSource = 'https://aspnetcore.blob.core.windows.net/buildtools' }
 
 # Execute

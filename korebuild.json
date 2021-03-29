@@ -1,6 +1,6 @@
 {
-  "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/master/tools/korebuild.schema.json",
-  "channel": "master",
+  "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/main/tools/korebuild.schema.json",
+  "channel": "main",
   "toolsets": {
     "visualstudio": {
       "required": false,
