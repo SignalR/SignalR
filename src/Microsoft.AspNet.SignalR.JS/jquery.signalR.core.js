@@ -628,7 +628,9 @@
                             signalR.transports._logic.monitorKeepAlive(connection);
                         }
 
-                        signalR.transports._logic.startHeartbeat(connection);
+                        if (connection._.keepAliveData.activated) {
+                            signalR.transports._logic.startHeartbeat(connection);
+                        }
 
                         // Used to ensure low activity clients maintain their authentication.
                         // Must be configured once a transport has been decided to perform valid ping requests.
