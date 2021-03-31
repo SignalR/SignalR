@@ -639,6 +639,7 @@
 
         markLastMessage: function (connection) {
             connection._.lastMessageAt = new Date().getTime();
+            connection._.lastActiveAt = connection._.lastMessageAt;
         },
 
         markActive: function (connection) {
@@ -672,15 +673,19 @@
         },
 
         verifyLastActive: function (connection) {
-            if (new Date().getTime() - connection._.lastActiveAt >= connection.reconnectWindow) {
-                var message = signalR._.format(signalR.resources.reconnectWindowTimeout, new Date(connection._.lastActiveAt), connection.reconnectWindow);
-                connection.log(message);
-                $(connection).triggerHandler(events.onError, [signalR._.error(message, /* source */ "TimeoutException")]);
-                connection.stop(/* async */ false, /* notifyServer */ false);
-                return false;
+            // If there is no keep alive configured, we cannot assume that timer callbacks will
+            // run frequently enough to keep lastActiveAt updated.
+            // https://github.com/SignalR/SignalR/issues/4536
+            if (!connection._.keepAliveData.activated ||
+                new Date().getTime() - connection._.lastActiveAt < connection.reconnectWindow) {
+                return true;
             }
 
-            return true;
+            var message = signalR._.format(signalR.resources.reconnectWindowTimeout, new Date(connection._.lastActiveAt), connection.reconnectWindow);
+            connection.log(message);
+            $(connection).triggerHandler(events.onError, [signalR._.error(message, /* source */ "TimeoutException")]);
+            connection.stop(/* async */ false, /* notifyServer */ false);
+            return false;
         },
 
         reconnect: function (connection, transportName) {

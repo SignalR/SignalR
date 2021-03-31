@@ -59,6 +59,18 @@ QUnit.test("verifyLastActive fires onError if timeout occurs", function (assert)
     $.signalR.transports._logic.verifyLastActive(connection);
 });
 
+QUnit.test("markLastMessage updates lastActiveAt", function (assert) {
+    var connection = testUtilities.createHubConnection();
+
+    delete connection._.lastMessageAt;
+    delete connection._.lastActiveAt;
+
+    $.signalR.transports._logic.markLastMessage(connection);
+
+    assert.isSet(connection._.lastMessageAt);
+    assert.isSet(connection._.lastActiveAt);
+});
+
 QUnit.test("lastError cleared when connection starts.", function (assert) {
     var connection = testUtilities.createHubConnection(function () { }, assert, "", undefined, false);
     connection.lastError = new Error();
