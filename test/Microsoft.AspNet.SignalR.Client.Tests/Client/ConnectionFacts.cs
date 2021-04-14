@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [Fact]
             public void StartValidatesTransportNotNull()
             {
-                Assert.Equal("transport", 
+                Assert.Equal("transport",
                     Assert.Throws<ArgumentNullException>(
                         () => new Connection("http://fake.url/").Start((IClientTransport)null).Wait()).ParamName);
             }
@@ -475,6 +475,39 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             ((IConnection) connection).Disconnect();
 
             mockTransport.Verify(t => t.Dispose(), Times.Once());
+        }
+
+        [Fact]
+        public async Task Null()
+        {
+            var mockTransport = new Mock<IClientTransport>();
+            var tcs = new TaskCompletionSource<NegotiationResponse>();
+            mockTransport.Setup(t => t.Negotiate(It.IsAny<IConnection>(), It.IsAny<string>()))
+                .Returns(tcs.Task);
+
+            mockTransport.Setup(t => t.Start(It.IsAny<IConnection>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult<object>(null));
+
+            using (var connection = new Connection("http://fakeurl"))
+            {
+                var startTask = connection.Start(mockTransport.Object);
+
+                connection.Stop(new TimeSpan(0));
+                tcs.SetResult(new NegotiationResponse
+                {
+                    ProtocolVersion = "1.4",
+                    ConnectionId = "42",
+                    ConnectionToken = "42.42",
+                    DisconnectTimeout = 10,
+                    TransportConnectTimeout = 10
+                });
+
+                var ex = await Assert.ThrowsAsync<StartException>(() => startTask);
+
+                Assert.Equal(Resources.Error_ConnectionCancelled, ex.Message);
+
+                Assert.Equal(ConnectionState.Disconnected, connection.State);
+            }
         }
     }
 }

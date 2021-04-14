@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.SignalR.Client
         // The amount of time the client should attempt to reconnect before stopping.
         private TimeSpan _disconnectTimeout;
 
-        // The amount of time a transport will wait (while connecting) before failing. 
+        // The amount of time a transport will wait (while connecting) before failing.
         private TimeSpan _totalTransportConnectTimeout;
 
         // Provides a way to cancel the the timeout that stops a reconnect cycle
@@ -520,7 +520,15 @@ namespace Microsoft.AspNet.SignalR.Client
                     _reconnectWindow = _disconnectTimeout;
                 }
 
-                Monitor = new HeartbeatMonitor(this, _stateLock, beatInterval);
+                // do not acquire _startLock, that can deadlock with Stop which takes _startLock then waits for Start to finish
+                lock (_stateLock)
+                {
+                    if (_state != ConnectionState.Connecting)
+                    {
+                        throw new StartException(Resources.Error_ConnectionCancelled, LastError);
+                    }
+                    Monitor = new HeartbeatMonitor(this, _stateLock, beatInterval);
+                }
 
                 return StartTransport();
             }
@@ -720,10 +728,17 @@ namespace Microsoft.AspNet.SignalR.Client
 
                 Trace(TraceLevels.Events, "Stop");
 
+                IClientTransport transport;
+                HeartbeatMonitor monitor;
+                lock (_stateLock)
+                {
+                    transport = _transport;
+                    monitor = Monitor;
+                }
                 // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
-                Monitor.Dispose();
+                monitor?.Dispose();
 
-                _transport.Abort(this, timeout, _connectionData);
+                transport?.Abort(this, timeout, _connectionData);
 
                 Disconnect();
             }
@@ -973,7 +988,7 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
         /// <summary>
-        /// Sets LastMessageAt to the current time 
+        /// Sets LastMessageAt to the current time
         /// </summary>
         void IConnection.MarkLastMessage()
         {
@@ -981,7 +996,7 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
         /// <summary>
-        /// Sets LastActiveAt to the current time 
+        /// Sets LastActiveAt to the current time
         /// </summary>
         void IConnection.MarkActive()
         {
@@ -1009,7 +1024,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 _assemblyVersion = new AssemblyName(typeof(Resources).GetTypeInfo().Assembly.FullName).Version;
 #elif NET40 || NET45
                 _assemblyVersion = new AssemblyName(typeof(Connection).Assembly.FullName).Version;
-#else 
+#else
 #error Unsupported target framework.
 #endif
             }
