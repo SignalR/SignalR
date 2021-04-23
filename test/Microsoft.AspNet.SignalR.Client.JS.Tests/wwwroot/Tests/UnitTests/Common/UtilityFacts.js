@@ -30,6 +30,7 @@ QUnit.test("markActive stops connection if called after extended period of time.
         stopCalled = false;
 
     connection._.lastActiveAt = new Date(new Date().valueOf() - 3000).getTime()
+    connection._.keepAliveData.activated = true;
     connection.reconnectWindow = 2900;
 
     connection.stop = function () {
