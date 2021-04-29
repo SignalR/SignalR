@@ -52,6 +52,7 @@ QUnit.test("lastError set when error occurrs", function (assert) {
 QUnit.test("verifyLastActive fires onError if timeout occurs", function (assert) {
     var connection = testUtilities.createHubConnection();
     connection._.lastActiveAt = new Date(0);
+    connection._.keepAliveData.activated = true;
     connection.error(function(err) {
         assert.equal(err.source, "TimeoutException", "Disconnected event has expected close reason");
     });
