@@ -29,6 +29,21 @@ foreach ($file in $files) {
     Write-Host "no issues found" -ForegroundColor Green
 }
 
+$hasError = $false;
+Write-Host "Running ESLint..." -ForegroundColor Yellow
+foreach ($file in $files) {
+    Write-Host "$file..."
+    & "./node_modules/.bin/eslint" "$file"
+    if ($LASTEXITCODE -ne 0) {
+        $hasError = $true;
+    }
+}
+
+if ($hasError) {
+    Write-Host "Error with ESLint"
+    exit 1;
+}
+
 # Combine all files into jquery.signalR.js
 if (!(Test-Path -path "$outputPath")) {
     New-Item "$outputPath" -Type Directory | Out-Null

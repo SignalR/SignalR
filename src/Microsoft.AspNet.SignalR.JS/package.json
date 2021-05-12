@@ -29,5 +29,8 @@
         "jquery.signalR.min.js",
         "README.md",
         "LICENSE.md"
-    ]
+    ],
+    "devDependencies": {
+        "eslint": "^7.22.0"
+    }
 }
