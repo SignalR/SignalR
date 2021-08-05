@@ -254,7 +254,7 @@
 
     // .on() was added in version 1.7.0, .load() was removed in version 3.0.0 so we fallback to .load() if .on() does
     // not exist to not break existing applications
-    if (typeof _pageWindow.on == "function") {
+    if (typeof _pageWindow.on === "function") {
         _pageWindow.on("load", function () { _pageLoaded = true; });
     }
     else {
