@@ -478,7 +478,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         }
 
         [Fact]
-        public async Task Null()
+        public async Task StopDuringStartCancelsStart()
         {
             var mockTransport = new Mock<IClientTransport>();
             var tcs = new TaskCompletionSource<NegotiationResponse>();
