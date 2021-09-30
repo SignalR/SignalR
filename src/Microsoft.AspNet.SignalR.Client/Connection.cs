@@ -728,17 +728,10 @@ namespace Microsoft.AspNet.SignalR.Client
 
                 Trace(TraceLevels.Events, "Stop");
 
-                IClientTransport transport;
-                HeartbeatMonitor monitor;
-                lock (_stateLock)
-                {
-                    transport = _transport;
-                    monitor = Monitor;
-                }
                 // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
-                monitor?.Dispose();
+                Monitor?.Dispose();
 
-                transport?.Abort(this, timeout, _connectionData);
+                _transport?.Abort(this, timeout, _connectionData);
 
                 Disconnect();
             }
