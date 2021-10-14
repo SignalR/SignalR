@@ -1,6 +1,6 @@
 {
     "name": "signalr",
-    "version": "[!VERSION!]",
+    "version": "0.0.0",
     "description": "Microsoft ASP.NET SignalR JavaScript Client",
     "main": "jquery.signalR.js",
     "repository": {
@@ -24,13 +24,13 @@
     "dependencies": {
         "jquery": ">=1.6.4"
     },
+    "devDependencies": {
+        "eslint": "^7.22.0"
+    },
     "files": [
         "jquery.signalR.js",
         "jquery.signalR.min.js",
         "README.md",
         "LICENSE.md"
-    ],
-    "devDependencies": {
-        "eslint": "^7.22.0"
-    }
+    ]
 }

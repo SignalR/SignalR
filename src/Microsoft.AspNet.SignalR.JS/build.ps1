@@ -29,6 +29,8 @@ foreach ($file in $files) {
     Write-Host "no issues found" -ForegroundColor Green
 }
 
+& "npm" "ci"
+
 $hasError = $false;
 Write-Host "Running ESLint..." -ForegroundColor Yellow
 foreach ($file in $files) {
@@ -74,8 +76,10 @@ Copy-Item "$outputPath\jquery.signalR-$version.min.js" "$outputPath\jquery.signa
 # Copy additional package files
 
 Get-Content "package.json" | 
-    ForEach-Object { $_.Replace("[!VERSION!]", $version) } |
     Set-Content -Path "$outputPath\package.json"
+pushd $outputPath
+& "npm" "version" $version
+popd
 Copy-Item "README.md" "$outputPath\README.md"
 Copy-Item "LICENSE.md" "$outputPath\LICENSE.md"
 
