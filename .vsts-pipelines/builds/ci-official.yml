@@ -25,7 +25,7 @@ jobs:
         governanceProduct: 'c641993b-8380-e811-80c3-0004ffb4789e'
         snapshotForceEnabled: true
 
-    - task: ms-vseng.MicroBuildTasks.a0262b21-fb8f-46f8-bb9a-60ed560d4a87.MicroBuildLocalizationPlugin@2
+    - task: ms-vseng.MicroBuildTasks.a0262b21-fb8f-46f8-bb9a-60ed560d4a87.MicroBuildLocalizationPlugin@4
       displayName: 'Install Localization Plugin'
       inputs:
         feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
