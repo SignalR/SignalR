@@ -66,13 +66,17 @@ namespace Microsoft.AspNet.SignalR.Owin
             WebSocket webSocket;
 
             // Try to get the websocket context from the environment
-            if (!environment.TryGetValue(typeof(WebSocketContext).FullName, out value))
+            if (environment.TryGetValue(typeof(WebSocketContext).FullName, out value))
             {
-                webSocket = new OwinWebSocket(environment);
+                webSocket = ((WebSocketContext)value).WebSocket;
+            }
+            else if (environment.TryGetValue(typeof(WebSocket).FullName, out value))
+            {
+                webSocket = (WebSocket)value;
             }
             else
             {
-                webSocket = ((WebSocketContext)value).WebSocket;
+                webSocket = new OwinWebSocket(environment);
             }
 
             var cts = new CancellationTokenSource();
