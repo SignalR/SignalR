@@ -3,7 +3,7 @@
 <Project>
     <Target Name="ResolveLSBuild">
         <ItemGroup>
-            <_LSBuildExe Include="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.Localization.*\build\LSBuild\*\LSBuild.exe" />
+            <_LSBuildExe Include="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.Localization.*\build\LSBuild\v7\LSBuild.exe" />
         </ItemGroup>
 
         <Error Text="One of 'LSBuild' or 'MicroBuildPluginDirectory' must be provided" Condition="'$(LSBuild)' == '' And '$(MicroBuildPluginDirectory)' == ''" />
