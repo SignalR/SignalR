@@ -160,16 +160,24 @@ for (let i = 2; i < process.argv.length; i += 1) {
     server = child_process.spawn(exePath, ["--url", serverUrl]);
 
     // Loop trying to request the status endpoint
-    let resp: http.IncomingMessage;
+    let statusCode = 500;
     let attempts = 0;
     do {
         attempts += 1;
-        debug(`polling ${serverUrl}status... (attempt ${attempts} of ${MAX_ATTEMPTS})`)
-        resp = await quickfetch(`${serverUrl}status`);
-        await delay(1000);
-    } while(resp.statusCode !== 200 && attempts < MAX_ATTEMPTS);
+        debug(`polling ${serverUrl}status... (attempt ${attempts} of ${MAX_ATTEMPTS})`);
 
-    if(resp.statusCode !== 200) {
+        try {
+            statusCode = (await quickfetch(`${serverUrl}status`)).statusCode;
+        } catch (error) {
+            if (attempts >= MAX_ATTEMPTS) {
+                throw error;
+            }
+        }
+
+        await delay(1000);
+    } while(statusCode !== 200 && attempts < MAX_ATTEMPTS);
+
+    if(statusCode !== 200) {
         console.error("Server failed to respond after 10 attempts to check status");
         return 1;
     }

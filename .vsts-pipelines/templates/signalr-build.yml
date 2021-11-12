@@ -24,6 +24,9 @@ jobs:
     displayName: Install Node.js
     inputs:
       versionSpec: 12.x
+  - powershell: |
+      ./tools/chrome/InstallGoogleChrome.ps1
+    displayName: Install Chrome
 
   - ${{ parameters.beforeBuild }}
 
@@ -52,5 +55,16 @@ jobs:
       pathtoPublish: artifacts/logs/
       artifactName: logs-$(BuildConfiguration)
       artifactType: Container
+
+  - task: PublishTestResults@2
+    displayName: Publish js test results
+    condition: always()
+    inputs:
+      testResultsFormat: JUnit
+      testResultsFiles: '**/artifacts/log/**/*.xml'
+      testRunTitle: $(AgentOsName)-$(BuildConfiguration)-js
+      mergeTestResults: true
+      buildConfiguration: $(BuildConfiguration)
+      buildPlatform: $(AgentOsName)
 
   - ${{ parameters.afterBuild }}

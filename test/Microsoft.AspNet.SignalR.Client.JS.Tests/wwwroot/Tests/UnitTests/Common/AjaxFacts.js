@@ -19,7 +19,8 @@ QUnit.test("No transport specified should result in noop behavior for ajaxAbort.
     }
 });
 
-QUnit.test("Asynchronous flag defaults and is used correctly in ajaxAbort", function (assert) {
+// fetch() is used when available and is always async. It does not have the same problems as async XHRs during unload.
+QUnit.skipIf(window.fetch).test("Asynchronous flag defaults and is used correctly in ajaxAbort", function (assert) {
     var connection = testUtilities.createHubConnection(),
         failed = false,
         // Saved current jquery ajax function so we can replace it once we've finished
