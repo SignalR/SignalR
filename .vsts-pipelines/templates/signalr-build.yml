@@ -26,7 +26,7 @@ jobs:
       versionSpec: 12.x
   - powershell: |
       ./tools/chrome/InstallGoogleChrome.ps1
-      displayName: Install Chrome
+    displayName: Install Chrome
 
   - ${{ parameters.beforeBuild }}
 
