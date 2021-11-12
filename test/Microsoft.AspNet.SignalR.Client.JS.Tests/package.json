@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "ts-node --project ./tsconfig.json run-tests.ts"
+    "test": "ts-node --project ./tsconfig.json run-tests.ts",
+    "test:all": "ts-node --project ./tsconfig.json run-tests.ts --all-browsers"
   },
   "keywords": [],
   "author": "",
@@ -16,10 +17,10 @@
     "@types/signalr": "^2.2.35",
     "debug": "^3.1.0",
     "jquery": "^3.3.1",
-    "karma": "^3.0.0",
-    "karma-chrome-launcher": "^2.2.0",
+    "karma": "^6.3.8",
+    "karma-chrome-launcher": "^3.1.0",
     "karma-edge-launcher": "^0.4.2",
-    "karma-firefox-launcher": "^1.1.0",
+    "karma-firefox-launcher": "^2.1.1",
     "karma-ie-launcher": "^1.0.0",
     "karma-junit-reporter": "^1.2.0",
     "karma-qunit": "^2.1.0",
