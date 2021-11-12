@@ -61,7 +61,7 @@ jobs:
     condition: always()
     inputs:
       testResultsFormat: JUnit
-      testResultsFiles: '**/artifacts/log/**/*.xml'
+      testResultsFiles: 'artifacts/logs/**/*.xml'
       testRunTitle: $(AgentOsName)-$(BuildConfiguration)-js
       mergeTestResults: true
       buildConfiguration: $(BuildConfiguration)
