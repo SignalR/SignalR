@@ -24,6 +24,9 @@ jobs:
     displayName: Install Node.js
     inputs:
       versionSpec: 12.x
+  - powershell: |
+      ./tools/chrome/InstallGoogleChrome.ps1
+      displayName: Install Chrome
 
   - ${{ parameters.beforeBuild }}
 
