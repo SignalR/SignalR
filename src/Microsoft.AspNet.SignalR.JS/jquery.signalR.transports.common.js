@@ -457,7 +457,7 @@
                     method: "POST",
                     keepalive: true,
                     headers: requestHeaders,
-                    credentials: "include"
+                    credentials: connection.withCredentials === true ? "include" : "same-origin",
                 });
             }
             else { 
