@@ -456,7 +456,8 @@
                 window.fetch(url, {
                     method: "POST",
                     keepalive: true,
-                    headers: requestHeaders
+                    headers: requestHeaders,
+                    credentials: "include"
                 });
             }
             else { 
