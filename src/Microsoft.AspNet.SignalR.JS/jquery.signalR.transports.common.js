@@ -456,7 +456,8 @@
                 window.fetch(url, {
                     method: "POST",
                     keepalive: true,
-                    headers: requestHeaders
+                    headers: requestHeaders,
+                    credentials: connection.withCredentials === true ? "include" : "same-origin"
                 });
             }
             else { 
