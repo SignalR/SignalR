@@ -10,8 +10,17 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
     {
         protected override Task OnConnected(IRequest request, string connectionId)
         {
+            var orig = ServicePointManager.SecurityProtocol;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             // Should throw 404
-            using (HttpWebRequest.Create("http://httpstat.us/404").GetResponse()) { }
+            try
+            {
+                using (HttpWebRequest.Create("https://httpstat.us/404").GetResponse()) { }
+            }
+            finally
+            {
+                ServicePointManager.SecurityProtocol = orig;
+            }
 
             return base.OnConnected(request, connectionId);
         }
