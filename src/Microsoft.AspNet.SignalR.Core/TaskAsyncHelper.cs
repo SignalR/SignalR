@@ -1039,7 +1039,7 @@ namespace Microsoft.AspNet.SignalR
 #if NETSTANDARD1_3
             // The Thread class is not available on .NET Standard 1.3
             return task.ContinueWith(continuationAction, continuationOptions);
-#elif NETSTANDARD2_0 || NET40 || NET45 || NET461
+#elif NETSTANDARD2_0 || NET40 || NET45 || NET461 || NET472
             var preservedCulture = SaveCulture();
             return task.ContinueWith(t => RunWithPreservedCulture(preservedCulture, continuationAction, t), continuationOptions);
 #else
@@ -1052,7 +1052,7 @@ namespace Microsoft.AspNet.SignalR
 #if NETSTANDARD1_3
             // The Thread class is not available on .NET Standard 1.3
             return task.ContinueWith(continuationAction, continuationOptions);
-#elif NETSTANDARD2_0 || NET40 || NET45 || NET461
+#elif NETSTANDARD2_0 || NET40 || NET45 || NET461 || NET472
             var preservedCulture = SaveCulture();
             return task.ContinueWith(t => RunWithPreservedCulture(preservedCulture, continuationAction, t), continuationOptions);
 #else
@@ -1066,7 +1066,7 @@ namespace Microsoft.AspNet.SignalR
 #if NETSTANDARD1_3
             // The Thread class is not available on .NET Standard 1.3
             return task.ContinueWith(continuationAction, continuationOptions);
-#elif NETSTANDARD2_0 || NET40 || NET45 || NET461
+#elif NETSTANDARD2_0 || NET40 || NET45 || NET461 || NET472
             var preservedCulture = SaveCulture();
             return task.ContinueWith(t => RunWithPreservedCulture(preservedCulture, continuationAction, t), continuationOptions);
 #else
@@ -1366,7 +1366,7 @@ namespace Microsoft.AspNet.SignalR
             {
                 action();
             }, state: null);
-#elif NET45 || NETSTANDARD1_3 || NETSTANDARD2_0 || NET461 // Stress uses this component and builds on net461
+#elif NET45 || NETSTANDARD1_3 || NETSTANDARD2_0 || NET461 || NET472 // Stress uses this component and builds on net461
             Task.Run(() =>
             {
                 action();

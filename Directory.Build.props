@@ -30,7 +30,7 @@
     <PackageSigningCertName>MicrosoftNuGet</PackageSigningCertName>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <LangVersion>latest</LangVersion>
-    <DefaultTestFrameworks>net461</DefaultTestFrameworks>
+    <DefaultTestFrameworks>net472</DefaultTestFrameworks>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
 
     <!-- Disable warning about SemVer 2.0 versions -->
