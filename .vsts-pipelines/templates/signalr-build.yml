@@ -67,4 +67,7 @@ jobs:
       buildConfiguration: $(BuildConfiguration)
       buildPlatform: $(AgentOsName)
 
+- ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+  - template: /eng/common/templates/steps/generate-sbom.yml
+
   - ${{ parameters.afterBuild }}
