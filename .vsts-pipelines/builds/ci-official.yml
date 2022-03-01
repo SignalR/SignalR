@@ -6,6 +6,12 @@ trigger:
 - release/*
 - vsts/*
 
+parameters:
+- name: IsFinalBuild
+  displayName: Is final build?
+  type: boolean
+  default: false
+
 jobs:
 - template: ../templates/signalr-build.yml
   parameters:
@@ -17,6 +23,7 @@ jobs:
       OfficialBuild: true
       VisualStudioMSBuildx86Path: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe'
     beforeBuild:
+
     # Detect OSS Components in use in the product. Only needs to run on one OS in the matrix.
     - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
       displayName: 'Component Detection'
@@ -41,6 +48,12 @@ jobs:
     - task: ms-vseng.MicroBuildTasks.521a94ea-9e68-468a-8167-6dcf361ea776.MicroBuildCleanup@1
       displayName: Perform Cleanup Tasks
       condition: succeededOrFailed()
+      
+    - ${{ if and(eq(parameters.IsFinalBuild, true), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+      - template: /eng/common/templates/steps/generate-sbom.yml
+
+    - ${{ if and(eq(parameters.IsFinalBuild, true), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+      - template: /eng/common/templates/steps/retain-build.yml
 
     # Temporarily disable the PublishSymbols task since the agent doesn't currently have access to the $(DropShareRoot)
     # - task: PublishSymbols@2
