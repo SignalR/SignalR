@@ -1,4 +1,4 @@
-﻿/// <reference path="../../Scripts/jquery-1.6.4.js" />
+﻿/// <reference path="../../Scripts/jquery-1.12.4.js" />
 /// <reference path="../../Scripts/jquery-ui-1.8.12.js" />
 /// <reference path="../../Scripts/jQuery.tmpl.js" />
 /// <reference path="../../Scripts/jquery.cookie.js" />

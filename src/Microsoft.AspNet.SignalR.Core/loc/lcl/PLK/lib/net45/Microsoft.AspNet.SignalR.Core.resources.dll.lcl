@@ -528,7 +528,7 @@
       </Item>
       <Item ItemId="0;4b166203726ce169669b94d3318a7ea1" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
         <Str Cat="Comment" UsrLk="true">
-          <Val><![CDATA[ <reference path="..\..\SignalR.Client.JS\Scripts\jquery-1.6.4.js" />]]></Val>
+          <Val><![CDATA[ <reference path="..\..\SignalR.Client.JS\Scripts\jquery-1.12.4.js" />]]></Val>
         </Str>
         <Disp Icon="Str" />
       </Item>

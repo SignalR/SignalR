@@ -1,4 +1,4 @@
-﻿/// <reference path="../../Scripts/jquery-1.6.4.js" />
+﻿/// <reference path="../../Scripts/jquery-1.12.4.js" />
 /// <reference path="../../Scripts/jquery.signalR.js" />
 /// <reference path="../../Scripts/hubs.js" />
 
