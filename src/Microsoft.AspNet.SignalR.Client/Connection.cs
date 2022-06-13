@@ -731,6 +731,8 @@ namespace Microsoft.AspNet.SignalR.Client
                 // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
                 Monitor?.Dispose();
 
+                // Preemptively disconnect so we don't timeout if the "/abort" is ignored.
+                _disconnectCts?.Cancel();
                 _transport?.Abort(this, timeout, _connectionData);
 
                 Disconnect();
