@@ -8,7 +8,6 @@
     <authors>$Authors$</authors>
     <owners>$Owners$</owners>
     <requireLicenseAcceptance>$RequireLicenseAcceptance$</requireLicenseAcceptance>
-    <licenseUrl>$LicenseUrl$</licenseUrl>
     <license type="file">LICENSE.txt</license>
     <icon>packageIcon.png</icon>
     <projectUrl>$ProjectSiteUrl$</projectUrl>
