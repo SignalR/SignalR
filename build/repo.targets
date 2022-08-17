@@ -20,7 +20,7 @@
             <LocalizedPackage Include="Microsoft.AspNet.SignalR.SqlServer" Locale="%(TranslationLanguage.PackageLocaleName)" />
             <LocalizedPackage Include="Microsoft.AspNet.SignalR.SystemWeb" Locale="%(TranslationLanguage.PackageLocaleName)" />
         </ItemGroup>
-        
+
         <ItemGroup>
             <!-- Copy items across and fill in common details -->
             <SatellitePackage Include="%(LocalizedPackage.Identity).%(LocalizedPackage.Locale)">
@@ -47,29 +47,29 @@
         </PropertyGroup>
 
         <!-- We have to restore first -->
-        <MSBuild 
-            Projects="$(RepositoryRoot)build\loc\SatellitePackage.csproj" 
+        <MSBuild
+            Projects="$(RepositoryRoot)build\loc\SatellitePackage.csproj"
             Targets="Restore" />
 
-        <MSBuild 
-            Projects="$(RepositoryRoot)build\loc\SatellitePackage.csproj" 
+        <MSBuild
+            Projects="$(RepositoryRoot)build\loc\SatellitePackage.csproj"
             Targets="Pack"
             Properties="PackageId=%(SatellitePackage.PackageId);Locale=%(SatellitePackage.Locale);$(_ConstantProperties);PackageVersion=$(PackageVersion)" />
     </Target>
-        
+
     <Target Name="CodeSign" AfterTargets="Package" DependsOnTargets="GetToolsets" Condition=" '$(OS)' == 'Windows_NT' ">
         <MSBuild Projects="$(MSBuildThisFileDirectory)sign.proj"
                 Targets="Restore;CodeSign"
                 Properties="VisualStudioMSBuildx86Path=$(VisualStudioMSBuildx86Path);Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);Localize=$(Localize)" />
     </Target>
 
-    
+
     <PropertyGroup>
         <RestoreDependsOn>$(RestoreDependsOn);RestoreNpm;LocateMicroBuild</RestoreDependsOn>
     </PropertyGroup>
     <Target Name="RestoreNpm" Condition="'$(PreflightRestore)' != 'True'">
         <Message Text="Restoring NPM modules" Importance="high" />
-        <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)test/Microsoft.AspNet.SignalR.Client.JS.Tests" />
+        <Exec Command="npm ci --include=optional" WorkingDirectory="$(RepositoryRoot)test/Microsoft.AspNet.SignalR.Client.JS.Tests" />
     </Target>
     <Target Name="LocateMicroBuild">
         <!-- Manually find MicroBuild plugins because MicroBuild.Core doesn't work in dotnet.exe -->

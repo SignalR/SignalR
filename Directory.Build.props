@@ -5,7 +5,6 @@
 
   <Import Project="version.props" />
   <Import Project="build\dependencies.props" />
-  <Import Project="build\sources.props" />
 
   <PropertyGroup>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)build\Microsoft.AspNet.SignalR.ruleset</CodeAnalysisRuleSet>
@@ -50,14 +49,12 @@
     <!-- Assembly/NuSpec attributes -->
     <Company>Microsoft</Company>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/SignalR/SignalR/2.3.0/LICENSE.txt</PackageLicenseUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(OfficialBuild)' != 'true'">
     <!-- Assembly/NuSpec attributes -->
     <Company>.NET Foundation</Company>
     <Copyright>© Copyright (c) .NET Foundation. All rights reserved.</Copyright>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/SignalR/SignalR/2.3.0/LICENSE.txt</PackageLicenseUrl>
   </PropertyGroup>
 
   <!-- Locating Visual Studio -->

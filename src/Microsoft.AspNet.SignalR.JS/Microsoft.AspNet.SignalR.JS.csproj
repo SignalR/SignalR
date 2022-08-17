@@ -8,7 +8,7 @@
     <TargetFramework>netstandard1.0</TargetFramework>
 
     <NuspecFile>$(MSBuildThisFileDirectory)$(MSBuildProjectName).nuspec</NuspecFile>
-    <NuspecProperties>PackageVersion=$(PackageVersion);Configuration=$(Configuration);LicenseUrl=$(PackageLicenseUrl);PackageIcon=$(PackageIconFullPath);Authors=$(Authors);Owners=$(Owners);CopyrightNotice=$(Copyright);ProjectSiteUrl=$(PackageProjectUrl);ReleaseNotes=$(PackageReleaseNotes);RequireLicenseAcceptance=$(PackageRequireLicenseAcceptance);License=$(LicenseFullPath)</NuspecProperties>
+    <NuspecProperties>PackageVersion=$(PackageVersion);Configuration=$(Configuration);PackageIcon=$(PackageIconFullPath);Authors=$(Authors);Owners=$(Owners);CopyrightNotice=$(Copyright);ProjectSiteUrl=$(PackageProjectUrl);ReleaseNotes=$(PackageReleaseNotes);RequireLicenseAcceptance=$(PackageRequireLicenseAcceptance);License=$(LicenseFullPath)</NuspecProperties>
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
 
     <!-- Suppress the DLL from the package -->
@@ -37,13 +37,13 @@
   </ItemGroup>
 
   <Target Name="CompileJs" BeforeTargets="Build" Inputs="@(JSCompile)" Outputs="@(GeneratedJavaScript)">
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\build.ps1 $(OutputPath) -version $(PackageVersion)" 
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\build.ps1 $(OutputPath) -version $(PackageVersion)"
           WorkingDirectory="$(ProjectDir)"
           Condition=" '$(OS)' == 'Windows_NT'" />
   </Target>
 
   <Target Name="PackJs" AfterTargets="Pack">
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\pack.ps1 $(OutputPath) -packageOutputPath $(PackageOutputPath) -version $(PackageVersion)" 
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\pack.ps1 $(OutputPath) -packageOutputPath $(PackageOutputPath) -version $(PackageVersion)"
           WorkingDirectory="$(ProjectDir)"
           Condition=" '$(OS)' == 'Windows_NT'" />
   </Target>

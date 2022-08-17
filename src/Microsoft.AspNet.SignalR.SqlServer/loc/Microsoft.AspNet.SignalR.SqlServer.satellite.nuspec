@@ -7,7 +7,6 @@
         <version>$PackageVersion$</version>
         <authors>$Authors$</authors>
         <owners>$Owners$</owners>
-        <licenseUrl>$LicenseUrl$</licenseUrl>
         <license type="file">LICENSE.txt</license>
         <icon>packageIcon.png</icon>
         <copyright>$CopyrightNotice$</copyright>
