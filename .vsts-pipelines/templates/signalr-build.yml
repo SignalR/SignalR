@@ -8,7 +8,7 @@ jobs:
 - job: Windows
   pool:
     ${{ if eq(parameters.pool, 'public') }}:
-      name: NetCore1ESPool-Public
+      name: NetCore-Public
       demands: ImageOverride -equals Build.Server.Amd64.VS2019.Open
     ${{ if eq(parameters.pool, 'internal') }}:
       name: NetCore1ESPool-Internal
