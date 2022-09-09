@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.SignalR.Owin
             public OwinWebSocket(IDictionary<string, object> env)
             {
                 _sendAsync = (WebSocketSendAsync)env[WebSocketConstants.WebSocketSendAsyncKey];
-                _receiveAsync = (WebSocketReceiveAsync)env[WebSocketConstants.WebSocketReceiveAyncKey];
+                _receiveAsync = (WebSocketReceiveAsync)env[WebSocketConstants.WebSocketReceiveAsyncKey];
                 _closeAsync = (WebSocketCloseAsync)env[WebSocketConstants.WebSocketCloseAsyncKey];
             }
 
