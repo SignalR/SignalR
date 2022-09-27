@@ -979,7 +979,6 @@
             }
 
             // Always clean up private non-timeout based state.
-            delete connection._.config;
             delete connection._.deferredStartHandler;
 
             // This needs to be checked despite the connection state because a connection start can be deferred until page load.
@@ -992,9 +991,15 @@
                     deferral.reject(signalR._.error(resources.stoppedWhileLoading));
                 }
 
+                //clean config
+                delete connection._.config;
+                
                 // Short-circuit because the start has not been fully started.
                 return;
             }
+
+            //clean config
+            delete connection._.config;
 
             if (connection.state === signalR.connectionState.disconnected) {
                 return;
