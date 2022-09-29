@@ -978,13 +978,15 @@
                 _pageWindow.unbind("load", connection._.deferredStartHandler);
             }
 
+            var waitForPageLoad = !connection._.config || connection._.config.waitForPageLoad === true;
+
             // Always clean up private non-timeout based state.
-            delete connection._.config;
             delete connection._.deferredStartHandler;
+            delete connection._.config;
 
             // This needs to be checked despite the connection state because a connection start can be deferred until page load.
             // If we've deferred the start due to a page load we need to unbind the "onLoad" -> start event.
-            if (!_pageLoaded && (!connection._.config || connection._.config.waitForPageLoad === true)) {
+            if (!_pageLoaded && waitForPageLoad) {
                 connection.log("Stopping connection prior to negotiate.");
 
                 // If we have a deferral we should reject it
