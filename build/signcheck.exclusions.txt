@@ -1,0 +1,10 @@
+*.js;Microsoft.AspNet.SignalR.JS.*.nupkg;
+;Microsoft.DiaSymReader.Pdb2Pdb.nupkg;
+;roslyntools.signtool.*.nupkg;
+*\artifacts\hubs.js|;;
+*\artifacts\obj\*|;;
+*\artifacts\Debug\bin\*|;;
+*\artifacts\Debug\symbols\*|;;
+*\artifacts\Release\bin\*|;;
+*\artifacts\Release\symbols\*|;;
+*\artifacts\tools\*|;;

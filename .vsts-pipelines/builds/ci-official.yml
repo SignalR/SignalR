@@ -1,6 +1,15 @@
 # This sets the build number
 name: $(Date:yyyyMMdd)$(Rev:-rr)
 
+# Keep compliance tooling e.g. CodeQL3000 up to date.
+schedules:
+- cron: 0 9 1,15 * *
+  displayName: "Run a build on the 1st and 15th of each month at 2:00 AM PDT"
+  branches:
+    include:
+    - release/2.1
+  always: true
+
 trigger:
 - main
 - release/*
@@ -22,6 +31,15 @@ jobs:
       TeamName: AspNetCore
       OfficialBuild: true
       VisualStudioMSBuildx86Path: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe'
+      # CodeQL3000 tasks are auto-injected into official builds of main. Variables below are ignored otherwise.
+      # Enable CodeQL3000 auto-injected tasks. These tasks will no-op if two builds run w/in the same week.
+      Codeql.Cadence: 168
+      # Ignore infrastructure and test code.
+      Codeql.SourceRoot: src
+      # CodeQL3000 needs this plumbed along as a variable to enable TSA.
+      Codeql.TSAEnabled: true
+      # Default expects tsaoptions.json under SourceRoot.
+      Codeql.TSAOptionsPath: '$(Build.SourcesDirectory)/.config/tsaoptions.json'
     beforeBuild:
 
     # Detect OSS Components in use in the product. Only needs to run on one OS in the matrix.
@@ -43,6 +61,10 @@ jobs:
         feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
         signType: $(SignType)
       condition: and(succeeded(), in(variables['SignType'], 'test', 'real'))
+
+    - script: "echo ##vso[build.addbuildtag]CodeQL3000"
+      displayName: 'Set CI CodeQL3000 tag'
+      condition: ne(variables.CODEQL_DIST,'')
 
     afterBuild:
     - task: ms-vseng.MicroBuildTasks.521a94ea-9e68-468a-8167-6dcf361ea776.MicroBuildCleanup@1

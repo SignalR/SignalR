@@ -15,6 +15,8 @@ jobs:
       demands: ImageOverride -equals windows.vs2019.amd64
   variables:
     BuildConfiguration: Release
+    # Rely on task ci-official.yml injects, not auto-injected build step.
+    skipComponentGovernanceDetection: true
     ${{ insert }}: ${{ parameters.variables }}
   steps:
   - checkout: self
@@ -30,8 +32,13 @@ jobs:
 
   - ${{ parameters.beforeBuild }}
 
-  - script: .\build.cmd -ci /p:Configuration=$(BuildConfiguration)
+  - script: .\build.cmd -ci /p:Configuration=$(BuildConfiguration) /bl:build.binlog
     displayName: Run build.cmd
+
+  - powershell: Move-Item build.binlog artifacts/logs/
+    displayName: Move binary log into artifacts/logs/
+    condition: always()
+    continueOnError: true
 
   - task: PublishTestResults@2
     displayName: Publish test results
@@ -50,7 +57,7 @@ jobs:
 
   - task: PublishBuildArtifacts@1
     displayName: Upload logs
-    condition: and(always(), eq(variables['system.pullrequest.isfork'], false))
+    condition: always()
     inputs:
       pathtoPublish: artifacts/logs/
       artifactName: logs-$(BuildConfiguration)

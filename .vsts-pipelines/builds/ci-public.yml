@@ -8,4 +8,5 @@ jobs:
   parameters:
     pool: public
     variables:
+      Codeql.SkipTaskAutoInjection: true
       SkipCodeSign: true
