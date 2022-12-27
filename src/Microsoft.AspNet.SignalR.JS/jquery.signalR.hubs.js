@@ -183,6 +183,8 @@
                         if (callbackSpace[i].guid === callbackIdentity._signalRGuid || (isFromOldGeneratedHubProxy && callbackSpace[i].isFromOldGeneratedHubProxy)) {
                             callbackIndex = i;
                             callbackRegistration = callbackSpace[i];
+
+                            break;
                         }
                     }
 
@@ -194,7 +196,7 @@
                         }
 
                         // Remove the registration from the list
-                        callbackSpace.splice(i, 1);
+                        callbackSpace.splice(callbackIndex, 1);
 
                         // Check if there are any registrations left, if not we need to destroy it.
                         if (callbackSpace.length === 0) {
