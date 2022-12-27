@@ -175,7 +175,7 @@
             // Verify that there is an event space to unbind
             if (callbackSpace) {
 
-                if (callback) {
+                if (callbackIdentity) {
                     // Find the callback registration
                     var callbackRegistration;
                     var callbackIndex;
@@ -203,7 +203,8 @@
                             delete callbackMap[eventName];
                         }
                     }
-                } else if (!callback) { // Check if we're removing the whole event and we didn't error because of an invalid callback
+                }
+                else if (!callbackIdentity) { // Check if we're removing the whole event and we didn't error because of an invalid callback
                     $(that).unbind(makeEventName(eventName));
 
                     delete callbackMap[eventName];
