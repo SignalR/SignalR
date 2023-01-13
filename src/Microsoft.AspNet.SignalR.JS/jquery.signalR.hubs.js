@@ -175,7 +175,7 @@
             // Verify that there is an event space to unbind
             if (callbackSpace) {
 
-                if (callback) {
+                if (callbackIdentity) {
                     // Find the callback registration
                     var callbackRegistration;
                     var callbackIndex;
@@ -183,6 +183,8 @@
                         if (callbackSpace[i].guid === callbackIdentity._signalRGuid || (isFromOldGeneratedHubProxy && callbackSpace[i].isFromOldGeneratedHubProxy)) {
                             callbackIndex = i;
                             callbackRegistration = callbackSpace[i];
+
+                            break;
                         }
                     }
 
@@ -194,14 +196,14 @@
                         }
 
                         // Remove the registration from the list
-                        callbackSpace.splice(i, 1);
+                        callbackSpace.splice(callbackIndex, 1);
 
                         // Check if there are any registrations left, if not we need to destroy it.
                         if (callbackSpace.length === 0) {
                             delete callbackMap[eventName];
                         }
                     }
-                } else if (!callback) { // Check if we're removing the whole event and we didn't error because of an invalid callback
+                } else if (!callbackIdentity) { // Check if we're removing the whole event and we didn't error because of an invalid callback
                     $(that).unbind(makeEventName(eventName));
 
                     delete callbackMap[eventName];
