@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
+using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Configuration;
@@ -552,6 +553,50 @@ namespace Microsoft.AspNet.SignalR.Tests
                         "Detected a connection attempt to an ASP.NET Core SignalR Server. This client only supports connecting to an ASP.NET SignalR Server. See https://aka.ms/signalr-core-differences for details.",
                         ex.Message);
                 }
+            }
+        }
+
+        [Theory]
+        [InlineData(TransportType.ServerSentEvents)]
+        [InlineData(TransportType.LongPolling)]
+        [InlineData(TransportType.Websockets)]
+        [InlineData(TransportType.Auto)]
+        public async Task StopsPreemptivelyClosesConnectionEvenIfAbortIsIgnored(TransportType transportType)
+        {
+            using (var host = CreateHost(HostType.HttpListener, transportType))
+            {
+                host.Initialize();
+
+                using (var connection = CreateHubConnection(host))
+                {
+                    var hub = connection.CreateHubProxy("EchoHub");
+                    await connection.Start(new SkipAbortHttpClient());
+
+                    // The default timeout for Connection.Stop() is 30 seconds. The connection should stop before that even if there is no "/abort" request.
+                    await Task.Run(() => connection.Stop()).OrTimeout(TimeSpan.FromSeconds(10));
+                }
+            }
+        }
+
+        private sealed class SkipAbortHttpClient : IHttpClient
+        {
+            private readonly DefaultHttpClient _defaultHttpClient = new DefaultHttpClient();
+
+            public Task<IResponse> Get(string url, Action<Client.Http.IRequest> prepareRequest, bool isLongRunning)
+            {
+                return _defaultHttpClient.Get(url, prepareRequest, isLongRunning);  
+            }
+
+            public void Initialize(Client.IConnection connection)
+            {
+                _defaultHttpClient.Initialize(connection);
+            }
+
+            public Task<IResponse> Post(string url, Action<Client.Http.IRequest> prepareRequest, IDictionary<string, string> postData, bool isLongRunning)
+            {
+                // TransportAbortHandler only cares if this fails. Let's cause it to "succeed" but be effectively ignored.
+                url = url.Replace("abort?", "negotiate?");
+                return _defaultHttpClient.Post(url, prepareRequest, postData, isLongRunning);
             }
         }
     }
