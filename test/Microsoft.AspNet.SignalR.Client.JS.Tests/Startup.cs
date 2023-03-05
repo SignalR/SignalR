@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.SignalR.Client.JS.Tests
                     // Inject server settings in to the javascript
                     context.Response.StatusCode = 200;
                     context.Response.ContentType = "application/javascript";
-                    await context.Response.WriteAsync($"window._server = {{ azureSignalR: {(string.IsNullOrEmpty(AzureSignalRConnectionString) ? "false" : "true")} }}");
+                    await context.Response.WriteAsync($"window._server.azureSignalR = {(string.IsNullOrEmpty(AzureSignalRConnectionString) ? "false" : "true")} }}");
                 }
                 else
                 {
