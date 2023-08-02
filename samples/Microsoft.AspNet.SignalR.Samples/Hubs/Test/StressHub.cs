@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.Test
 {
     public class StressHub : Hub
     {
-        private static TraceSource _trace = GlobalHost.DependencyResolver.Resolve<ITraceManager>()["SignalR.ScaleoutMessageBus"];
+        private static readonly TraceSource _trace = GlobalHost.DependencyResolver.Resolve<ITraceManager>()["SignalR.ScaleoutMessageBus"];
 
         public override Task OnConnected()
         {

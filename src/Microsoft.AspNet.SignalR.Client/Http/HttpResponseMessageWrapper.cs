@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 {
     public class HttpResponseMessageWrapper : IResponse
     {
-        private HttpResponseMessage _httpResponseMessage;
+        private readonly HttpResponseMessage _httpResponseMessage;
         
         public HttpResponseMessageWrapper(HttpResponseMessage httpResponseMessage)
         {

@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
     {
         private const string SignalRTopicPrefix = "SIGNALR_TOPIC";
 
-        private ServiceBusConnectionContext _connectionContext;
+        private readonly ServiceBusConnectionContext _connectionContext;
 
         private TraceSource _trace;
 

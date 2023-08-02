@@ -12,9 +12,9 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.ShapeShare
 {
     public class ShapeShare : Hub
     {
-        private static ConcurrentDictionary<string, User> _users = new ConcurrentDictionary<string, User>(StringComparer.OrdinalIgnoreCase);
-        private static ConcurrentDictionary<string, Shape> _shapes = new ConcurrentDictionary<string, Shape>();
-        private static Random _userNameGenerator = new Random();
+        private static readonly ConcurrentDictionary<string, User> _users = new ConcurrentDictionary<string, User>(StringComparer.OrdinalIgnoreCase);
+        private static readonly ConcurrentDictionary<string, Shape> _shapes = new ConcurrentDictionary<string, Shape>();
+        private static readonly Random _userNameGenerator = new Random();
 
         public IEnumerable<Shape> GetShapes()
         {

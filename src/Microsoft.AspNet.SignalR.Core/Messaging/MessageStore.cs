@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private static readonly ArraySegment<T> _emptyArraySegment = new ArraySegment<T>(new T[0]);
         private readonly uint _offset;
 
-        private Fragment[] _fragments;
+        private readonly Fragment[] _fragments;
         private readonly uint _fragmentSize;
 
         private long _nextFreeMessageId;

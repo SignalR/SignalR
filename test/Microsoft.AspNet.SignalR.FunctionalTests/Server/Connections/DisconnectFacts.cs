@@ -215,8 +215,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         public class MyHub : Hub
         {
-            private TaskCompletionSource<object> _connectWh;
-            private TaskCompletionSource<object> _disconnectWh;
+            private readonly TaskCompletionSource<object> _connectWh;
+            private readonly TaskCompletionSource<object> _disconnectWh;
 
             public MyHub(TaskCompletionSource<object> connectWh, TaskCompletionSource<object> disconnectWh)
             {
@@ -246,8 +246,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         private class MyConnection : PersistentConnection
         {
-            private TaskCompletionSource<object> _connectWh;
-            private TaskCompletionSource<object> _disconnectWh;
+            private readonly TaskCompletionSource<object> _connectWh;
+            private readonly TaskCompletionSource<object> _disconnectWh;
 
             public MyConnection(TaskCompletionSource<object> connectWh, TaskCompletionSource<object> disconnectWh)
             {

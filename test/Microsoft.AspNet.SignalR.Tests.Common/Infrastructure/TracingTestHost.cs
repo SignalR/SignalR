@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
         private readonly TextWriterTraceListener _listener;
         private ITraceManager _traceManager;
 
-        private static string[] _traceSources = new[] {
+        private static readonly string[] _traceSources = new[] {
             "SignalR.Transports.WebSocketTransport",
             "SignalR.Transports.ServerSentEventsTransport",
             "SignalR.Transports.ForeverFrameTransport",

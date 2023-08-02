@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         // Vectors provided by reference implementation:
         // https://131002.net/siphash/siphash24.c
 
-        byte[,] vectors =
+        readonly byte[,] vectors =
 {
   { 0x31, 0x0e, 0x0e, 0xdd, 0x47, 0xdb, 0x6f, 0x72, },
   { 0xfd, 0x67, 0xdc, 0x93, 0xc5, 0x39, 0xf8, 0x74, },

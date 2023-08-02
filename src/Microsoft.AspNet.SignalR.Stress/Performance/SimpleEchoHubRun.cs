@@ -14,12 +14,12 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
     [Export("SimpleEchoHub", typeof(IRun))]
     public class SimpleEchoHubRun : HostedRun
     {
-        private HubConnection[] _connections;
-        private IHubProxy[] _proxies;
+        private readonly HubConnection[] _connections;
+        private readonly IHubProxy[] _proxies;
         private bool _sampling;
-        private string _categoryString;
-        private TaskCompletionSource<bool>[] _callbacks;
-        private ConcurrentBag<long> _latencySamples = new ConcurrentBag<long>();
+        private readonly string _categoryString;
+        private readonly TaskCompletionSource<bool>[] _callbacks;
+        private readonly ConcurrentBag<long> _latencySamples = new ConcurrentBag<long>();
 
         [ImportingConstructor]
         public SimpleEchoHubRun(RunData runData)

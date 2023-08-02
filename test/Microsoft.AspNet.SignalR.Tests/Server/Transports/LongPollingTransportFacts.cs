@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
 
         private class TestLongPollingTransport : LongPollingTransport
         {
-            private TaskCompletionSource<string> _contentTypeTcs = new TaskCompletionSource<string>();
+            private readonly TaskCompletionSource<string> _contentTypeTcs = new TaskCompletionSource<string>();
 
             private TestLongPollingTransport(
                 HostContext context,

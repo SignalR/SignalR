@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private static readonly ArraySegment<ScaleoutMapping> _emptyArraySegment = new ArraySegment<ScaleoutMapping>(new ScaleoutMapping[0]);
 
-        private Fragment[] _fragments;
+        private readonly Fragment[] _fragments;
         private readonly uint _fragmentSize;
 
         private long _minMessageId;

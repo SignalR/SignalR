@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
 {
     public class AsyncManualResetEvent : IDisposable
     {
-        private ManualResetEventSlim _mre;
+        private readonly ManualResetEventSlim _mre;
 
         public AsyncManualResetEvent()
         {

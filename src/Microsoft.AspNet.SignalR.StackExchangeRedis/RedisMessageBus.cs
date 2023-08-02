@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.StackExchangeRedis
         private readonly TraceSource _trace;
         private readonly ITraceManager _traceManager;
 
-        private IRedisConnection _connection;
+        private readonly IRedisConnection _connection;
         private string _connectionString;
         private readonly object _callbackLock = new object();
         private ulong? lastId = null;

@@ -14,10 +14,10 @@ namespace Microsoft.AspNet.SignalR
     {
         private double _fps;
         private long _frameId;
-        private Action<long> _callback;
-        private Action _started;
-        private Action _stopped;
-        private Action<int> _actualFpsUpdate;
+        private readonly Action<long> _callback;
+        private readonly Action _started;
+        private readonly Action _stopped;
+        private readonly Action<int> _actualFpsUpdate;
 
         // 0 = stopped
         // 1 = start requested

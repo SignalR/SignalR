@@ -11,9 +11,9 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.Test
 {
     public class TestHub : Hub
     {
-        private static ConcurrentDictionary<string, string> _connections = new ConcurrentDictionary<string, string>();
-        private static ConcurrentDictionary<string, string> _groups = new ConcurrentDictionary<string, string>();
-        private static TraceSource _trace = GlobalHost.DependencyResolver.Resolve<ITraceManager>()["SignalR.ScaleoutMessageBus"];
+        private static readonly ConcurrentDictionary<string, string> _connections = new ConcurrentDictionary<string, string>();
+        private static readonly ConcurrentDictionary<string, string> _groups = new ConcurrentDictionary<string, string>();
+        private static readonly TraceSource _trace = GlobalHost.DependencyResolver.Resolve<ITraceManager>()["SignalR.ScaleoutMessageBus"];
 
         public override Task OnConnected()
         {

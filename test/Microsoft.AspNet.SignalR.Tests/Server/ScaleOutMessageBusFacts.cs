@@ -472,7 +472,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
         private class TestScaleoutBus : ScaleoutMessageBus
         {
-            private int _streams;
+            private readonly int _streams;
 
             public TestScaleoutBus(IDependencyResolver resolver)
                 : this(resolver, streams: 1)
