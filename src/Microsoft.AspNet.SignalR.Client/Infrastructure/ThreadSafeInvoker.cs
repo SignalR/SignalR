@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
     /// </summary>
     internal class ThreadSafeInvoker
     {
-        private readonly int _invoked;
+        private int _invoked;
 
         public bool Invoke(Action action)
         {

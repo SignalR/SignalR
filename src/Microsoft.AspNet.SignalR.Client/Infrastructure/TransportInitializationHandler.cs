@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         private readonly IDisposable _tokenCleanup;
         private readonly TransportHelper _transportHelper;
 
-        private readonly int _state = InitializationState.Initial;
+        private int _state = InitializationState.Initial;
 
         private static class InitializationState
         {

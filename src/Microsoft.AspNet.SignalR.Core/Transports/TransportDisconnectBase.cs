@@ -20,9 +20,9 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private TraceSource _trace;
 
-        private readonly int _timedOut;
+        private int _timedOut;
         private readonly IPerformanceCounterManager _counters;
-        private readonly int _ended;
+        private int _ended;
         private TransportConnectionStates _state;
 
         [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "It can be set in any derived class.")]

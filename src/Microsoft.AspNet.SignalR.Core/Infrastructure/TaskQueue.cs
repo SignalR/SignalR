@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private Task _lastQueuedTask;
         private volatile bool _drained;
         private readonly int? _maxSize;
-        private readonly long _size;
+        private long _size;
 
 #if CLIENT
         // This is the TaskQueueMonitor in the .NET client that watches for

@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     public class LongPollingTransport : HttpBasedTransport
     {
         private IRequest _currentRequest;
-        private readonly int _running;
+        private int _running;
         private readonly object _stopLock = new object();
         private ThreadSafeInvoker _reconnectInvoker;
         private IDisposable _disconnectRegistration;

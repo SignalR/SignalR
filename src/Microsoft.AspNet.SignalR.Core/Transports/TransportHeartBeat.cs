@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private readonly IPerformanceCounterManager _counters;
         private readonly object _counterLock = new object();
 
-        private readonly int _running;
+        private int _running;
         private ulong _heartbeatCount;
 
         /// <summary>

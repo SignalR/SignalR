@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly TraceSource _trace;
 
         private Timer _gcTimer;
-        private readonly int _gcRunning;
+        private int _gcRunning;
         private static readonly TimeSpan _gcInterval = TimeSpan.FromSeconds(5);
 
         private readonly TimeSpan _topicTtl;

@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         {
             private readonly Action<object> _callback;
             private readonly object _state;
-            private readonly int _callbackInvoked;
+            private int _callbackInvoked;
 
             public CancellationCallbackWrapper(Action<object> callback, object state)
             {
