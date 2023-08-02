@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
 {
     public class TypedDemoHub : Hub<IClient>
     {
-        private static readonly int _invokeCount = 0;
+        private static int _invokeCount = 0;
 
         public async Task Echo(string message)
         {
