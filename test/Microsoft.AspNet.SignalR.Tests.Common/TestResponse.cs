@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
 {
     public class TestResponse : IResponse
     {
-        private MemoryStream _body = new MemoryStream();
+        private readonly MemoryStream _body = new MemoryStream();
 
         public CancellationToken CancellationToken => CancellationTokenSource.Token;
 

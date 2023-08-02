@@ -85,11 +85,11 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         // Internal class to facilitate URL decoding -- keeps char buffer and byte buffer, allows appending of either chars or bytes
         private class DecoderHelper
         {
-            private int _bufferSize;
+            private readonly int _bufferSize;
 
             // Accumulate characters in a special array
             private int _numChars;
-            private char[] _charBuffer;
+            private readonly char[] _charBuffer;
 
             // Accumulate bytes for decoding into characters in a special array
             private int _numBytes;

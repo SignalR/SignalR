@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     internal class WebSocketWrapperRequest : IRequest
     {
         private readonly ClientWebSocket _clientWebSocket;
-        private IConnection _connection;
+        private readonly IConnection _connection;
 
         public WebSocketWrapperRequest(ClientWebSocket clientWebSocket, IConnection connection)
         {

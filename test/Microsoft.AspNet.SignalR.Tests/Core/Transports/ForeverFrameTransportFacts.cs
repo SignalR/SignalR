@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
 
         private class CustomResponse : IResponse
         {
-            private MemoryStream _stream;
+            private readonly MemoryStream _stream;
 
             public CustomResponse()
             {

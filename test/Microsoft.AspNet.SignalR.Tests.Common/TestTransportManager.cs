@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
     public class TestTransportManager : ITransportManager
     {
         public static readonly string TestTransportName = "test";
-        private Dictionary<string, Func<ITransport>> _transports = new Dictionary<string, Func<ITransport>>();
+        private readonly Dictionary<string, Func<ITransport>> _transports = new Dictionary<string, Func<ITransport>>();
 
         public TestTransport TestTransport { get; } = new TestTransport();
 

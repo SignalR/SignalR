@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.SignalR.Client
 {
     public class HeaderDictionary : IDictionary<string, string>
     {
-        private IDictionary<string, string> _dictionary = new Dictionary<string, string>();
+        private readonly IDictionary<string, string> _dictionary = new Dictionary<string, string>();
         private readonly IConnection _connection;
 
         public HeaderDictionary(IConnection connection)

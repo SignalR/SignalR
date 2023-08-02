@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         private readonly IHttpClient _httpClient;
 
         // Used to complete the synchronous call to Abort()
-        private ManualResetEvent _abortResetEvent = new ManualResetEvent(initialState: false);
+        private readonly ManualResetEvent _abortResetEvent = new ManualResetEvent(initialState: false);
 
         // Used to indicate whether Abort() has been called
         private bool _startedAbort;

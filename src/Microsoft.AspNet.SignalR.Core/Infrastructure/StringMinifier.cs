@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     {
         private readonly ConcurrentDictionary<string, string> _stringMinifier = new ConcurrentDictionary<string, string>();
         private readonly ConcurrentDictionary<string, string> _stringMaximizer = new ConcurrentDictionary<string, string>();
-        private int _lastMinifiedKey = -1;
+        private readonly int _lastMinifiedKey = -1;
 
         private readonly Func<string, string> _createMinifiedString;
 

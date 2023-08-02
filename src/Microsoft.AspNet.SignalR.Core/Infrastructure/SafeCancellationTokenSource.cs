@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     internal class SafeCancellationTokenSource : IDisposable
     {
         private CancellationTokenSource _cts;
-        private int _state;
+        private readonly int _state;
 
         public SafeCancellationTokenSource()
         {

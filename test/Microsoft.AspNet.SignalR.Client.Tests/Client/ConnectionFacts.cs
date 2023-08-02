@@ -351,7 +351,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
         private class UrlInspectingHttpClient : IHttpClient
         {
-            private Action<string> _onUrlGet;
+            private readonly Action<string> _onUrlGet;
 
             public UrlInspectingHttpClient(Action<string> onUrlGet)
             {

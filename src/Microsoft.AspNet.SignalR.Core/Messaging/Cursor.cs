@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     internal unsafe class Cursor
     {
-        private static char[] _escapeChars = new[] { '\\', '|', ',' };
+        private static readonly char[] _escapeChars = new[] { '\\', '|', ',' };
         private string _escapedKey;
 
         public string Key { get; private set; }

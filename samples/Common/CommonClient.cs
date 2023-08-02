@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 {
     public class CommonClient
     {
-        private TextWriter _traceWriter;
+        private readonly TextWriter _traceWriter;
 
         public CommonClient(TextWriter traceWriter)
         {

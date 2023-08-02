@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
 {
     public class FakeScaleoutBus : ScaleoutMessageBus
     {
-        private int _streams;
+        private readonly int _streams;
         private ulong _id;
 
         public FakeScaleoutBus(IDependencyResolver resolver)

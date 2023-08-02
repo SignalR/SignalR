@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Stress.Stress
         private static readonly object SyncLock = new object();
         private HubConnection _connection = null;
         private IHubProxy _hubProxy = null;
-        private Dictionary<string, ManualResetEvent> _eventsMre = new Dictionary<string, ManualResetEvent>();
+        private readonly Dictionary<string, ManualResetEvent> _eventsMre = new Dictionary<string, ManualResetEvent>();
 
         [ImportingConstructor]
         public ConcurrentCallsRun(RunData runData)

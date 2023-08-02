@@ -13,8 +13,8 @@ namespace Microsoft.AspNet.SignalR.Owin
 {
     public class ServerRequest : IRequest
     {
-        private INameValueCollection _queryString;
-        private INameValueCollection _headers;
+        private readonly INameValueCollection _queryString;
+        private readonly INameValueCollection _headers;
         private IDictionary<string, Cookie> _cookies;
         private IPrincipal _user;
 

@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
         public bool ShowOutputInTestLog { get; set; }
         public List<int> IgnoreExitCodes { get; private set; }
 
-        private Process process;
+        private readonly Process process;
 
         public CommonCommandLine()
         {

@@ -9,9 +9,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Infrastructure
 {
     public class CountDownRange<T>
     {
-        private HashSet<T> _items;
-        private HashSet<T> _seen;
-        private TaskCompletionSource<object> _wh = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly HashSet<T> _items;
+        private readonly HashSet<T> _seen;
+        private readonly TaskCompletionSource<object> _wh = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public CountDownRange(IEnumerable<T> range)
         {

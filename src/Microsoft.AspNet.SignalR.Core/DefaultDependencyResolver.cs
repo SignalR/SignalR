@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR
     {
         private readonly Dictionary<Type, IList<Func<object>>> _resolvers = new Dictionary<Type, IList<Func<object>>>();
         private readonly HashSet<IDisposable> _trackedDisposables = new HashSet<IDisposable>();
-        private int _disposed;
+        private readonly int _disposed;
 
         [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "It's easiest")]
         public DefaultDependencyResolver()

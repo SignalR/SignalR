@@ -602,7 +602,7 @@ namespace Microsoft.AspNet.SignalR.Stress
         {
             private int _counter;
             private readonly SignalR.Client.Http.IHttpClient[] _servers;
-            private Random _random = new Random();
+            private readonly Random _random = new Random();
 
             public LoadBalancer(params SignalR.Client.Http.IHttpClient[] servers)
             {
@@ -668,7 +668,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             private readonly TimeSpan _delay;
             private readonly EventBus _bus;
             private readonly string _serverName;
-            private TaskQueue _queue = new TaskQueue();
+            private readonly TaskQueue _queue = new TaskQueue();
 
             public DelayedMessageBus(string serverName, EventBus bus, IDependencyResolver resolver, TimeSpan delay)
                 : base(resolver, new ScaleoutConfiguration())

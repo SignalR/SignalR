@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Test
 {
     public class LongRunningHub : Hub
     {
-        private static ManualResetEvent myEvent = new ManualResetEvent(false);
+        private static readonly ManualResetEvent myEvent = new ManualResetEvent(false);
 
         public void Set()
         {

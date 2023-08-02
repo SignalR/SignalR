@@ -14,10 +14,10 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
     public class TestHttpMessageHandler : HttpMessageHandler
     {
-        private List<HttpRequestMessage> _receivedRequests = new List<HttpRequestMessage>();
+        private readonly List<HttpRequestMessage> _receivedRequests = new List<HttpRequestMessage>();
         private RequestDelegate _app;
 
-        private List<Func<RequestDelegate, RequestDelegate>> _middleware = new List<Func<RequestDelegate, RequestDelegate>>();
+        private readonly List<Func<RequestDelegate, RequestDelegate>> _middleware = new List<Func<RequestDelegate, RequestDelegate>>();
 
         public bool Disposed { get; private set; }
 

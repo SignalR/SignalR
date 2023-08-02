@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         // Transport that's in use
         private IClientTransport _transport;
-        private bool _tryWebSockets = true;
+        private readonly bool _tryWebSockets = true;
 
         public AutoTransport(IHttpClient httpClient)
         {

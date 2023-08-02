@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private readonly object _bufferLock = new object();
         private readonly Stream _stream;
         private byte[] _readBuffer;
-        private int _reading;
+        private readonly int _reading;
         private Action _setOpened;
 
         protected object BufferLock

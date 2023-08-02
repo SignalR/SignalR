@@ -14,8 +14,8 @@ namespace Microsoft.AspNet.SignalR.Transports
     public class ServerSentEventsTransport : ForeverTransport
     {
         private readonly IPerformanceCounterManager _counters;
-        private static byte[] _keepAlive = Encoding.UTF8.GetBytes("data: {}\n\n");
-        private static byte[] _dataInitialized = Encoding.UTF8.GetBytes("data: initialized\n\n");
+        private static readonly byte[] _keepAlive = Encoding.UTF8.GetBytes("data: {}\n\n");
+        private static readonly byte[] _dataInitialized = Encoding.UTF8.GetBytes("data: initialized\n\n");
 
         public ServerSentEventsTransport(HostContext context, IDependencyResolver resolver)
             : this(context, resolver, resolver.Resolve<IPerformanceCounterManager>())

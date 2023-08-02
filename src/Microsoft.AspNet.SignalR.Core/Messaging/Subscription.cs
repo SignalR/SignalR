@@ -17,8 +17,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly object _callbackState;
         private readonly IPerformanceCounterManager _counters;
 
-        private int _state;
-        private int _subscriptionState;
+        private readonly int _state;
+        private readonly int _subscriptionState;
 
         private bool Alive
         {

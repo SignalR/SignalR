@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 {
     internal class HubMethodDispatcher
     {
-        private HubMethodExecutor _executor;
+        private readonly HubMethodExecutor _executor;
 
         public HubMethodDispatcher(MethodInfo methodInfo)
         {
