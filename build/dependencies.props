@@ -1,45 +1,45 @@
 <Project>
   <PropertyGroup Label="Package Versions: Auto">
-    <CastleCorePackageVersion>4.0.0</CastleCorePackageVersion>
+    <CastleCorePackageVersion>5.1.1</CastleCorePackageVersion>
     <CmdLinePackageVersion>1.0.7.509</CmdLinePackageVersion>
     <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20180907.9</InternalAspNetCoreSdkPackageVersion>
-    <jQueryPackageVersion>1.12.4</jQueryPackageVersion>
+    <jQueryPackageVersion>3.7.1</jQueryPackageVersion>
     <MicroBuildCorePackageVersion>0.2.0</MicroBuildCorePackageVersion>
     <RoslynToolsSignToolPackageVersion>1.0.0-beta2-63206-01</RoslynToolsSignToolPackageVersion>
     <MicrosoftAzureSignalRAspNetPackageVersion>1.0.0-preview1-10233</MicrosoftAzureSignalRAspNetPackageVersion>
-    <MicrosoftNETTestSdkPackageVersion>15.8.0</MicrosoftNETTestSdkPackageVersion>
-    <MicrosoftOwinCorsPackageVersion>2.1.0</MicrosoftOwinCorsPackageVersion>
-    <MicrosoftOwinDiagnosticsPackageVersion>2.1.0</MicrosoftOwinDiagnosticsPackageVersion>
-    <MicrosoftOwinHostHttpListenerPackageVersion>2.1.0</MicrosoftOwinHostHttpListenerPackageVersion>
-    <MicrosoftOwinHostingPackageVersion>2.1.0</MicrosoftOwinHostingPackageVersion>
-    <MicrosoftOwinHostSystemWebPackageVersion>2.1.0</MicrosoftOwinHostSystemWebPackageVersion>
-    <MicrosoftOwinPackageVersion>2.1.0</MicrosoftOwinPackageVersion>
-    <MicrosoftOwinSecurityCookiesPackageVersion>2.1.0</MicrosoftOwinSecurityCookiesPackageVersion>
-    <MicrosoftOwinSecurityPackageVersion>2.1.0</MicrosoftOwinSecurityPackageVersion>
-    <MicrosoftOwinSelfHostPackageVersion>2.1.0</MicrosoftOwinSelfHostPackageVersion>
-    <MicrosoftOwinStaticFilesPackageVersion>2.1.0</MicrosoftOwinStaticFilesPackageVersion>
-    <MicrosoftOwinTestingPackageVersion>2.1.0</MicrosoftOwinTestingPackageVersion>
+    <MicrosoftNETTestSdkPackageVersion>17.10.0</MicrosoftNETTestSdkPackageVersion>
+    <MicrosoftOwinCorsPackageVersion>4.2.2</MicrosoftOwinCorsPackageVersion>
+    <MicrosoftOwinDiagnosticsPackageVersion>4.2.2</MicrosoftOwinDiagnosticsPackageVersion>
+    <MicrosoftOwinHostHttpListenerPackageVersion>4.2.2</MicrosoftOwinHostHttpListenerPackageVersion>
+    <MicrosoftOwinHostingPackageVersion>4.2.2</MicrosoftOwinHostingPackageVersion>
+    <MicrosoftOwinHostSystemWebPackageVersion>4.2.2</MicrosoftOwinHostSystemWebPackageVersion>
+    <MicrosoftOwinPackageVersion>4.2.2</MicrosoftOwinPackageVersion>
+    <MicrosoftOwinSecurityCookiesPackageVersion>4.2.2</MicrosoftOwinSecurityCookiesPackageVersion>
+    <MicrosoftOwinSecurityPackageVersion>4.2.2</MicrosoftOwinSecurityPackageVersion>
+    <MicrosoftOwinSelfHostPackageVersion>4.2.2</MicrosoftOwinSelfHostPackageVersion>
+    <MicrosoftOwinStaticFilesPackageVersion>4.2.2</MicrosoftOwinStaticFilesPackageVersion>
+    <MicrosoftOwinTestingPackageVersion>4.2.2</MicrosoftOwinTestingPackageVersion>
     <MicrosoftWindowsAzureConfigurationManagerPackageVersion>2.0.0.0</MicrosoftWindowsAzureConfigurationManagerPackageVersion>
-    <MoqPackageVersion>4.7.8</MoqPackageVersion>
-    <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
+    <MoqPackageVersion>4.20.70</MoqPackageVersion>
+    <NewtonsoftJsonPackageVersion>13.0.3</NewtonsoftJsonPackageVersion>
     <OwinPackageVersion>1.0</OwinPackageVersion>
-    <StackExchangeRedisPackageVersion>2.0.513</StackExchangeRedisPackageVersion>
-    <StackExchangeRedisStrongNamePackageVersion>1.1.608</StackExchangeRedisStrongNamePackageVersion>
-    <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.0.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
-    <SystemThreadingChannelsPackageVersion>4.5.0</SystemThreadingChannelsPackageVersion>
-    <WindowsAzureServiceBusPackageVersion>2.1.0</WindowsAzureServiceBusPackageVersion>
-    <XunitAbstractionsPackageVersion>2.0.2</XunitAbstractionsPackageVersion>
-    <XunitAssertPackageVersion>2.4.0</XunitAssertPackageVersion>
-    <XunitExtensibilityCorePackageVersion>2.4.0</XunitExtensibilityCorePackageVersion>
-    <XunitExtensibilityExecutionPackageVersion>2.4.0</XunitExtensibilityExecutionPackageVersion>
-    <XunitPackageVersion>2.4.0</XunitPackageVersion>
-    <XunitRunnerVisualstudioPackageVersion>2.4.0</XunitRunnerVisualstudioPackageVersion>
+    <StackExchangeRedisPackageVersion>2.8.0</StackExchangeRedisPackageVersion>
+    <StackExchangeRedisStrongNamePackageVersion>1.2.6</StackExchangeRedisStrongNamePackageVersion>
+    <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
+    <SystemThreadingChannelsPackageVersion>8.0.0</SystemThreadingChannelsPackageVersion>
+    <WindowsAzureServiceBusPackageVersion>7.0.1</WindowsAzureServiceBusPackageVersion>
+    <XunitAbstractionsPackageVersion>2.0.3</XunitAbstractionsPackageVersion>
+    <XunitAssertPackageVersion>2.9.0</XunitAssertPackageVersion>
+    <XunitExtensibilityCorePackageVersion>2.9.0</XunitExtensibilityCorePackageVersion>
+    <XunitExtensibilityExecutionPackageVersion>2.9.0</XunitExtensibilityExecutionPackageVersion>
+    <XunitPackageVersion>2.9.0</XunitPackageVersion>
+    <XunitRunnerVisualstudioPackageVersion>2.8.2</XunitRunnerVisualstudioPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="Package Versions: Pinned">
     <Release_NewtonsoftJsonPackageVersion>6.0.4</Release_NewtonsoftJsonPackageVersion>
     <ReleaseNetStandard13_NewtonsoftJsonPackageVersion>9.0.1</ReleaseNetStandard13_NewtonsoftJsonPackageVersion>	
     <ReleaseNetStandard20_NewtonsoftJsonPackageVersion>11.0.2</ReleaseNetStandard20_NewtonsoftJsonPackageVersion>	
-    <ServiceBus3_WindowsAzureServiceBusPackageVersion>3.4.5</ServiceBus3_WindowsAzureServiceBusPackageVersion>
+    <ServiceBus3_WindowsAzureServiceBusPackageVersion>7.0.1</ServiceBus3_WindowsAzureServiceBusPackageVersion>
   </PropertyGroup>
 </Project>
