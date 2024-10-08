@@ -10,7 +10,7 @@
     <OutputType>Exe</OutputType>
     <AssemblyName>signalr</AssemblyName>
     <Description>Command line utilities for ASP.NET SignalR.</Description>
-    <TargetFramework>net40</TargetFramework>
+    <TargetFramework>net45</TargetFramework>
 
     <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
   </PropertyGroup>
