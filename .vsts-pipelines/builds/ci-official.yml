@@ -1,15 +1,6 @@
 # This sets the build number
 name: $(Date:yyyyMMdd)$(Rev:-rr)
 
-# Keep compliance tooling e.g. CodeQL3000 up to date.
-schedules:
-- cron: 0 9 1,15 * *
-  displayName: "Run a build on the 1st and 15th of each month at 2:00 AM PDT"
-  branches:
-    include:
-    - release/2.1
-  always: true
-
 trigger:
 - main
 - release/*
@@ -21,72 +12,82 @@ parameters:
   type: boolean
   default: false
 
-jobs:
-- template: ../templates/signalr-build.yml
+resources:
+  repositories:
+  # Repo: 1ESPipelineTemplates/1ESPipelineTemplates
+  - repository: 1esPipelines
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
-    pool: internal
-    variables:
-      SignType: real
-      Localize: true
-      TeamName: AspNetCore
-      OfficialBuild: true
-      VisualStudioMSBuildx86Path: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe'
-      # CodeQL3000 tasks are auto-injected into official builds of main. Variables below are ignored otherwise.
-      # Enable CodeQL3000 auto-injected tasks. These tasks will no-op if two builds run w/in the same week.
-      Codeql.Cadence: 168
-      # Ignore infrastructure and test code.
-      Codeql.SourceRoot: src
-      # CodeQL3000 needs this plumbed along as a variable to enable TSA.
-      Codeql.TSAEnabled: true
-      # Default expects tsaoptions.json under SourceRoot.
-      Codeql.TSAOptionsPath: '$(Build.SourcesDirectory)/.config/tsaoptions.json'
-    beforeBuild:
+    sdl:
+      policheck:
+        enabled: true
+      tsa:
+        enabled: true
+      sourceAnalysisPool:
+        name: NetCore1ESPool-Svc-Internal
+        image: windows.vs2022.amd64
+        os: windows
+    stages:
+    - stage: build
+      displayName: Build
+      jobs:
+      - template: .vsts-pipelines/templates/signalr-build.yml@self
+        parameters:
+          pool: internal
+          variables:
+            SignType: real
+            Localize: true
+            TeamName: AspNetCore
+            OfficialBuild: true
+            VisualStudioMSBuildx86Path: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe'
+          beforeBuild:
 
-    # Detect OSS Components in use in the product. Only needs to run on one OS in the matrix.
-    - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-      displayName: 'Component Detection'
-      inputs:
-        # This funky GUID represents the product "ASP.NET and EF Core"
-        governanceProduct: 'c641993b-8380-e811-80c3-0004ffb4789e'
-        snapshotForceEnabled: true
+          # Detect OSS Components in use in the product. Only needs to run on one OS in the matrix.
+          - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+            displayName: 'Component Detection'
+            inputs:
+              # This funky GUID represents the product "ASP.NET and EF Core"
+              governanceProduct: 'c641993b-8380-e811-80c3-0004ffb4789e'
+              snapshotForceEnabled: true
 
-    - task: ms-vseng.MicroBuildTasks.a0262b21-fb8f-46f8-bb9a-60ed560d4a87.MicroBuildLocalizationPlugin@4
-      displayName: 'Install Localization Plugin'
-      inputs:
-        feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
+          - task: ms-vseng.MicroBuildTasks.a0262b21-fb8f-46f8-bb9a-60ed560d4a87.MicroBuildLocalizationPlugin@4
+            displayName: 'Install Localization Plugin'
+            inputs:
+              feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
 
-    - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@4
-      displayName: Install CodeSigning plugin
-      inputs:
-        feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
-        signType: $(SignType)
-      condition: and(succeeded(), in(variables['SignType'], 'test', 'real'))
+          - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@4
+            displayName: Install CodeSigning plugin
+            inputs:
+              feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
+              signType: $(SignType)
+            condition: and(succeeded(), in(variables['SignType'], 'test', 'real'))
 
-    - script: "echo ##vso[build.addbuildtag]CodeQL3000"
-      displayName: 'Set CI CodeQL3000 tag'
-      condition: ne(variables.CODEQL_DIST,'')
+          afterBuild:
+          - task: ms-vseng.MicroBuildTasks.521a94ea-9e68-468a-8167-6dcf361ea776.MicroBuildCleanup@1
+            displayName: Perform Cleanup Tasks
+            condition: succeededOrFailed()
 
-    afterBuild:
-    - task: ms-vseng.MicroBuildTasks.521a94ea-9e68-468a-8167-6dcf361ea776.MicroBuildCleanup@1
-      displayName: Perform Cleanup Tasks
-      condition: succeededOrFailed()
+          - ${{ if and(eq(parameters.IsFinalBuild, true), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+            - template: /eng/common/templates/steps/generate-sbom.yml@self
 
-    - ${{ if and(eq(parameters.IsFinalBuild, true), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-      - template: /eng/common/templates/steps/generate-sbom.yml
+          - ${{ if and(eq(parameters.IsFinalBuild, true), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+            - template: /eng/common/templates/steps/retain-build.yml@self
 
-    - ${{ if and(eq(parameters.IsFinalBuild, true), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-      - template: /eng/common/templates/steps/retain-build.yml
+          # Temporarily disable the PublishSymbols task since the agent doesn't currently have access to the $(DropShareRoot)
+          # - task: PublishSymbols@2
+          #   displayName: 'Publish symbols path'
+          #   condition: succeeded()
+          #   inputs:
+          #     SearchPattern: 'artifacts\$(BuildConfiguration)\symbols\windows\**\*.pdb'
+          #     SymbolServerType: FileShare
+          #     SymbolsProduct: AspNetSignalR
+          #     SymbolsPath: '$(DropShareRoot)\$(Build.BuildNumber)'
+          #     SymbolsArtifactName: 'symbols-$(BuildConfiguration)'
 
-    # Temporarily disable the PublishSymbols task since the agent doesn't currently have access to the $(DropShareRoot)
-    # - task: PublishSymbols@2
-    #   displayName: 'Publish symbols path'
-    #   condition: succeeded()
-    #   inputs:
-    #     SearchPattern: 'artifacts\$(BuildConfiguration)\symbols\windows\**\*.pdb'
-    #     SymbolServerType: FileShare
-    #     SymbolsProduct: AspNetSignalR
-    #     SymbolsPath: '$(DropShareRoot)\$(Build.BuildNumber)'
-    #     SymbolsArtifactName: 'symbols-$(BuildConfiguration)'
-
-    #     # We use SourceLink at build time, and Pdb2Pdb translates that to srcsrv at conversion time
-    #     IndexSources: false
+          #     # We use SourceLink at build time, and Pdb2Pdb translates that to srcsrv at conversion time
+          #     IndexSources: false

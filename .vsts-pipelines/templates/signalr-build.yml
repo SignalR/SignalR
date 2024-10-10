@@ -12,7 +12,9 @@ jobs:
       demands: ImageOverride -equals windows.vs2019.amd64.open
     ${{ if eq(parameters.pool, 'internal') }}:
       name: NetCore1ESPool-Svc-Internal
-      demands: ImageOverride -equals windows.vs2019.amd64
+      # Visual Studio Enterprise - contains some stuff, like SQL Server and IIS Express, that we use for testing
+      image: windows.vs2019.amd64
+      os: windows
   variables:
     BuildConfiguration: Release
     # Rely on task ci-official.yml injects, not auto-injected build step.
@@ -47,21 +49,39 @@ jobs:
       testRunner: vstest
       testResultsFiles: 'artifacts/logs/**/*.trx'
 
-  - task: PublishBuildArtifacts@1
-    displayName: Upload artifacts
-    condition: and(always(), eq(variables['system.pullrequest.isfork'], false))
-    inputs:
-      pathtoPublish: artifacts/$(BuildConfiguration)/
-      artifactName: artifacts-$(BuildConfiguration)
-      artifactType: Container
+  - ${{ if eq(parameters.pool, 'public') }}:
+    - task: PublishBuildArtifacts@1
+      displayName: Upload artifacts
+      condition: and(always(), eq(variables['system.pullrequest.isfork'], false))
+      inputs:
+        pathtoPublish: artifacts/$(BuildConfiguration)/
+        artifactName: artifacts-$(BuildConfiguration)
+        artifactType: Container
 
-  - task: PublishBuildArtifacts@1
-    displayName: Upload logs
-    condition: always()
-    inputs:
-      pathtoPublish: artifacts/logs/
-      artifactName: logs-$(BuildConfiguration)
-      artifactType: Container
+    - task: PublishBuildArtifacts@1
+      displayName: Upload logs
+      condition: always()
+      inputs:
+        pathtoPublish: artifacts/logs/
+        artifactName: logs-$(BuildConfiguration)
+        artifactType: Container
+
+  - ${{ if eq(parameters.pool, 'internal') }}:
+    - task: 1ES.PublishPipelineArtifact@1
+      displayName: Upload artifacts
+      condition: and(always(), eq(variables['system.pullrequest.isfork'], false))
+      inputs:
+        path: artifacts/$(BuildConfiguration)/
+        artifactName: artifacts-$(BuildConfiguration)
+        artifactType: Container
+
+    - task: 1ES.PublishPipelineArtifact@1
+      displayName: Upload logs
+      condition: always()
+      inputs:
+        path: artifacts/logs/
+        artifactName: logs-$(BuildConfiguration)
+        artifactType: Container
 
   - task: PublishTestResults@2
     displayName: Publish js test results
