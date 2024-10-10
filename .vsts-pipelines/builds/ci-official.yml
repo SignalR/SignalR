@@ -36,7 +36,7 @@ extends:
     - stage: build
       displayName: Build
       jobs:
-      - template: ../templates/signalr-build.yml@self
+      - template: .vsts-pipelines/templates/signalr-build.yml@self
         parameters:
           pool: internal
           variables:
