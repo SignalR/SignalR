@@ -11,7 +11,7 @@ jobs:
       name: NetCore-Svc-Public
       demands: ImageOverride -equals windows.vs2019.amd64.open
     ${{ if eq(parameters.pool, 'internal') }}:
-      name: $(DncEngInternalBuildPool)
+      name: NetCore1ESPool-Svc-Internal
       # Visual Studio Enterprise - contains some stuff, like SQL Server and IIS Express, that we use for testing
       image: windows.vs2019.amd64
       os: windows
