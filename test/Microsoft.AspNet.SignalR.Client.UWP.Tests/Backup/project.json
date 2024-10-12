@@ -1,7 +1,7 @@
 ﻿{
   "dependencies": {
     "Microsoft.NETCore.UniversalWindowsPlatform": "5.2.2",
-    "Newtonsoft.Json": "6.0.8",
+    "Newtonsoft.Json": "13.0.3",
     "xunit": "2.2.0",
     "xunit.runner.visualstudio": "2.2.0"
   },

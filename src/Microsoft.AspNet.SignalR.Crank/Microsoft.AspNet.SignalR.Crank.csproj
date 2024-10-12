@@ -15,7 +15,7 @@
     <PackageReference Include="Microsoft.Owin.Diagnostics" Version="$(MicrosoftOwinDiagnosticsPackageVersion)" />
     <PackageReference Include="Microsoft.Owin.Host.HttpListener" Version="$(MicrosoftOwinHostHttpListenerPackageVersion)" />
     <PackageReference Include="Microsoft.Owin.Hosting" Version="$(MicrosoftOwinHostingPackageVersion)" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(Release_NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.Composition.Registration" />

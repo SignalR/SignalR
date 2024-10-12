@@ -15,7 +15,7 @@
         "bin/Microsoft.AspNet.SignalR.ServiceBus3/net45/Microsoft.AspNet.SignalR.ServiceBus3.dll",
         "bin/Microsoft.AspNet.SignalR.SqlServer/net45/Microsoft.AspNet.SignalR.SqlServer.dll",
         "bin/Microsoft.AspNet.SignalR.SystemWeb/net45/Microsoft.AspNet.SignalR.SystemWeb.dll",
-        "bin/Microsoft.AspNet.SignalR.Utils/net40/signalr.exe"
+        "bin/Microsoft.AspNet.SignalR.Utils/net45/signalr.exe"
       ]
     },
     {
