@@ -224,13 +224,18 @@ namespace Owin
                     resolver.Register(typeof(ITraceManager), () => traceManager);
                 }
 
-                // Try to get the list of reference assemblies from the host
-                IEnumerable<Assembly> referenceAssemblies = env.GetReferenceAssemblies();
-                if (referenceAssemblies != null)
+                // Check if IAssemblyLocator dependency has changed, so custom defined IAssemblyLocator will not be overriden
+                IAssemblyLocator assemblyLocator = resolver.Resolve<IAssemblyLocator>();
+                if (assemblyLocator is DefaultAssemblyLocator)
                 {
-                    // Use this list as the assembly locator
-                    var assemblyLocator = new EnumerableOfAssemblyLocator(referenceAssemblies);
-                    resolver.Register(typeof(IAssemblyLocator), () => assemblyLocator);
+                    // Try to get the list of reference assemblies from the host
+                    IEnumerable<Assembly> referenceAssemblies = env.GetReferenceAssemblies();
+                    if (referenceAssemblies != null)
+                    {
+                        // Use this list as the assembly locator
+                        assemblyLocator = new EnumerableOfAssemblyLocator(referenceAssemblies);
+                        resolver.Register(typeof(IAssemblyLocator), () => assemblyLocator);
+                    }
                 }
 
                 resolver.InitializeHost(instanceName, token);
