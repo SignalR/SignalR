@@ -458,7 +458,7 @@
                     keepalive: true,
                     headers: requestHeaders,
                     credentials: connection.withCredentials === true ? "include" : "same-origin"
-                });
+                }).catch(() => {});
             }
             else { 
                 // fetch is not available - fallback to $.ajax
