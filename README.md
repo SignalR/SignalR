@@ -1,3 +1,35 @@
+   
+<div align="right" >
+  <details>
+    <summary >🌐 Language</summary>
+    <div>
+      <div align="right">
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=en">English</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=zh-CN">简体中文</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=zh-TW">繁體中文</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=ja">日本語</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=ko">한국어</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=hi">हिन्दी</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=th">ไทย</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=fr">Français</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=de">Deutsch</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=es">Español</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=it">Itapano</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=ru">Русский</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=pt">Português</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=nl">Nederlands</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=pl">Polski</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=ar">العربية</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=fa">فارسی</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=tr">Türkçe</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=vi">Tiếng Việt</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=SignalR&project=SignalR&lang=id">Bahasa Indonesia</a></p>
+      </div>
+    </div>
+  </details>
+</div>
+
+
 # ASP.NET SignalR 
 
 **IMPORTANT**: There will be no new features added to this product. We are in maintenance mode and only fixing critical issues. See [our blog post](https://devblogs.microsoft.com/aspnet/the-future-of-asp-net-signalr/) for details. 
