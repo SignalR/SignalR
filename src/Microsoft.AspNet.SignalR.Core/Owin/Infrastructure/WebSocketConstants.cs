@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.SignalR.Owin
     {
         internal const string WebSocketSubProtocolKey = "websocket.SubProtocol";
         internal const string WebSocketSendAsyncKey = "websocket.SendAsync";
-        internal const string WebSocketReceiveAyncKey = "websocket.ReceiveAsync";
+        internal const string WebSocketReceiveAsyncKey = "websocket.ReceiveAsync";
         internal const string WebSocketCloseAsyncKey = "websocket.CloseAsync";
         internal const string WebSocketCallCancelledKey = "websocket.CallCancelled";
         internal const string WebSocketVersionKey = "websocket.Version";
