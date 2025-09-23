@@ -19,6 +19,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         // Used to indicate whether Abort() has been called
         private bool _startedAbort;
+        private bool _abortSent;
         // Used to ensure that Abort() runs effectively only once
         // The _abortLock subsumes the _disposeLock and can be held upwards of 30 seconds
         private readonly object _abortLock = new object();
@@ -58,10 +59,12 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                     return;
                 }
 
+                _startedAbort = true;
+
                 // Ensure that an abort request is only made once
-                if (!_startedAbort)
+                if (!_abortSent)
                 {
-                    _startedAbort = true;
+                    _abortSent = true;
 
                     var url = UrlBuilder.BuildAbort(connection, _transportName, connectionData);
 
