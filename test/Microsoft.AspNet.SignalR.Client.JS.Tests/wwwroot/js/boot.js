@@ -8,3 +8,6 @@ window.onerror = function(message) {
         return message === "Script error.";
     }
 };
+
+// Make sure window._server is defined for karma tests which do not load js/server-info.js
+window._server = {};
