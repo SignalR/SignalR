@@ -1,0 +1,133 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="ARM" />
+    <Platform Name="Mixed Platforms" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/.nuget/">
+    <File Path=".nuget/NuGet.exe" />
+    <File Path=".nuget/NuGet.targets" />
+    <File Path=".nuget/packages.config" />
+  </Folder>
+  <Folder Name="/build/">
+    <File Path="build/dependencies.props" />
+    <File Path="build/Microsoft.AspNet.SignalR.ruleset" />
+    <File Path="build/repo.props" />
+    <File Path="build/repo.targets" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/Microsoft.AspNet.SelfHost.Samples/Microsoft.AspNet.SelfHost.Samples.csproj">
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="samples/Microsoft.AspNet.SignalR.Client.Samples/Microsoft.AspNet.SignalR.Client.Samples.csproj" />
+    <Project Path="samples/Microsoft.AspNet.SignalR.LoadTestHarness/Microsoft.AspNet.SignalR.LoadTestHarness.csproj">
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="samples/Microsoft.AspNet.SignalR.Samples.VB/Microsoft.AspNet.SignalR.Samples.VB.vbproj">
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="samples/Microsoft.AspNet.SignalR.Samples/Microsoft.AspNet.SignalR.Samples.csproj">
+      <BuildDependency Project="src/Microsoft.AspNet.SignalR.Utils/Microsoft.AspNet.SignalR.Utils.csproj" />
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Microsoft.AspNet.SignalR.Client/Microsoft.AspNet.SignalR.Client.csproj">
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="src/Microsoft.AspNet.SignalR.Core/Microsoft.AspNet.SignalR.Core.csproj">
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="src/Microsoft.AspNet.SignalR.Crank/Microsoft.AspNet.SignalR.Crank.csproj">
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="src/Microsoft.AspNet.SignalR.JS/Microsoft.AspNet.SignalR.JS.csproj" />
+    <Project Path="src/Microsoft.AspNet.SignalR.Redis/Microsoft.AspNet.SignalR.Redis.csproj">
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="src/Microsoft.AspNet.SignalR.SelfHost/Microsoft.AspNet.SignalR.SelfHost.csproj" />
+    <Project Path="src/Microsoft.AspNet.SignalR.ServiceBus/Microsoft.AspNet.SignalR.ServiceBus.csproj">
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="src/Microsoft.AspNet.SignalR.ServiceBus3/Microsoft.AspNet.SignalR.ServiceBus3.csproj" />
+    <Project Path="src/Microsoft.AspNet.SignalR.SqlServer/Microsoft.AspNet.SignalR.SqlServer.csproj">
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="src/Microsoft.AspNet.SignalR.StackExchangeRedis/Microsoft.AspNet.SignalR.StackExchangeRedis.csproj" />
+    <Project Path="src/Microsoft.AspNet.SignalR.Stress/Microsoft.AspNet.SignalR.Stress.csproj" />
+    <Project Path="src/Microsoft.AspNet.SignalR.StressServer/Microsoft.AspNet.SignalR.StressServer.csproj">
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="src/Microsoft.AspNet.SignalR.SystemWeb/Microsoft.AspNet.SignalR.SystemWeb.csproj">
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="src/Microsoft.AspNet.SignalR.Utils/Microsoft.AspNet.SignalR.Utils.csproj">
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="src/Microsoft.AspNet.SignalR/Microsoft.AspNet.SignalR.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <File Path="test/Directory.Build.props" />
+    <File Path="test/Directory.Build.targets" />
+    <Project Path="test/Microsoft.AspNet.SignalR.Client.JS.Tests/Microsoft.AspNet.SignalR.Client.JS.Tests.csproj">
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="test/Microsoft.AspNet.SignalR.Client.Tests/Microsoft.AspNet.SignalR.Client.Tests.csproj">
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="test/Microsoft.AspNet.SignalR.FunctionalTests/Microsoft.AspNet.SignalR.FunctionalTests.csproj" />
+    <Project Path="test/Microsoft.AspNet.SignalR.Redis.Tests/Microsoft.AspNet.SignalR.Redis.Tests.csproj">
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="test/Microsoft.AspNet.SignalR.SqlServer.Tests/Microsoft.AspNet.SignalR.SqlServer.Tests.csproj">
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="test/Microsoft.AspNet.SignalR.StackExchangeRedis.Tests/Microsoft.AspNet.SignalR.StackExchangeRedis.Tests.csproj" />
+    <Project Path="test/Microsoft.AspNet.SignalR.Tests.Common/Microsoft.AspNet.SignalR.Tests.Common.csproj">
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+    <Project Path="test/Microsoft.AspNet.SignalR.Tests/Microsoft.AspNet.SignalR.Tests.csproj">
+      <Build Solution="*|ARM" Project="false" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="*|x86" Project="false" />
+    </Project>
+  </Folder>
+</Solution>
