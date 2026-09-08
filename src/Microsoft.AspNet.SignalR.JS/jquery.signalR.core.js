@@ -648,7 +648,10 @@
                         $(connection).triggerHandler(events.onStart);
 
                         // wire the stop handler for when the user leaves the page
-                        _pageWindow.bind("unload", function () {
+                        _pageWindow.bind("pagehide", function (event) {
+                            if ((event.originalEvent || event).persisted) {
+                                return;
+                            }
                             connection.log("Window unloading, stopping the connection.");
 
                             connection.stop(asyncAbort);
