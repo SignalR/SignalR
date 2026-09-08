@@ -649,10 +649,11 @@
 
                         // wire the stop handler for when the user leaves the page
                         _pageWindow.bind("pagehide", function (event) {
-                            if (event.persisted) {
+                            if ((event.originalEvent || event).persisted) {
                                 return;
                             }
                             connection.log("Window unloading, stopping the connection.");
+                            
                             connection.stop(asyncAbort);
                         });
 
