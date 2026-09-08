@@ -653,7 +653,7 @@
                                 return;
                             }
                             connection.log("Window unloading, stopping the connection.");
-                            
+
                             connection.stop(asyncAbort);
                         });
 
