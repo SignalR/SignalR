@@ -6,6 +6,14 @@ trigger:
 - release/*
 - vsts/*
 
+schedules:
+- cron: "0 9 1,15 * *"
+  displayName: "Twice-monthly official build"
+  branches:
+    include:
+    - main
+  always: true
+
 parameters:
 - name: IsFinalBuild
   displayName: Is final build?
